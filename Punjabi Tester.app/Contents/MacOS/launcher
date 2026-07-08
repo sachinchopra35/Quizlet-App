@@ -1,0 +1,41 @@
+#!/bin/bash
+# Dock tile: run run_app.sh from this project. One bounce is normal.
+# Do not send child stdout/stderr to /dev/null — if run_app.sh cannot open PunjabiVocab.log,
+# every line after "exec >>" would be discarded and the log would look empty.
+
+if [[ -z "${HOME:-}" ]]; then
+  export HOME="$(eval echo "~$(/usr/bin/id -un)")"
+fi
+
+DOCK_LOG="${HOME}/Library/Logs/PunjabiVocab-dock.log"
+mkdir -p "$(dirname "$DOCK_LOG")"
+{
+  echo "==== $(/bin/date) Punjabi Tester pid=$$ ===="
+  echo "HOME=$HOME"
+} >>"$DOCK_LOG" 2>&1
+
+PROJECT="$(cd "$(dirname "$0")/../../.." && pwd)" || {
+  echo "failed to cd to project (dirname=\$0)" >>"$DOCK_LOG" 2>&1
+  exit 1
+}
+SCRIPT="$PROJECT/run_app.sh"
+echo "PROJECT=$PROJECT" >>"$DOCK_LOG" 2>&1
+if [[ -f "$SCRIPT" ]]; then
+  echo "run_app.sh: found" >>"$DOCK_LOG" 2>&1
+else
+  echo "run_app.sh: MISSING" >>"$DOCK_LOG" 2>&1
+fi
+
+if [[ ! -f "$SCRIPT" ]]; then
+  /usr/bin/osascript -e "display dialog \"Keep Punjabi Tester.app next to run_app.sh.
+
+Expected: $SCRIPT\" with title \"Punjabi Tester\" buttons {\"OK\"} default button \"OK\"" || true
+  exit 1
+fi
+
+# Append early errors to dock log; run_app.sh switches to PunjabiVocab.log after its own "exec >>".
+/usr/bin/nohup /bin/bash "$SCRIPT" >>"$DOCK_LOG" 2>&1 &
+CHILD=$!
+echo "started child pid=$CHILD" >>"$DOCK_LOG" 2>&1
+disown "$CHILD" 2>/dev/null || true
+exit 0

@@ -1,0 +1,53 @@
+#!/bin/bash
+# Logs: ~/Library/Logs/PunjabiVocab-launcher.log
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+LOG="${HOME}/Library/Logs/PunjabiVocab-launcher.log"
+mkdir -p "$(dirname "$LOG")"
+exec >>"$LOG" 2>&1
+echo "==== $(/bin/date) launcher pid=$$ HOME=${HOME:-?} argv0=$0 ===="
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+echo "HERE=$HERE"
+
+# Project folder = parent of this .app (MacOS -> Contents -> *.app -> REPO).
+# Dock / App Translocation breaks "walk up to find run_app.sh"; REPO is stable
+# when Punjabi.app sits next to app.py in the real project folder.
+REPO="$(cd "$HERE/../../.." && pwd)"
+REPO="$(cd "$REPO" && pwd)"
+echo "REPO=$REPO"
+
+BUNDLED="$HERE/../Resources/run_app.sh"
+if [[ -f "$BUNDLED" ]] && [[ -f "$REPO/app.py" ]]; then
+  echo "launch via bundled script, PUNJABI_VOCAB_ROOT=$REPO"
+  export PUNJABI_VOCAB_ROOT="$REPO"
+  exec /bin/bash -s <"$BUNDLED"
+fi
+
+echo "no bundled script or no app.py at REPO — fallback search for run_app.sh"
+SEARCH="$HERE"
+for _ in {1..64}; do
+  SEARCH="$(cd "$SEARCH" && pwd)"
+  echo "try SEARCH=$SEARCH"
+  if [[ -f "$SEARCH/run_app.sh" ]]; then
+    echo "found run_app.sh -> bash -s (stdin)"
+    export PUNJABI_VOCAB_ROOT="$SEARCH"
+    exec /bin/bash -s <"$SEARCH/run_app.sh"
+  fi
+  PARENT="$(cd "$SEARCH/.." && pwd)"
+  PARENT="$(cd "$PARENT" && pwd)"
+  if [[ "$PARENT" == "$SEARCH" ]]; then
+    echo "reached filesystem root"
+    break
+  fi
+  SEARCH="$PARENT"
+done
+
+/usr/bin/osascript -e 'display dialog "Could not find your project next to this app.
+
+Fix: Put Punjabi.app in the same folder as app.py and venv (your Quizlet project folder). Remove the old Dock icon and drag the app from Finder again.
+
+If it still fails, run: xattr -cr (drag Punjabi.app here) in Terminal, then try again.
+
+See ~/Library/Logs/PunjabiVocab-launcher.log" with title "Punjabi vocab" buttons {"OK"} default button "OK"' || true
+echo "launcher exit 1"
+exit 1
