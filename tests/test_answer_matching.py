@@ -1,6 +1,6 @@
 import unittest
 
-from app import answers_match, canonicalize_punjabi, normalize
+from vocab_quiz.matching import answers_match, canonicalize_punjabi, normalize
 
 
 class TestNormalize(unittest.TestCase):
