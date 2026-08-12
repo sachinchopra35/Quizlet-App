@@ -11,6 +11,7 @@ from vocab_quiz.browser_audio import (
 from vocab_quiz.browser_scripts import (
     focus_answer_input,
     focus_idle_start_submit_button,
+    play_confetti,
     register_enter_to_start_round,
 )
 from vocab_quiz.config import (
@@ -142,6 +143,7 @@ def main() -> None:
         if msg:
             if level == "success":
                 st.success(msg)
+                play_confetti()
             else:
                 st.info(msg)
             if level == "success":
@@ -163,7 +165,6 @@ def main() -> None:
         fb = st.session_state.last_feedback
         if not st.session_state.audio_muted and fb and fb[0] == "correct":
             play_feedback_chime("correct")
-        st.balloons()
         st.session_state.last_feedback = None
         st.rerun()
         return
