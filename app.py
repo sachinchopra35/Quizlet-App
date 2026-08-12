@@ -13,7 +13,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 APP_DIR = Path(__file__).resolve().parent
-VOCAB_LISTS_DIR = APP_DIR / "vocab_lists"
+VOCAB_LISTS_DIR = APP_DIR / "vocab_lists_new"
 SPEECH_LEAD_MS = 250  # brief pause before any TTS so UI/chimes can land first
 REQUIRED_COLS = ("en", "lang")
 STYLE_FROM_EN = "Translate from English"
@@ -42,11 +42,42 @@ def load_vocab(path: Path) -> pd.DataFrame:
 
 
 def normalize(s: str) -> str:
-    """Compare answers without caring about punctuation (. ? ! etc.) or extra spaces."""
+    """Loose compare for spoken-language practice: ignore punctuation, spacing, and doubled letters."""
     s = (s or "").strip()
     s = "".join(c if unicodedata.category(c)[0] != "P" else " " for c in s)
-    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s+", "", s)
+    s = re.sub(r"(.)\1+", r"\1", s)
     return s.casefold()
+
+
+# Punjabi spelling equivalences — extend these tuples/patterns to accept more variants.
+PUNJABI_SUBSTRING_CANONICALS = (
+    ("eh", "oh"),
+)
+PUNJABI_CHAR_CANONICAL = str.maketrans("rR", "dd")
+I_AM_SUFFIX_RAW_RE = re.compile(r"(hoon|hoo|hun)\s*$", re.IGNORECASE)
+# Formal "your" (tuhada / tuada / tusada …) — masc ends in a, fem ends in i.
+TUADA_MASC_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a")
+TUADA_FEM_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i")
+
+
+def canonicalize_punjabi(s: str) -> str:
+    """Map common Punjabi romanization variants to one form for answer matching."""
+    s = (s or "").strip()
+    s = I_AM_SUFFIX_RAW_RE.sub("hun", s)
+    s = normalize(s)
+    s = TUADA_MASC_RE.sub("tuadha", s)
+    s = TUADA_FEM_RE.sub("tuadhi", s)
+    for variant, canonical in PUNJABI_SUBSTRING_CANONICALS:
+        s = s.replace(variant, canonical)
+    s = s.translate(PUNJABI_CHAR_CANONICAL)
+    return s
+
+
+def answers_match(user_text: str, answer: str, *, punjabi: bool) -> bool:
+    if punjabi:
+        return canonicalize_punjabi(user_text) == canonicalize_punjabi(str(answer))
+    return normalize(user_text) == normalize(str(answer))
 
 
 def direction_from_style(style: str) -> str:
@@ -409,7 +440,8 @@ def process_answer(user_text: str) -> None:
     else:
         prompt_side, answer = row["lang"], row["en"]
 
-    ok = normalize(user_text) == normalize(str(answer))
+    punjabi_answer = st.session_state.direction == "en_to_lang"
+    ok = answers_match(user_text, answer, punjabi=punjabi_answer)
 
     if st.session_state.first_attempt_ok[idx] is None:
         st.session_state.first_attempt_ok[idx] = ok
@@ -430,7 +462,7 @@ def main() -> None:
     init_session_keys()
 
     st.title("Vocabulary quiz")
-    st.caption("CSV files in `vocab_lists/` must have columns `en` and `lang`.")
+    st.caption("CSV files in `vocab_lists_new/` must have columns `en` and `lang`.")
 
     csv_paths = list_csv_files()
     if not csv_paths:
