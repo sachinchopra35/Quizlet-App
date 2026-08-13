@@ -153,6 +153,46 @@ def focus_answer_input() -> None:
     )
 
 
+def inject_nav_button_styles() -> None:
+    """Inject CSS for vocab list nav buttons (st.markdown no longer applies <style> reliably)."""
+    components.html(
+        """
+        <script>
+        (function () {
+          const doc = window.top && window.top.document ? window.top.document : window.parent.document;
+          if (doc.getElementById("vq-nav-btn-styles")) return;
+          const style = doc.createElement("style");
+          style.id = "vq-nav-btn-styles";
+          style.textContent = [
+            'button[title="Previous list"],',
+            'button[title="Next list"],',
+            'button[title="Random list"] {',
+            "  display: inline-flex !important;",
+            "  align-items: center !important;",
+            "  justify-content: center !important;",
+            "  min-height: 2.5rem;",
+            "  padding: 0.35rem 0.5rem !important;",
+            "}",
+            'button[title="Previous list"] p,',
+            'button[title="Next list"] p,',
+            'button[title="Random list"] p {',
+            "  margin: 0 !important;",
+            "  line-height: 1 !important;",
+            "  text-align: center !important;",
+            "  width: 100%;",
+            "}",
+            'button[title="Random list"] p {',
+            "  font-size: 1.05rem;",
+            "}",
+          ].join("\\n");
+          doc.head.appendChild(style);
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
+
 def play_confetti() -> None:
     """Lightweight canvas confetti burst when a round completes."""
     components.html(

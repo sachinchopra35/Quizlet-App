@@ -20,6 +20,37 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(canonicalize_punjabi("ehnu"), canonicalize_punjabi("ohnu"))
         self.assertEqual(canonicalize_punjabi("eh"), canonicalize_punjabi("oh"))
 
+    def test_usnu_ohnu_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("usnu"), canonicalize_punjabi("ohnu"))
+        self.assertEqual(
+            canonicalize_punjabi("usnu na dekho"),
+            canonicalize_punjabi("ohnu na dekho"),
+        )
+
+    def test_negative_imperative_kar_karo(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("intezaar na karo"),
+            canonicalize_punjabi("intezaar na kar"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("darwaza band na karo"),
+            canonicalize_punjabi("darwaza band na kar"),
+        )
+
+    def test_intezaar_udeek_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("mera intezaar karo"),
+            canonicalize_punjabi("mera udeek karo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main udeek karda hun"),
+            canonicalize_punjabi("main intezaar karda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("intezaar na kar"),
+            canonicalize_punjabi("udeek na kar"),
+        )
+
     def test_vich_ch_interchange(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("apniyan akhan vich eyedrop"),
@@ -29,6 +60,34 @@ class TestCanonicalizePunjabi(unittest.TestCase):
     def test_vich_ch_does_not_break_ch_prefix_words(self) -> None:
         self.assertEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("chaku"))
         self.assertNotEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("vaku"))
+
+    def test_menu_mainu_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("menu paani chaida hai"),
+            canonicalize_punjabi("mainu paani chaida hai"),
+        )
+
+    def test_mai_main_interchange_at_start_only(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("mai thaka hun"),
+            canonicalize_punjabi("main thaka hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("mainu paani chaida hai"),
+            canonicalize_punjabi("mainu paani chaida hai"),
+        )
+
+    def test_hai_haan_aa_copula_endings(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("mainu bookh lag rahi hai"),
+            canonicalize_punjabi("mainu bookh lag rahi haan"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("mainu bookh lag rahi hai"),
+            canonicalize_punjabi("mainu bookh lag rahi aa"),
+        )
+        self.assertEqual(canonicalize_punjabi("sab theek hai"), canonicalize_punjabi("sab theek aa"))
+        self.assertNotEqual(canonicalize_punjabi("mere naal aa"), canonicalize_punjabi("mere naal hai"))
 
     def test_r_d_interchange(self) -> None:
         self.assertEqual(canonicalize_punjabi("khirki"), canonicalize_punjabi("khidki"))
@@ -56,6 +115,7 @@ class TestCanonicalizePunjabi(unittest.TestCase):
 class TestAnswersMatch(unittest.TestCase):
     def test_punjabi_mode_uses_canonical_rules(self) -> None:
         self.assertTrue(answers_match("ohnu dekho", "ehnu dekho", punjabi=True))
+        self.assertTrue(answers_match("usnu dedo", "ohnu dedo", punjabi=True))
         self.assertTrue(answers_match("khidki band kar raha hun", "khirki band kar raha hun", punjabi=True))
         self.assertTrue(
             answers_match(
@@ -112,6 +172,37 @@ class TestAnswersMatch(unittest.TestCase):
                 "apniyan akhan vich eyedrop paa lo",
                 punjabi=True,
             )
+        )
+
+    def test_menu_and_hai_variants_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match(
+                "menu paani chaida hai",
+                "mainu paani chaida hai",
+                punjabi=True,
+            )
+        )
+        self.assertTrue(
+            answers_match(
+                "mainu bookh lag rahi haan",
+                "mainu bookh lag rahi hai",
+                punjabi=True,
+            )
+        )
+
+    def test_negative_imperative_kar_karo_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("intezaar na karo", "intezaar na kar", punjabi=True),
+        )
+        # Positive imperatives stay distinct.
+        self.assertFalse(answers_match("apna kam karo", "apna kam kar", punjabi=True))
+
+    def test_intezaar_udeek_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("mera udeek karo", "mera intezaar karo", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("main intezaar karda hun", "main udeek karda hun", punjabi=True),
         )
 
 

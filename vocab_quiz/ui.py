@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 
 import streamlit as st
@@ -11,6 +12,7 @@ from vocab_quiz.browser_audio import (
 from vocab_quiz.browser_scripts import (
     focus_answer_input,
     focus_idle_start_submit_button,
+    inject_nav_button_styles,
     play_confetti,
     register_enter_to_start_round,
 )
@@ -29,6 +31,133 @@ from vocab_quiz.rounds import (
     start_round,
 )
 from vocab_quiz.vocab import list_csv_files, load_vocab
+
+
+def _adjacent_csv(names: list[str], current: str, delta: int) -> str:
+    idx = names.index(current)
+    return names[(idx + delta) % len(names)]
+
+
+def _random_csv(names: list[str], current: str) -> str:
+    if len(names) <= 1:
+        return current
+    others = [n for n in names if n != current]
+    return random.choice(others)
+
+
+def _vocab_file_label(filename: str) -> str:
+    return Path(filename).stem
+
+
+def _nav_prev_csv() -> None:
+    names = st.session_state.csv_names
+    current = st.session_state.selected_csv
+    if current not in names:
+        current = names[0]
+    st.session_state.selected_csv = _adjacent_csv(names, current, -1)
+
+
+def _nav_next_csv() -> None:
+    names = st.session_state.csv_names
+    current = st.session_state.selected_csv
+    if current not in names:
+        current = names[0]
+    st.session_state.selected_csv = _adjacent_csv(names, current, 1)
+
+
+def _nav_shuffle_csv() -> None:
+    names = st.session_state.csv_names
+    current = st.session_state.selected_csv
+    if current not in names:
+        current = names[0]
+    st.session_state.selected_csv = _random_csv(names, current)
+
+
+def _render_idle_panel() -> None:
+    msg = st.session_state.pop("round_message", None)
+    announce = st.session_state.pop("round_announce", None)
+    level = st.session_state.pop("round_message_level", "info")
+    if announce and not st.session_state.audio_muted:
+        speak_text(str(announce), lang="en-GB", rate=0.88)
+    if msg:
+        if level == "success":
+            st.success(msg)
+            play_confetti()
+        else:
+            st.info(msg)
+        if level == "success":
+            focus_idle_start_submit_button()
+    else:
+        st.caption("Start a round to begin.")
+    register_enter_to_start_round()
+
+
+def _render_active_quiz() -> None:
+    idx = current_row_index()
+    if idx is None:
+        st.session_state.round_active = False
+        c, t, pct = end_round_stats()
+        st.session_state.round_message = (
+            f"Round complete. First-try accuracy: **{c} / {t}** ({pct:.1f}%)."
+        )
+        st.session_state.round_announce = (
+            f"The round is complete. You scored {c} out of {t} on first-time accuracy."
+        )
+        st.session_state.round_message_level = "success"
+        fb = st.session_state.last_feedback
+        if not st.session_state.audio_muted and fb and fb[0] == "correct":
+            play_feedback_chime("correct")
+        st.session_state.last_feedback = None
+        st.rerun()
+        return
+
+    df = st.session_state.vocab_df
+    row = df.iloc[idx]
+    st.subheader(style_from_direction(st.session_state.direction))
+    if st.session_state.direction == "en_to_lang":
+        prompt = row["en"]
+    else:
+        prompt = row["lang"]
+
+    tts_lang = "en-GB" if st.session_state.direction == "en_to_lang" else None
+
+    st.markdown(f"### {prompt}")
+    remaining = len(st.session_state.queue)
+    total = len(df)
+    st.caption(f"Cards left in this round’s queue: **{remaining}** (of **{total}** unique words).")
+
+    played_wrong_voice = False
+    fb = st.session_state.last_feedback
+    if fb:
+        kind, shown, ans = fb
+        if kind == "wrong":
+            st.warning(f"Not quite — you saw **{shown}**. Correct answer: **{ans}**.")
+        elif kind == "correct":
+            st.success("Correct — nice.")
+
+    with st.form("answer_form", clear_on_submit=True):
+        guess = st.text_input("Your answer", key="guess_input")
+        submitted = st.form_submit_button("Check")
+
+    # Run audio after the form is in the DOM so focus/TTS do not race (wrong answers were losing focus).
+    if fb:
+        gen = int(st.session_state.get("feedback_sound_gen", 0))
+        if gen != int(st.session_state.get("last_chimed_feedback_gen", 0)):
+            if not st.session_state.audio_muted:
+                play_feedback_chime(fb[0])
+                if fb[0] == "wrong":
+                    speak_wrong_then_question(str(fb[2]), str(prompt), tts_lang)
+                    played_wrong_voice = True
+            st.session_state.last_chimed_feedback_gen = gen
+
+    if not submitted and not st.session_state.audio_muted and not played_wrong_voice:
+        speak_question(str(prompt), tts_lang)
+
+    if submitted:
+        process_answer(guess)
+        st.rerun()
+
+    focus_answer_input()
 
 
 def main() -> None:
@@ -52,16 +181,50 @@ def main() -> None:
     ):
         st.session_state.selected_csv = names[0]
 
-    def _vocab_file_label(filename: str) -> str:
-        return Path(filename).stem
+    st.session_state.csv_names = names
+    inject_nav_button_styles()
 
-    st.selectbox(
-        "Choose vocabulary file",
-        options=names,
-        format_func=_vocab_file_label,
-        key="selected_csv",
-        disabled=st.session_state.round_active,
+    nav_disabled = st.session_state.round_active
+    file_col, prev_col, next_col, shuffle_col = st.columns(
+        [6.5, 0.85, 0.85, 0.85],
+        vertical_alignment="bottom",
     )
+    with file_col:
+        st.selectbox(
+            "Choose vocabulary file",
+            options=names,
+            format_func=_vocab_file_label,
+            key="selected_csv",
+            disabled=nav_disabled,
+        )
+    with prev_col:
+        st.button(
+            "←",
+            help="Previous list",
+            disabled=nav_disabled,
+            on_click=_nav_prev_csv,
+            use_container_width=True,
+            key="nav_prev_csv",
+        )
+    with next_col:
+        st.button(
+            "→",
+            help="Next list",
+            disabled=nav_disabled,
+            on_click=_nav_next_csv,
+            use_container_width=True,
+            key="nav_next_csv",
+        )
+    with shuffle_col:
+        st.button(
+            "🔀",
+            help="Random list",
+            disabled=nav_disabled,
+            on_click=_nav_shuffle_csv,
+            use_container_width=True,
+            key="nav_shuffle_csv",
+        )
+
     choice = st.session_state.selected_csv
     csv_path = VOCAB_LISTS_DIR / choice
 
@@ -134,85 +297,9 @@ def main() -> None:
         start_round(vocab_df.copy(), st.session_state.direction)
         st.rerun()
 
-    if not st.session_state.round_active:
-        msg = st.session_state.pop("round_message", None)
-        announce = st.session_state.pop("round_announce", None)
-        level = st.session_state.pop("round_message_level", "info")
-        if announce and not st.session_state.audio_muted:
-            speak_text(str(announce), lang="en-GB", rate=0.88)
-        if msg:
-            if level == "success":
-                st.success(msg)
-                play_confetti()
-            else:
-                st.info(msg)
-            if level == "success":
-                focus_idle_start_submit_button()
-        register_enter_to_start_round()
-        return
+    with st.container(border=True):
+        if not st.session_state.round_active:
+            _render_idle_panel()
+        else:
+            _render_active_quiz()
 
-    idx = current_row_index()
-    if idx is None:
-        st.session_state.round_active = False
-        c, t, pct = end_round_stats()
-        st.session_state.round_message = (
-            f"Round complete. First-try accuracy: **{c} / {t}** ({pct:.1f}%)."
-        )
-        st.session_state.round_announce = (
-            f"The round is complete. You scored {c} out of {t} on first-time accuracy."
-        )
-        st.session_state.round_message_level = "success"
-        fb = st.session_state.last_feedback
-        if not st.session_state.audio_muted and fb and fb[0] == "correct":
-            play_feedback_chime("correct")
-        st.session_state.last_feedback = None
-        st.rerun()
-        return
-
-    df = st.session_state.vocab_df
-    row = df.iloc[idx]
-    st.subheader(style_from_direction(st.session_state.direction))
-    if st.session_state.direction == "en_to_lang":
-        prompt = row["en"]
-    else:
-        prompt = row["lang"]
-
-    tts_lang = "en-GB" if st.session_state.direction == "en_to_lang" else None
-
-    st.markdown(f"### {prompt}")
-    remaining = len(st.session_state.queue)
-    total = len(df)
-    st.caption(f"Cards left in this round’s queue: **{remaining}** (of **{total}** unique words).")
-
-    played_wrong_voice = False
-    fb = st.session_state.last_feedback
-    if fb:
-        kind, shown, ans = fb
-        if kind == "wrong":
-            st.warning(f"Not quite — you saw **{shown}**. Correct answer: **{ans}**.")
-        elif kind == "correct":
-            st.success("Correct — nice.")
-
-    with st.form("answer_form", clear_on_submit=True):
-        guess = st.text_input("Your answer", key="guess_input")
-        submitted = st.form_submit_button("Check")
-
-    # Run audio after the form is in the DOM so focus/TTS do not race (wrong answers were losing focus).
-    if fb:
-        gen = int(st.session_state.get("feedback_sound_gen", 0))
-        if gen != int(st.session_state.get("last_chimed_feedback_gen", 0)):
-            if not st.session_state.audio_muted:
-                play_feedback_chime(fb[0])
-                if fb[0] == "wrong":
-                    speak_wrong_then_question(str(fb[2]), str(prompt), tts_lang)
-                    played_wrong_voice = True
-            st.session_state.last_chimed_feedback_gen = gen
-
-    if not submitted and not st.session_state.audio_muted and not played_wrong_voice:
-        speak_question(str(prompt), tts_lang)
-
-    if submitted:
-        process_answer(guess)
-        st.rerun()
-
-    focus_answer_input()
