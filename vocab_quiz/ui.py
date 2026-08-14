@@ -19,7 +19,7 @@ from vocab_quiz.browser_scripts import (
 from vocab_quiz.config import (
     STYLE_FROM_EN,
     STYLE_TO_EN,
-    VOCAB_LISTS_DIR,
+    PUNJABI_VOCAB_DIR,
     direction_from_style,
     style_from_direction,
 )
@@ -28,6 +28,7 @@ from vocab_quiz.rounds import (
     end_round_stats,
     init_session_keys,
     process_answer,
+    start_beast_round,
     start_round,
 )
 from vocab_quiz.vocab import list_csv_files, load_vocab
@@ -73,6 +74,11 @@ def _nav_shuffle_csv() -> None:
     st.session_state.selected_csv = _random_csv(names, current)
 
 
+def _start_beast_mode() -> None:
+    direction = direction_from_style(st.session_state.question_style)
+    start_beast_round(direction)
+
+
 def _render_idle_panel() -> None:
     msg = st.session_state.pop("round_message", None)
     announce = st.session_state.pop("round_announce", None)
@@ -96,6 +102,7 @@ def _render_active_quiz() -> None:
     idx = current_row_index()
     if idx is None:
         st.session_state.round_active = False
+        st.session_state.beast_mode = False
         c, t, pct = end_round_stats()
         st.session_state.round_message = (
             f"Round complete. First-try accuracy: **{c} / {t}** ({pct:.1f}%)."
@@ -113,7 +120,14 @@ def _render_active_quiz() -> None:
 
     df = st.session_state.vocab_df
     row = df.iloc[idx]
-    st.subheader(style_from_direction(st.session_state.direction))
+    if st.session_state.beast_mode:
+        st.subheader("Beast Mode")
+        st.caption(
+            f"**{len(df)}** random cards from all lists · "
+            f"{style_from_direction(st.session_state.direction)}"
+        )
+    else:
+        st.subheader(style_from_direction(st.session_state.direction))
     if st.session_state.direction == "en_to_lang":
         prompt = row["en"]
     else:
@@ -165,11 +179,11 @@ def main() -> None:
     init_session_keys()
 
     st.title("Vocabulary quiz")
-    st.caption("CSV files in `vocab_lists_new/` must have columns `en` and `lang`.")
+    st.caption("CSV files in `punjabi_vocab/` must have columns `en` and `lang`.")
 
     csv_paths = list_csv_files()
     if not csv_paths:
-        st.error(f"No CSV files found in `{VOCAB_LISTS_DIR}`. Add `*.csv` files there.")
+        st.error(f"No CSV files found in `{PUNJABI_VOCAB_DIR}`. Add `*.csv` files there.")
         return
 
     names = [p.name for p in csv_paths]
@@ -185,8 +199,8 @@ def main() -> None:
     inject_nav_button_styles()
 
     nav_disabled = st.session_state.round_active
-    file_col, prev_col, next_col, shuffle_col = st.columns(
-        [6.5, 0.85, 0.85, 0.85],
+    file_col, prev_col, next_col, shuffle_col, beast_col = st.columns(
+        [6.0, 0.8, 0.8, 0.8, 0.8],
         vertical_alignment="bottom",
     )
     with file_col:
@@ -200,7 +214,7 @@ def main() -> None:
     with prev_col:
         st.button(
             "←",
-            help="Previous list",
+            help="Previous Vocab List",
             disabled=nav_disabled,
             on_click=_nav_prev_csv,
             use_container_width=True,
@@ -209,7 +223,7 @@ def main() -> None:
     with next_col:
         st.button(
             "→",
-            help="Next list",
+            help="Next Vocab List",
             disabled=nav_disabled,
             on_click=_nav_next_csv,
             use_container_width=True,
@@ -218,15 +232,24 @@ def main() -> None:
     with shuffle_col:
         st.button(
             "🔀",
-            help="Random list",
+            help="Pick Random Vocab List",
             disabled=nav_disabled,
             on_click=_nav_shuffle_csv,
             use_container_width=True,
             key="nav_shuffle_csv",
         )
+    with beast_col:
+        st.button(
+            "🔥",
+            help="Beast Mode - 10 Random Questions",
+            disabled=nav_disabled,
+            on_click=_start_beast_mode,
+            use_container_width=True,
+            key="nav_beast_mode",
+        )
 
     choice = st.session_state.selected_csv
-    csv_path = VOCAB_LISTS_DIR / choice
+    csv_path = PUNJABI_VOCAB_DIR / choice
 
     try:
         vocab_df = load_vocab(csv_path)
@@ -278,6 +301,7 @@ def main() -> None:
     with col_b:
         if st.button("Stop round", disabled=not st.session_state.round_active):
             st.session_state.round_active = False
+            st.session_state.beast_mode = False
             st.session_state.queue = []
             st.session_state.last_feedback = None
             c, t, pct = end_round_stats()

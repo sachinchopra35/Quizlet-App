@@ -2,13 +2,25 @@ from pathlib import Path
 
 import pandas as pd
 
-from vocab_quiz.config import REQUIRED_COLS, VOCAB_LISTS_DIR
+from vocab_quiz.config import PUNJABI_VOCAB_DIR, REQUIRED_COLS
 
 
 def list_csv_files() -> list[Path]:
-    VOCAB_LISTS_DIR.mkdir(parents=True, exist_ok=True)
-    files = sorted(VOCAB_LISTS_DIR.glob("*.csv"), key=lambda p: p.name.lower())
+    PUNJABI_VOCAB_DIR.mkdir(parents=True, exist_ok=True)
+    files = sorted(PUNJABI_VOCAB_DIR.glob("*.csv"), key=lambda p: p.name.lower())
     return [p for p in files if p.is_file()]
+
+
+def load_combined_vocab() -> pd.DataFrame:
+    """Concatenate all valid rows from every CSV in punjabi_vocab/."""
+    paths = list_csv_files()
+    if not paths:
+        raise ValueError("No CSV files found in punjabi_vocab/.")
+    frames = [load_vocab(path) for path in paths]
+    combined = pd.concat(frames, ignore_index=True)
+    if combined.empty:
+        raise ValueError("No vocabulary rows in any CSV.")
+    return combined
 
 
 def load_vocab(path: Path) -> pd.DataFrame:

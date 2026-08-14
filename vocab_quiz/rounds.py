@@ -5,6 +5,13 @@ import streamlit as st
 
 from vocab_quiz.config import STYLE_FROM_EN, style_from_direction
 from vocab_quiz.matching import answers_match
+from vocab_quiz.vocab import load_combined_vocab
+
+BEAST_MODE_SIZE = 10
+
+
+def beast_sample_size(pool_size: int) -> int:
+    return min(BEAST_MODE_SIZE, pool_size)
 
 
 def init_session_keys() -> None:
@@ -23,6 +30,7 @@ def init_session_keys() -> None:
         "feedback_sound_gen": 0,
         "last_chimed_feedback_gen": 0,
         "audio_muted": False,
+        "beast_mode": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -39,9 +47,18 @@ def start_round(df: pd.DataFrame, direction: str) -> None:
     st.session_state.queue = order
     st.session_state.first_attempt_ok = {i: None for i in range(n)}
     st.session_state.round_active = True
+    st.session_state.beast_mode = False
     st.session_state.last_feedback = None
     st.session_state.feedback_sound_gen = 0
     st.session_state.last_chimed_feedback_gen = 0
+
+
+def start_beast_round(direction: str) -> None:
+    df = load_combined_vocab()
+    n = beast_sample_size(len(df))
+    sample = df.sample(n=n).reset_index(drop=True)
+    start_round(sample, direction)
+    st.session_state.beast_mode = True
 
 
 def current_row_index() -> int | None:

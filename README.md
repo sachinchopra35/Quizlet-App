@@ -1,8 +1,8 @@
 # Vocab quiz
 
-Small Streamlit app that quizzes you on vocabulary: it shows a prompt in one language and you type the translation. Pick any `*.csv` in **`vocab_lists_new/`**, choose whether you translate **from English** or **to English**, and answer in rounds (it tracks first-try correctness).
+Small Streamlit app that quizzes you on vocabulary: it shows a prompt in one language and you type the translation. Pick any `*.csv` in **`punjabi_vocab/`**, choose whether you translate **from English** or **to English**, and answer in rounds (it tracks first-try correctness).
 
-**Input:** CSV files in the **`vocab_lists_new/`** folder (next to `app.py`) with two columns: `en` (English) and `lang` (your target language). Extra columns are ignored; empty rows are skipped.
+**Input:** CSV files in the **`punjabi_vocab/`** folder (next to `app.py`) with two columns: `en` (English) and `lang` (your target language). Extra columns are ignored; empty rows are skipped.
 
 ---
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent.parent
-VOCAB_LISTS_DIR = APP_DIR / "vocab_lists_new"
+PUNJABI_VOCAB_DIR = APP_DIR / "punjabi_vocab"
 SPEECH_LEAD_MS = 250  # brief pause before any TTS so UI/chimes can land first
 REQUIRED_COLS = ("en", "lang")
 STYLE_FROM_EN = "Translate from English"
