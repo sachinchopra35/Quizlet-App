@@ -121,6 +121,40 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         for variant in fem_variants:
             self.assertEqual(canonicalize_punjabi(variant), canonicalize_punjabi("tuadhi"))
 
+    def test_optional_leading_eh_oh(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("kitchen vich hai"),
+            canonicalize_punjabi("eh kitchen vich hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("kitthe hai"),
+            canonicalize_punjabi("oh kitthe hai"),
+        )
+
+    def test_optional_leading_eh_oh_preserves_pronouns(self) -> None:
+        self.assertNotEqual(
+            canonicalize_punjabi("ehnu dedo"),
+            canonicalize_punjabi("nu dedo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("eh na lo"),
+            canonicalize_punjabi("eh na lo"),
+        )
+
+    def test_trailing_lo_o_imperatives(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("chaku varto"),
+            canonicalize_punjabi("chaku vart lo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("meri kursi te baitho"),
+            canonicalize_punjabi("meri kursi te baith lo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("shower le lo"),
+            canonicalize_punjabi("shower lelo"),
+        )
+
 
 class TestAnswersMatch(unittest.TestCase):
     def test_punjabi_mode_uses_canonical_rules(self) -> None:
@@ -199,6 +233,35 @@ class TestAnswersMatch(unittest.TestCase):
                 punjabi=True,
             )
         )
+
+    def test_karo_kar_lo_interchangeable(self) -> None:
+        self.assertTrue(
+            answers_match("mera intezaar karo", "mera intezaar kar lo", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("darwaza band karo", "darwaza band kar lo", punjabi=True),
+        )
+
+    def test_optional_leading_eh_oh_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("kitchen vich hai", "eh kitchen vich hai", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("kitthe hai", "oh kitthe hai", punjabi=True),
+        )
+        self.assertFalse(answers_match("ehnu dedo", "nu dedo", punjabi=True))
+
+    def test_trailing_lo_o_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("chaku varto", "chaku vart lo", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("meri kursi te baitho", "meri kursi te baith lo", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("shower le lo", "shower lelo", punjabi=True),
+        )
+        self.assertFalse(answers_match("usnu dedo", "usnu de lo", punjabi=True))
 
     def test_negative_imperative_kar_karo_in_phrase(self) -> None:
         self.assertTrue(

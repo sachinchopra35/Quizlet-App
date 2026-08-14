@@ -59,6 +59,10 @@ def canonicalize_punjabi(s: str) -> str:
     for variant, canonical in PUNJABI_SUBSTRING_CANONICALS:
         s = s.replace(variant, canonical)
     s = s.translate(PUNJABI_CHAR_CANONICAL)
+    s = re.sub(r"lo$", "o", s)
+    s = s.replace("nakaro", "nakar")
+    if s.startswith("oh") and not s.startswith("ohn"):
+        s = s[2:]
     return s
 
 

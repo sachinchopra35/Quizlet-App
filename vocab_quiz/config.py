@@ -6,6 +6,7 @@ SPEECH_LEAD_MS = 250  # brief pause before any TTS so UI/chimes can land first
 REQUIRED_COLS = ("en", "lang")
 STYLE_FROM_EN = "Translate from English"
 STYLE_TO_EN = "Translate to English"
+BEAST_MODE_SELECTION = "__beast_mode__"
 
 
 def direction_from_style(style: str) -> str:

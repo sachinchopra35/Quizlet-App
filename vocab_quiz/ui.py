@@ -17,6 +17,7 @@ from vocab_quiz.browser_scripts import (
     register_enter_to_start_round,
 )
 from vocab_quiz.config import (
+    BEAST_MODE_SELECTION,
     STYLE_FROM_EN,
     STYLE_TO_EN,
     PUNJABI_VOCAB_DIR,
@@ -47,7 +48,13 @@ def _random_csv(names: list[str], current: str) -> str:
 
 
 def _vocab_file_label(filename: str) -> str:
+    if filename == BEAST_MODE_SELECTION:
+        return "Beast Mode"
     return Path(filename).stem
+
+
+def _is_beast_mode_selected() -> bool:
+    return st.session_state.selected_csv == BEAST_MODE_SELECTION
 
 
 def _nav_prev_csv() -> None:
@@ -75,6 +82,7 @@ def _nav_shuffle_csv() -> None:
 
 
 def _start_beast_mode() -> None:
+    st.session_state.selected_csv = BEAST_MODE_SELECTION
     direction = direction_from_style(st.session_state.question_style)
     start_beast_round(direction)
 
@@ -187,11 +195,12 @@ def main() -> None:
         return
 
     names = [p.name for p in csv_paths]
+    dropdown_options = names + [BEAST_MODE_SELECTION]
     # Bind the selectbox to session state (no per-run `index=`) so the widget does not
     # snap back — passing `index` every rerun fights Streamlit's stored value.
     if (
         st.session_state.selected_csv is None
-        or st.session_state.selected_csv not in names
+        or st.session_state.selected_csv not in dropdown_options
     ):
         st.session_state.selected_csv = names[0]
 
@@ -206,7 +215,7 @@ def main() -> None:
     with file_col:
         st.selectbox(
             "Choose vocabulary file",
-            options=names,
+            options=dropdown_options,
             format_func=_vocab_file_label,
             key="selected_csv",
             disabled=nav_disabled,
@@ -249,20 +258,24 @@ def main() -> None:
         )
 
     choice = st.session_state.selected_csv
-    csv_path = PUNJABI_VOCAB_DIR / choice
 
-    try:
-        vocab_df = load_vocab(csv_path)
-    except Exception as e:
-        st.error(str(e))
-        return
+    if _is_beast_mode_selected():
+        with st.expander("Show words list", expanded=False):
+            st.caption("Beast Mode draws 10 random cards from all lists — no fixed word list.")
+    else:
+        csv_path = PUNJABI_VOCAB_DIR / choice
+        try:
+            vocab_df = load_vocab(csv_path)
+        except Exception as e:
+            st.error(str(e))
+            return
 
-    with st.expander("Show words list", expanded=False):
-        st.dataframe(
-            vocab_df,
-            use_container_width=True,
-            height=min(280, 40 + 28 * len(vocab_df)),
-        )
+        with st.expander("Show words list", expanded=False):
+            st.dataframe(
+                vocab_df,
+                use_container_width=True,
+                height=min(280, 40 + 28 * len(vocab_df)),
+            )
 
     if st.session_state.round_active:
         seg_default = style_from_direction(st.session_state.direction)
@@ -318,7 +331,10 @@ def main() -> None:
         if style is not None:
             st.session_state.question_style = style
             st.session_state.direction = direction_from_style(style)
-        start_round(vocab_df.copy(), st.session_state.direction)
+        if _is_beast_mode_selected():
+            start_beast_round(st.session_state.direction)
+        else:
+            start_round(vocab_df.copy(), st.session_state.direction)
         st.rerun()
 
     with st.container(border=True):
