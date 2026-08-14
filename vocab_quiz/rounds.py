@@ -31,6 +31,7 @@ def init_session_keys() -> None:
         "last_chimed_feedback_gen": 0,
         "audio_muted": False,
         "beast_mode": False,
+        "round_medals": [],
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -75,6 +76,23 @@ def end_round_stats() -> tuple[int, int, float]:
     return correct, total, pct
 
 
+def medal_for_round(correct: int, total: int) -> str:
+    wrong = total - correct
+    if wrong == 0:
+        return "🏅"
+    if wrong == 1:
+        return "🥇"
+    if wrong == 2:
+        return "🥈"
+    return "🥉"
+
+
+def record_round_medal(correct: int, total: int) -> None:
+    st.session_state.round_medals.append(
+        {"emoji": medal_for_round(correct, total), "label": f"{correct}/{total}"}
+    )
+
+
 def process_answer(user_text: str) -> None:
     idx = current_row_index()
     if idx is None:
@@ -99,5 +117,5 @@ def process_answer(user_text: str) -> None:
     else:
         wrong = q.pop(0)
         q.append(wrong)
-        st.session_state.last_feedback = ("wrong", prompt_side, answer)
+        st.session_state.last_feedback = ("wrong", user_text, answer)
     st.session_state.feedback_sound_gen = int(st.session_state.get("feedback_sound_gen", 0)) + 1

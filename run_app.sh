@@ -30,7 +30,31 @@ fi
 PORT="${STREAMLIT_PORT:-8501}"
 URL="http://127.0.0.1:${PORT}/"
 
+stop_existing_listener() {
+  local pids
+  pids="$(/usr/sbin/lsof -ti "tcp:${PORT}" -sTCP:LISTEN 2>/dev/null || true)"
+  if [[ -z "$pids" ]]; then
+    echo "Port $PORT is free"
+    return
+  fi
+  echo "Stopping existing listener(s) on port $PORT: $pids"
+  # shellcheck disable=SC2086
+  kill $pids 2>/dev/null || true
+  local i
+  for i in {1..10}; do
+    if ! /usr/sbin/lsof -ti "tcp:${PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
+      echo "Port $PORT is free"
+      return
+    fi
+    /bin/sleep 0.3
+  done
+  echo "Force-killing stubborn listener(s) on port $PORT"
+  # shellcheck disable=SC2086
+  kill -9 $pids 2>/dev/null || true
+}
+
 cd "$ROOT"
+stop_existing_listener
 echo "Starting streamlit on port $PORT ..."
 
 "$PY" -m streamlit run "$ROOT/app.py" --server.headless true --server.port "$PORT" &

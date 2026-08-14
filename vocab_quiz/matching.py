@@ -7,7 +7,14 @@ PUNJABI_SUBSTRING_CANONICALS = (
     ("vich", "ch"),
     ("usnu", "ohnu"),
     ("mez", "table"),
+    ("garam", "garm"),
     ("nakaro", "nakar"),
+    ("liya", "leya"),
+    ("liyi", "leya"),
+    ("leyi", "leya"),
+    ("lya", "leya"),
+    ("lyi", "leya"),
+    ("gyi", "gya"),
     ("eh", "oh"),
 )
 PUNJABI_CHAR_CANONICAL = str.maketrans("rR", "dd")
@@ -51,8 +58,11 @@ def canonicalize_punjabi(s: str) -> str:
     s = I_AM_SUFFIX_RAW_RE.sub("hun", s)
     s = _normalize_copula_raw(s)
     s = _strip_for_compare(s)
+    s = s.replace("rehi", "rahi")
+    s = s.replace("reha", "raha")
     s = re.sub(r"^mai", "main", s)
     s = WAIT_WORD_RE.sub("udeek", s)
+    s = s.replace("taiyaar", "tyaar")
     s = _collapse_doubled_letters(s)
     s = TUADA_MASC_RE.sub("tuadha", s)
     s = TUADA_FEM_RE.sub("tuadhi", s)
@@ -60,6 +70,7 @@ def canonicalize_punjabi(s: str) -> str:
         s = s.replace(variant, canonical)
     s = s.translate(PUNJABI_CHAR_CANONICAL)
     s = re.sub(r"lo$", "o", s)
+    s = s.replace("dakhdo", "dakho")
     s = s.replace("nakaro", "nakar")
     if s.startswith("oh") and not s.startswith("ohn"):
         s = s[2:]

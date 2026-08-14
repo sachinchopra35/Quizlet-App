@@ -113,6 +113,62 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi(f"{base} hoo"),
         )
 
+    def test_leya_lya_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("kha leya"), canonicalize_punjabi("kha lya"))
+        self.assertEqual(canonicalize_punjabi("main kha leya"), canonicalize_punjabi("main kha lya"))
+        self.assertEqual(canonicalize_punjabi("pee liya"), canonicalize_punjabi("pee leya"))
+
+    def test_leyi_feminine_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("call kar leya"), canonicalize_punjabi("call kar leyi"))
+        self.assertEqual(canonicalize_punjabi("kha leyi"), canonicalize_punjabi("kha leya"))
+        self.assertEqual(canonicalize_punjabi("call kar lyi"), canonicalize_punjabi("call kar leya"))
+
+    def test_gyi_gya_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("so gya"), canonicalize_punjabi("so gyi"))
+        self.assertEqual(canonicalize_punjabi("bhul gya"), canonicalize_punjabi("bhul gyi"))
+        self.assertEqual(canonicalize_punjabi("ho gya?"), canonicalize_punjabi("ho gyi?"))
+        self.assertEqual(canonicalize_punjabi("main so gya"), canonicalize_punjabi("main so gyi"))
+
+    def test_garam_garm_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("garam kar lo"),
+            canonicalize_punjabi("garm kar lo"),
+        )
+
+    def test_reha_raha_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main darwaza band kar reha hun"),
+            canonicalize_punjabi("main darwaza band kar raha hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("mainu bookh lag rehi hai"),
+            canonicalize_punjabi("mainu bookh lag rahi hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("oh ki kar reha hai"),
+            canonicalize_punjabi("oh ki kar raha hai"),
+        )
+
+    def test_taiyaar_tyaar_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("khana taiyaar hai"),
+            canonicalize_punjabi("khana tyaar hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main tyaar hun"),
+            canonicalize_punjabi("main taiyaar hun"),
+        )
+
+    def test_rakh_lo_do_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("itte rakh lo"), canonicalize_punjabi("itte rakh do"))
+        self.assertEqual(
+            canonicalize_punjabi("le ke othe rakh do"),
+            canonicalize_punjabi("le ke othe rakh lo"),
+        )
+
+    def test_rakh_lo_do_does_not_generalize(self) -> None:
+        self.assertNotEqual(canonicalize_punjabi("kar do"), canonicalize_punjabi("kar lo"))
+
     def test_tuada_possessive_spellings(self) -> None:
         masc_variants = ("thuadha", "tuadha", "tuhada", "tuada", "thuada", "tusadha", "tusada")
         for variant in masc_variants:
@@ -161,6 +217,20 @@ class TestAnswersMatch(unittest.TestCase):
         self.assertTrue(answers_match("ohnu dekho", "ehnu dekho", punjabi=True))
         self.assertTrue(answers_match("usnu dedo", "ohnu dedo", punjabi=True))
         self.assertTrue(answers_match("khidki band kar raha hun", "khirki band kar raha hun", punjabi=True))
+        self.assertTrue(
+            answers_match(
+                "main darwaza band kar reha hun",
+                "main darwaza band kar raha hun",
+                punjabi=True,
+            )
+        )
+        self.assertTrue(
+            answers_match(
+                "mainu bookh lag rehi hai",
+                "mainu bookh lag rahi hai",
+                punjabi=True,
+            )
+        )
         self.assertTrue(
             answers_match(
                 "main darwaza band kar raha hoon",
@@ -277,6 +347,35 @@ class TestAnswersMatch(unittest.TestCase):
         self.assertTrue(
             answers_match("main intezaar karda hun", "main udeek karda hun", punjabi=True),
         )
+
+    def test_leya_lya_in_phrase(self) -> None:
+        self.assertTrue(answers_match("main kha lya", "main kha leya", punjabi=True))
+        self.assertTrue(answers_match("kha lya?", "kha leya?", punjabi=True))
+        self.assertTrue(answers_match("call kar leyi", "call kar leya?", punjabi=True))
+        self.assertTrue(answers_match("call kar lyi?", "call kar leya?", punjabi=True))
+
+    def test_gyi_gya_in_phrase(self) -> None:
+        self.assertTrue(answers_match("so gyi?", "so gya?", punjabi=True))
+        self.assertTrue(answers_match("bhul gyi", "bhul gya", punjabi=True))
+        self.assertTrue(answers_match("main bhul gyi", "main bhul gya", punjabi=True))
+
+    def test_garam_garm_in_phrase(self) -> None:
+        self.assertTrue(answers_match("garm kar lo", "garam kar lo", punjabi=True))
+
+    def test_taiyaar_tyaar_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("khana taiyaar hai", "khana tyaar hai", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("main taiyaar hun", "main tyaar hun", punjabi=True),
+        )
+
+    def test_rakh_lo_do_in_phrase(self) -> None:
+        self.assertTrue(answers_match("itte rakh do", "itte rakh lo", punjabi=True))
+        self.assertTrue(
+            answers_match("le ke othe rakh lo", "le ke othe rakh do", punjabi=True),
+        )
+        self.assertFalse(answers_match("kar do", "kar lo", punjabi=True))
 
     def test_mez_table_in_phrase(self) -> None:
         self.assertTrue(

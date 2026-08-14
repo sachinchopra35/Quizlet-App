@@ -10,11 +10,13 @@ from vocab_quiz.browser_audio import (
     speak_wrong_then_question,
 )
 from vocab_quiz.browser_scripts import (
+    ensure_browser_hub,
     focus_answer_input,
     focus_idle_start_submit_button,
     inject_nav_button_styles,
     play_confetti,
     register_enter_to_start_round,
+    render_medal_shelf,
 )
 from vocab_quiz.config import (
     BEAST_MODE_SELECTION,
@@ -29,6 +31,7 @@ from vocab_quiz.rounds import (
     end_round_stats,
     init_session_keys,
     process_answer,
+    record_round_medal,
     start_beast_round,
     start_round,
 )
@@ -49,7 +52,7 @@ def _random_csv(names: list[str], current: str) -> str:
 
 def _vocab_file_label(filename: str) -> str:
     if filename == BEAST_MODE_SELECTION:
-        return "Beast Mode"
+        return "🔥 Beast Mode - 10 Random Questions"
     return Path(filename).stem
 
 
@@ -91,18 +94,20 @@ def _render_idle_panel() -> None:
     msg = st.session_state.pop("round_message", None)
     announce = st.session_state.pop("round_announce", None)
     level = st.session_state.pop("round_message_level", "info")
-    if announce and not st.session_state.audio_muted:
-        speak_text(str(announce), lang="en-GB", rate=0.88)
     if msg:
         if level == "success":
             st.success(msg)
-            play_confetti()
+            if not st.session_state.audio_muted:
+                play_confetti()
+                play_feedback_chime("correct")
+            focus_idle_start_submit_button()
         else:
             st.info(msg)
-        if level == "success":
-            focus_idle_start_submit_button()
     else:
         st.caption("Start a round to begin.")
+    if announce and not st.session_state.audio_muted:
+        announce_delay = 450 if level == "success" else None
+        speak_text(str(announce), lang="en-GB", rate=0.88, delay_ms=announce_delay)
     register_enter_to_start_round()
 
 
@@ -115,13 +120,9 @@ def _render_active_quiz() -> None:
         st.session_state.round_message = (
             f"Round complete. First-try accuracy: **{c} / {t}** ({pct:.1f}%)."
         )
-        st.session_state.round_announce = (
-            f"The round is complete. You scored {c} out of {t} on first-time accuracy."
-        )
+        st.session_state.round_announce = f"Quiz complete. You scored {c} out of {t}."
         st.session_state.round_message_level = "success"
-        fb = st.session_state.last_feedback
-        if not st.session_state.audio_muted and fb and fb[0] == "correct":
-            play_feedback_chime("correct")
+        record_round_medal(c, t)
         st.session_state.last_feedback = None
         st.rerun()
         return
@@ -153,7 +154,7 @@ def _render_active_quiz() -> None:
     if fb:
         kind, shown, ans = fb
         if kind == "wrong":
-            st.warning(f"Not quite — you saw **{shown}**. Correct answer: **{ans}**.")
+            st.warning(f"Not quite — you wrote **{shown}**. Correct answer: **{ans}**.")
         elif kind == "correct":
             st.success("Correct — nice.")
 
@@ -173,7 +174,11 @@ def _render_active_quiz() -> None:
             st.session_state.last_chimed_feedback_gen = gen
 
     if not submitted and not st.session_state.audio_muted and not played_wrong_voice:
-        speak_question(str(prompt), tts_lang)
+        if fb and fb[0] == "correct":
+            # Queue already advanced; speak the new prompt after the chime lands.
+            speak_text(str(prompt), lang=tts_lang, rate=0.92, delay_ms=550)
+        else:
+            speak_question(str(prompt), tts_lang)
 
     if submitted:
         process_answer(guess)
@@ -205,6 +210,7 @@ def main() -> None:
         st.session_state.selected_csv = names[0]
 
     st.session_state.csv_names = names
+    ensure_browser_hub()
     inject_nav_button_styles()
 
     nav_disabled = st.session_state.round_active
@@ -321,9 +327,7 @@ def main() -> None:
             st.session_state.round_message = (
                 f"Round stopped early. First-try score so far: **{c} / {t}** ({pct:.1f}%)."
             )
-            st.session_state.round_announce = (
-                f"The round has ended. Your first-time score is {c} out of {t}."
-            )
+            st.session_state.round_announce = f"Quiz ended. You scored {c} out of {t}."
             st.session_state.round_message_level = "info"
             st.rerun()
 
@@ -342,4 +346,6 @@ def main() -> None:
             _render_idle_panel()
         else:
             _render_active_quiz()
+
+    render_medal_shelf(st.session_state.round_medals)
 

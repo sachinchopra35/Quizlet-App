@@ -44,7 +44,7 @@ xattr -cr "$HOME/Projects/Quizlet App/Punjabi Tester.app" "$HOME/Projects/Quizle
 
 The project is expected under **`~/Projects/Quizlet App`** (not under `Documents`) so Dock / Python can read the venv without Full Disk Access.
 
-`run_app.sh` starts Streamlit in headless mode (so the system default browser is not used), waits until the server is up, then opens **Google Chrome** to the app if Chrome is installed; otherwise it uses the default browser.
+`run_app.sh` stops any existing Streamlit on port 8501, then starts a fresh server (so Dock launches always pick up your latest code). It runs Streamlit in headless mode (so the system default browser is not used), waits until the server is up, then opens **Google Chrome** to the app if Chrome is installed; otherwise it uses the default browser.
 
 **Regenerate the Dock icon for Punjabi Tester** (ਪ on white) after editing the script or if the icon is missing:
 
