@@ -6,6 +6,7 @@ PUNJABI_SUBSTRING_CANONICALS = (
     ("menu", "mainu"),
     ("vich", "ch"),
     ("usnu", "ohnu"),
+    ("mez", "table"),
     ("nakaro", "nakar"),
     ("eh", "oh"),
 )

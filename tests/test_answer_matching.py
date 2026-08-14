@@ -51,6 +51,16 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi("udeek na kar"),
         )
 
+    def test_mez_table_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("kitab mez te hai"),
+            canonicalize_punjabi("kitab table te hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("doggy mez de niche hai"),
+            canonicalize_punjabi("doggy table de niche hai"),
+        )
+
     def test_vich_ch_interchange(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("apniyan akhan vich eyedrop"),
@@ -203,6 +213,14 @@ class TestAnswersMatch(unittest.TestCase):
         )
         self.assertTrue(
             answers_match("main intezaar karda hun", "main udeek karda hun", punjabi=True),
+        )
+
+    def test_mez_table_in_phrase(self) -> None:
+        self.assertTrue(
+            answers_match("kitab mez te hai", "kitab table te hai", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("sofa mez de samne hai", "sofa table de samne hai", punjabi=True),
         )
 
 
