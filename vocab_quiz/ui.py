@@ -187,7 +187,7 @@ def main() -> None:
     init_session_keys()
 
     st.title("Vocabulary quiz")
-    st.caption("CSV files in `punjabi_vocab/` must have columns `en` and `lang`.")
+    # st.caption("CSV files in `punjabi_vocab/` must have columns `en` and `lang`.")
 
     csv_paths = list_csv_files()
     if not csv_paths:
