@@ -1,0 +1,263 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0e1117;
+  color: #fafafa;
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#app {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1rem 1rem 2rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.35rem;
+}
+
+select,
+input[type="text"],
+button {
+  font: inherit;
+  border-radius: 0.5rem;
+}
+
+select,
+input[type="text"] {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #3d4450;
+  background: #1a1f28;
+  color: #fafafa;
+}
+
+button {
+  padding: 0.65rem 1rem;
+  border: 1px solid #3d4450;
+  background: #262b36;
+  color: #fafafa;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: #ff4b4b;
+  border-color: #ff4b4b;
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.nav-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-row button {
+  flex: 0 0 auto;
+  min-width: 2.75rem;
+  padding: 0.65rem 0.5rem;
+}
+
+.style-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.style-row .segmented {
+  flex: 1;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.style-row .segmented button {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 0.55rem 0.4rem;
+}
+
+.style-row .segmented button.active {
+  border-color: #ff4b4b;
+  outline: 1px solid #ff4b4b;
+}
+
+.mute-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  padding-bottom: 0.35rem;
+}
+
+.actions-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.actions-row button {
+  flex: 1;
+}
+
+.quiz-panel {
+  border: 1px solid #3d4450;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #141820;
+}
+
+.quiz-panel h2 {
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.quiz-panel .prompt {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0.75rem 0;
+  line-height: 1.35;
+}
+
+.caption {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.feedback {
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.feedback.success {
+  background: rgba(33, 195, 84, 0.15);
+  border: 1px solid rgba(33, 195, 84, 0.4);
+}
+
+.feedback.warning {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+}
+
+.feedback.info {
+  background: rgba(100, 149, 237, 0.12);
+  border: 1px solid rgba(100, 149, 237, 0.35);
+}
+
+.answer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#medal-shelf {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+#medal-shelf[hidden] {
+  display: none;
+}
+
+.medal-item {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.5rem;
+}
+
+.medal-emoji {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.medal-score {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 0.15rem;
+}
+
+.medal-item.medal-new .medal-emoji {
+  animation: medal-pop 0.55s ease-out;
+}
+
+@keyframes medal-pop {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.expander summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.word-table {
+  width: 100%;
+  font-size: 0.8rem;
+  border-collapse: collapse;
+}
+
+.word-table td {
+  padding: 0.25rem 0.35rem;
+  border-bottom: 1px solid #2a303a;
+  vertical-align: top;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}

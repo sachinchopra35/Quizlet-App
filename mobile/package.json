@@ -1,0 +1,25 @@
+{
+  "name": "punjabi-vocab-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "copy-vocab": "node scripts/copy-vocab.mjs",
+    "dev": "npm run copy-vocab && vite",
+    "build": "npm run copy-vocab && tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "cap:sync": "npm run build && npx cap sync ios",
+    "cap:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.5"
+  }
+}

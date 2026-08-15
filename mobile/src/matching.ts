@@ -1,0 +1,120 @@
+const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
+  ["menu", "mainu"],
+  ["vich", "ch"],
+  ["usnu", "ohnu"],
+  ["mez", "table"],
+  ["garam", "garm"],
+  ["nakaro", "nakar"],
+  ["liya", "leya"],
+  ["liyi", "leya"],
+  ["leyi", "leya"],
+  ["lya", "leya"],
+  ["lyi", "leya"],
+  ["gyi", "gya"],
+  ["eh", "oh"],
+];
+
+const FUTURE_ANGA_TO_UNGA: [string, string][] = [
+  ["khaanga", "khaunga"],
+  ["khanga", "khaunga"],
+  ["peeanga", "peeunga"],
+  ["peenga", "peeunga"],
+  ["pianga", "peeunga"],
+  ["aajanga", "aajaaunga"],
+  ["jaanga", "jaaunga"],
+  ["janga", "jaaunga"],
+  ["jaunga", "jaaunga"],
+  ["karanga", "karunga"],
+  ["kranga", "karunga"],
+  ["daanga", "daunga"],
+];
+
+const FUTURE_ONGE_TO_OGE: [string, string][] = [
+  ["aaonge", "aaoge"],
+  ["karonge", "karoge"],
+  ["khaonge", "khaoge"],
+  ["kronge", "karoge"],
+  ["kroge", "karoge"],
+];
+
+const I_AM_SUFFIX_RAW_RE = /(hoon|hoo|hun)\s*$/i;
+const COPULA_STEM_HAI_RAW_RE =
+  /(lag rahi|lag raha|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
+const TUADA_MASC_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a/g;
+const TUADA_FEM_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i/g;
+const WAIT_WORD_RE = /intezaa?r/g;
+
+function stripForCompare(s: string): string {
+  let out = "";
+  for (const c of (s || "").trim()) {
+    out += /\p{P}/u.test(c) ? " " : c;
+  }
+  return out.replace(/\s+/g, "").toLowerCase();
+}
+
+function collapseDoubledLetters(s: string): string {
+  return s.replace(/(.)\1+/g, "$1");
+}
+
+function normalizeCopulaRaw(s: string): string {
+  s = s.replace(/\bhaan\s*$/i, "hai");
+  return s.replace(COPULA_STEM_HAI_RAW_RE, "$1 hai");
+}
+
+function normalizeFutureRomanization(s: string): string {
+  for (const [variant, canonical] of FUTURE_ANGA_TO_UNGA) {
+    s = s.split(variant).join(canonical);
+  }
+  for (const [variant, canonical] of FUTURE_ONGE_TO_OGE) {
+    s = s.split(variant).join(canonical);
+  }
+  return s;
+}
+
+function translatePunjabiChars(s: string): string {
+  return s.replace(/r/g, "d").replace(/R/g, "d");
+}
+
+export function normalize(s: string): string {
+  return stripForCompare(s);
+}
+
+export function canonicalizePunjabi(s: string): string {
+  let t = (s || "").trim();
+  t = t.replace(I_AM_SUFFIX_RAW_RE, "hun");
+  t = normalizeCopulaRaw(t);
+  t = stripForCompare(t);
+  t = t.split("rehi").join("rahi");
+  t = t.split("reha").join("raha");
+  t = t.split("tenu").join("thuanu");
+  t = t.split("tainu").join("thuanu");
+  t = normalizeFutureRomanization(t);
+  t = t.replace(/^mai/, "main");
+  t = t.replace(WAIT_WORD_RE, "udeek");
+  t = t.split("taiyaar").join("tyaar");
+  t = collapseDoubledLetters(t);
+  t = t.replace(TUADA_MASC_RE, "tuadha");
+  t = t.replace(TUADA_FEM_RE, "tuadhi");
+  for (const [variant, canonical] of PUNJABI_SUBSTRING_CANONICALS) {
+    t = t.split(variant).join(canonical);
+  }
+  t = translatePunjabiChars(t);
+  t = t.replace(/lo$/, "o");
+  t = t.split("dakhdo").join("dakho");
+  t = t.split("nakaro").join("nakar");
+  if (t.startsWith("oh") && !t.startsWith("ohn")) {
+    t = t.slice(2);
+  }
+  return t;
+}
+
+export function answersMatch(
+  userText: string,
+  answer: string,
+  punjabi: boolean,
+): boolean {
+  if (punjabi) {
+    return canonicalizePunjabi(userText) === canonicalizePunjabi(String(answer));
+  }
+  return normalize(userText) === normalize(String(answer));
+}
