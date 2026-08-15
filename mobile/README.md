@@ -186,6 +186,7 @@ The default icon is generic. To use the ਪ Dock icon later: generate it with `s
 | `npm run cap:open` does nothing | Install Xcode from the App Store. |
 | iPhone not listed in Xcode | Unlock phone, tap Trust This Computer, try another cable. |
 | App won’t open on phone after a week | Normal with free Apple ID — Run ▶ from Xcode again. |
+| Build fails: `Sandbox: bash deny` / `Pods-App-frameworks.sh` | Xcode’s **User Script Sandboxing** blocks CocoaPods. This repo sets it to **No** in the iOS project; if it comes back after a fresh `cap add ios`, open **App** target → **Build Settings** → search **User Script Sandboxing** → set to **No**, then **Product → Clean Build Folder** and Run again. |
 
 ---
 
