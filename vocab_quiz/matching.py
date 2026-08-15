@@ -27,8 +27,38 @@ COPULA_STEM_HAI_RAW_RE = re.compile(
 # Formal "your" (tuhada / tuada / tusada …) — masc ends in a, fem ends in i.
 TUADA_MASC_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a")
 TUADA_FEM_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i")
-# intezaar / intezar → udeek before doubled-letter collapse (aa in intezaar).
+# Future tense: gf uses -unga (khaunga); also accept -anga romanization (khaanga).
+FUTURE_ANGA_TO_UNGA = (
+    ("khaanga", "khaunga"),
+    ("khanga", "khaunga"),
+    ("peeanga", "peeunga"),
+    ("peenga", "peeunga"),
+    ("pianga", "peeunga"),
+    ("aajanga", "aajaaunga"),
+    ("jaanga", "jaaunga"),
+    ("janga", "jaaunga"),
+    ("jaunga", "jaaunga"),
+    ("karanga", "karunga"),
+    ("kranga", "karunga"),
+    ("daanga", "daunga"),
+)
+# Future questions (tusi): CSV uses -oge; also accept gf's -onge (aaonge, karonge, …).
+FUTURE_ONGE_TO_OGE = (
+    ("aaonge", "aaoge"),
+    ("karonge", "karoge"),
+    ("khaonge", "khaoge"),
+    ("kronge", "karoge"),
+    ("kroge", "karoge"),
+)
 WAIT_WORD_RE = re.compile(r"intezaa?r")
+
+
+def _normalize_future_romanization(s: str) -> str:
+    for variant, canonical in FUTURE_ANGA_TO_UNGA:
+        s = s.replace(variant, canonical)
+    for variant, canonical in FUTURE_ONGE_TO_OGE:
+        s = s.replace(variant, canonical)
+    return s
 
 
 def _strip_for_compare(s: str) -> str:
@@ -60,6 +90,10 @@ def canonicalize_punjabi(s: str) -> str:
     s = _strip_for_compare(s)
     s = s.replace("rehi", "rahi")
     s = s.replace("reha", "raha")
+    s = s.replace("tenu", "thuanu")
+    s = s.replace("tainu", "thuanu")
+    # Future-tense romanization shortcuts (before doubled-letter collapse).
+    s = _normalize_future_romanization(s)
     s = re.sub(r"^mai", "main", s)
     s = WAIT_WORD_RE.sub("udeek", s)
     s = s.replace("taiyaar", "tyaar")

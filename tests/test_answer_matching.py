@@ -149,6 +149,62 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi("oh ki kar raha hai"),
         )
 
+    def test_future_spelling_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main khaanga"),
+            canonicalize_punjabi("main khaunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main peeanga"),
+            canonicalize_punjabi("main peeunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main jaaunga"),
+            canonicalize_punjabi("main jaanga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main thuanu call karanga"),
+            canonicalize_punjabi("main thuanu call karunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main thuanu call kranga"),
+            canonicalize_punjabi("main thuanu call karunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main udeek karanga"),
+            canonicalize_punjabi("main udeek karunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("jaldi aa janga"),
+            canonicalize_punjabi("jaldi aa jaaunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main tenu call karunga"),
+            canonicalize_punjabi("main thuanu call karunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi ki kroge"),
+            canonicalize_punjabi("tusi ki karoge"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi kadon aaonge"),
+            canonicalize_punjabi("tusi kadon aaoge"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi ki karonge"),
+            canonicalize_punjabi("tusi ki karoge"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi khaonge"),
+            canonicalize_punjabi("tusi khaoge"),
+        )
+        self.assertTrue(
+            answers_match("tusi aaonge", "tusi aaoge", punjabi=True),
+        )
+        self.assertTrue(
+            answers_match("tusi call karonge", "tusi call karoge", punjabi=True),
+        )
+
     def test_taiyaar_tyaar_interchange(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("khana taiyaar hai"),
