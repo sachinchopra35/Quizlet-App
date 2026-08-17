@@ -5,6 +5,11 @@ import pandas as pd
 from vocab_quiz.config import PUNJABI_VOCAB_DIR, REQUIRED_COLS
 
 
+def clean_lang_text(text: str) -> str:
+    """Strip review markers (*) from CSV lang cells; ignored in matching too."""
+    return str(text).replace("*", "").strip()
+
+
 def list_csv_files() -> list[Path]:
     PUNJABI_VOCAB_DIR.mkdir(parents=True, exist_ok=True)
     files = sorted(PUNJABI_VOCAB_DIR.glob("*.csv"), key=lambda p: p.name.lower())
@@ -30,7 +35,7 @@ def load_vocab(path: Path) -> pd.DataFrame:
         raise ValueError(f"CSV must include columns {REQUIRED_COLS}; missing: {missing}")
     df = df[list(REQUIRED_COLS)].copy()
     df["en"] = df["en"].astype(str).str.strip()
-    df["lang"] = df["lang"].astype(str).str.strip()
+    df["lang"] = df["lang"].map(clean_lang_text)
     df = df[(df["en"] != "") & (df["lang"] != "")]
     df = df.reset_index(drop=True)
     if df.empty:

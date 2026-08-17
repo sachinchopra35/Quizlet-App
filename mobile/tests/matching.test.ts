@@ -34,6 +34,12 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("main ja rehi hun")).toBe(
       canonicalizePunjabi("main ja raha hun"),
     );
+    expect(canonicalizePunjabi("asi kha rehe han")).toBe(
+      canonicalizePunjabi("asi kha rahe han"),
+    );
+    expect(canonicalizePunjabi("main ja rehe hun")).toBe(
+      canonicalizePunjabi("main ja raha hun"),
+    );
   });
 
   it("future unga/anga interchange", () => {
@@ -74,6 +80,107 @@ describe("canonicalizePunjabi", () => {
       canonicalizePunjabi("mainu paani chaida hai"),
     );
   });
+
+  it("gya gaya gayi gaye forms", () => {
+    expect(canonicalizePunjabi("oh bhul gayi")).toBe(
+      canonicalizePunjabi("oh bhul gyi"),
+    );
+    expect(canonicalizePunjabi("oh jaldi chal gaye")).toBe(
+      canonicalizePunjabi("oh jaldi chal gye"),
+    );
+  });
+
+  it("leye plural leya forms", () => {
+    expect(canonicalizePunjabi("ohna ne kha leye")).toBe(
+      canonicalizePunjabi("ohna ne kha leya"),
+    );
+  });
+
+  it("karo and kar dena imperatives", () => {
+    expect(canonicalizePunjabi("pahunch ke call karo")).toBe(
+      canonicalizePunjabi("pahunch ke call kar dena"),
+    );
+  });
+
+  it("baitho and baith jao imperatives", () => {
+    expect(canonicalizePunjabi("sofa te baitho")).toBe(
+      canonicalizePunjabi("sofa te baith jao"),
+    );
+  });
+
+  it("baithya and baith raha sitting", () => {
+    expect(canonicalizePunjabi("main sofa te baithya hun")).toBe(
+      canonicalizePunjabi("main sofa te baith raha hun"),
+    );
+  });
+
+  it("let lo/jao and letya/let raha lying", () => {
+    expect(canonicalizePunjabi("mere bistar te let lo")).toBe(
+      canonicalizePunjabi("mere bistar te let jao"),
+    );
+    expect(canonicalizePunjabi("main apne bistar te letya hun")).toBe(
+      canonicalizePunjabi("main apne bistar te let raha hun"),
+    );
+  });
+
+  it("so lo/jao and sutta/so raha sleeping", () => {
+    expect(canonicalizePunjabi("mere bistar te so lo")).toBe(
+      canonicalizePunjabi("mere bistar te so jao"),
+    );
+    expect(canonicalizePunjabi("main apne bistar te sutta hun")).toBe(
+      canonicalizePunjabi("main apne bistar te so raha hun"),
+    );
+  });
+
+  it("aa jao and ao/aao come imperative", () => {
+    expect(canonicalizePunjabi("aa jao")).toBe(canonicalizePunjabi("ao"));
+    expect(canonicalizePunjabi("kar ke aa jao")).toBe(
+      canonicalizePunjabi("kar ke ao"),
+    );
+    expect(canonicalizePunjabi("tusi aaoge")).not.toBe(canonicalizePunjabi("tusi ao"));
+  });
+
+  it("compound aa future jayegi/jauga and aayegi/aauga", () => {
+    expect(canonicalizePunjabi("oh ajj raat aa jayegi")).toBe(
+      canonicalizePunjabi("oh ajj raat aayegi"),
+    );
+    expect(canonicalizePunjabi("oh baad vich aa jauga")).toBe(
+      canonicalizePunjabi("oh baad vich aauga"),
+    );
+    expect(canonicalizePunjabi("main aaungi")).not.toBe(
+      canonicalizePunjabi("oh ajj raat aayegi"),
+    );
+  });
+
+  it("kinne baje han and ne time question", () => {
+    expect(canonicalizePunjabi("kinne baje han?")).toBe(
+      canonicalizePunjabi("kinne baje ne?"),
+    );
+    expect(canonicalizePunjabi("kinne baje hain")).toBe(
+      canonicalizePunjabi("kinne baje han"),
+    );
+  });
+
+  it("plural auxiliary han, ne, hain", () => {
+    expect(canonicalizePunjabi("oh aa rahe han")).toBe(
+      canonicalizePunjabi("oh aa rahe ne"),
+    );
+    expect(canonicalizePunjabi("asi kha rahe hain")).toBe(
+      canonicalizePunjabi("asi kha rahe han"),
+    );
+    expect(canonicalizePunjabi("asi kha rahe ne")).not.toBe(
+      canonicalizePunjabi("asi kha rahe han"),
+    );
+  });
+
+  it("optional trailing hun", () => {
+    expect(canonicalizePunjabi("main so gya")).toBe(
+      canonicalizePunjabi("main so gya hun"),
+    );
+    expect(canonicalizePunjabi("main thaka")).toBe(
+      canonicalizePunjabi("main thaka hun"),
+    );
+  });
 });
 
 describe("answersMatch", () => {
@@ -91,6 +198,7 @@ describe("answersMatch", () => {
     expect(answersMatch("khaunga", "main khaunga", true)).toBe(true);
     expect(answersMatch("khaoge", "tusi khaoge", true)).toBe(true);
     expect(answersMatch("main thaka hu", "main thaka hun", true)).toBe(true);
+    expect(answersMatch("oh bhul gayi", "oh bhul gyi?", true)).toBe(true);
     expect(
       answersMatch("paani chaida hai", "mainu paani chaida hai", true),
     ).toBe(false);

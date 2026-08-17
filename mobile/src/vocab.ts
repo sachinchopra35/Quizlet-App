@@ -19,7 +19,7 @@ export function parseCsv(text: string): VocabRow[] {
     if (!line) continue;
     const cols = parseCsvLine(line);
     const en = (cols[enIdx] ?? "").trim();
-    const lang = (cols[langIdx] ?? "").trim();
+    const lang = (cols[langIdx] ?? "").trim().replace(/\*/g, "");
     if (en && lang) rows.push({ en, lang });
   }
   if (!rows.length) throw new Error("No vocabulary rows after cleaning");
