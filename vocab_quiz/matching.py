@@ -98,6 +98,21 @@ def _normalize_baje_time_auxiliary(s: str) -> str:
     return s
 
 
+def _normalize_ik_ek(s: str) -> str:
+    """One — ik / ek (avoid bare ek→ik inside words like leke)."""
+    s = re.sub(r"^ek", "ik", s)
+    s = s.replace("ekmin", "ikmin")
+    return s
+
+
+def _normalize_location_adverbs(s: str) -> str:
+    """here/there adverbs — itthe↔itte; otte↔othe (otthe already collapses to othe)."""
+    s = s.replace("itthe", "itte")
+    s = s.replace("otte", "othe")
+    s = s.replace("ikmind", "ikminute")
+    return s
+
+
 def _normalize_imperative_kar(s: str) -> str:
     # kar lo -> karo via lo$ rule; kar dena (…call kar dena) -> karo for the same imperative family.
     s = s.replace("kardena", "karo")
@@ -173,6 +188,8 @@ def canonicalize_punjabi(s: str) -> str:
     s = I_AM_SUFFIX_RAW_RE.sub("hun", s)
     s = _normalize_copula_raw(s)
     s = _strip_for_compare(s)
+    s = _normalize_ik_ek(s)
+    s = _normalize_location_adverbs(s)
     s = _normalize_imperative_kar(s)
     s = _normalize_baith_sitting(s)
     s = _normalize_gya_forms(s)

@@ -67,6 +67,50 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi("apniyan akhan ch eyedrop"),
         )
 
+    def test_itte_itthe_and_othe_otte_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("itte hai"),
+            canonicalize_punjabi("itthe hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("itte rakh lo"),
+            canonicalize_punjabi("itthe rakh lo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("othe hai"),
+            canonicalize_punjabi("otthe hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("othe hai"),
+            canonicalize_punjabi("otte hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("othe rakh lo"),
+            canonicalize_punjabi("otte rakh lo"),
+        )
+
+    def test_ik_minute_mind_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("ik minute rukho"),
+            canonicalize_punjabi("ik mind rukho"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("ik minute"),
+            canonicalize_punjabi("ik mind"),
+        )
+
+    def test_ik_ek_interchange(self) -> None:
+        self.assertEqual(canonicalize_punjabi("ik"), canonicalize_punjabi("ek"))
+        self.assertEqual(
+            canonicalize_punjabi("ik minute rukho"),
+            canonicalize_punjabi("ek minute rukho"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tuhade kol ik minute hai"),
+            canonicalize_punjabi("tuhade kol ek minute hai"),
+        )
+        self.assertNotEqual(canonicalize_punjabi("le ke rakh do"), canonicalize_punjabi("lik rakh do"))
+
     def test_vich_ch_does_not_break_ch_prefix_words(self) -> None:
         self.assertEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("chaku"))
         self.assertNotEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("vaku"))

@@ -75,6 +75,25 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("itte/itthe and othe/otte here-there", () => {
+    expect(canonicalizePunjabi("itte hai")).toBe(canonicalizePunjabi("itthe hai"));
+    expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otte hai"));
+    expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otthe hai"));
+  });
+
+  it("ik minute and ik mind", () => {
+    expect(canonicalizePunjabi("ik minute rukho")).toBe(
+      canonicalizePunjabi("ik mind rukho"),
+    );
+  });
+
+  it("ik and ek one", () => {
+    expect(canonicalizePunjabi("ik")).toBe(canonicalizePunjabi("ek"));
+    expect(canonicalizePunjabi("ik minute rukho")).toBe(
+      canonicalizePunjabi("ek minute rukho"),
+    );
+  });
+
   it("hu suffix and optional subject pronouns", () => {
     expect(canonicalizePunjabi("main thaka hu")).toBe(
       canonicalizePunjabi("main thaka hun"),

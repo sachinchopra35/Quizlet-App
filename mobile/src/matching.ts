@@ -118,6 +118,19 @@ function normalizeBaithSitting(s: string): string {
   return s;
 }
 
+function normalizeIkEk(s: string): string {
+  s = s.replace(/^ek/, "ik");
+  s = s.split("ekmin").join("ikmin");
+  return s;
+}
+
+function normalizeLocationAdverbs(s: string): string {
+  s = s.split("itthe").join("itte");
+  s = s.split("otte").join("othe");
+  s = s.split("ikmind").join("ikminute");
+  return s;
+}
+
 function normalizeImperativeKar(s: string): string {
   s = s.split("kardena").join("karo");
   s = s.split("baithjao").join("baitho");
@@ -171,6 +184,8 @@ export function canonicalizePunjabi(s: string): string {
   t = t.replace(I_AM_SUFFIX_RAW_RE, "hun");
   t = normalizeCopulaRaw(t);
   t = stripForCompare(t);
+  t = normalizeIkEk(t);
+  t = normalizeLocationAdverbs(t);
   t = normalizeImperativeKar(t);
   t = normalizeBaithSitting(t);
   t = normalizeGyaForms(t);
