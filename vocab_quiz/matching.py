@@ -30,6 +30,9 @@ COPULA_STEM_HAI_RAW_RE = re.compile(
 # Formal "your" (tuhada / tuada / tusada …) — masc ends in a, fem ends in i.
 TUADA_MASC_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a")
 TUADA_FEM_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i")
+# Oblique/plural "your" (tuhade kol) — also thuadha/thuadhi before kol in speech.
+TUADA_BEFORE_KOL_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?[aei](?=kol)")
+TUADE_OBLIQUE_RE = re.compile(r"t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?e")
 # Future tense: gf uses -unga (khaunga); also accept -anga romanization (khaanga).
 FUTURE_ANGA_TO_UNGA = (
     ("khaanga", "khaunga"),
@@ -183,6 +186,8 @@ def canonicalize_punjabi(s: str) -> str:
     s = s.replace("taiyaar", "tyaar")
     s = _normalize_plural_auxiliary(s)
     s = _collapse_doubled_letters(s)
+    s = TUADA_BEFORE_KOL_RE.sub("tuade", s)
+    s = TUADE_OBLIQUE_RE.sub("tuade", s)
     s = TUADA_MASC_RE.sub("tuadha", s)
     s = TUADA_FEM_RE.sub("tuadhi", s)
     for variant, canonical in PUNJABI_SUBSTRING_CANONICALS:

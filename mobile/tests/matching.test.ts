@@ -63,6 +63,18 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("tuade oblique and kol spellings", () => {
+    expect(canonicalizePunjabi("tuhade kol dudh hai")).toBe(
+      canonicalizePunjabi("thuadhe kol dudh hai"),
+    );
+    expect(canonicalizePunjabi("tuhade kol dudh hai")).toBe(
+      canonicalizePunjabi("thuadha kol dudh hai"),
+    );
+    expect(canonicalizePunjabi("thuadha kam karo")).not.toBe(
+      canonicalizePunjabi("tuade kam karo"),
+    );
+  });
+
   it("hu suffix and optional subject pronouns", () => {
     expect(canonicalizePunjabi("main thaka hu")).toBe(
       canonicalizePunjabi("main thaka hun"),

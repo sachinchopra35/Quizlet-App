@@ -56,6 +56,8 @@ const COPULA_STEM_HAI_RAW_RE =
   /(lag rahi|lag rehi|lag raha|lag reha|lag rahe|lag rehe|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
 const TUADA_MASC_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a/g;
 const TUADA_FEM_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i/g;
+const TUADA_BEFORE_KOL_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?[aei](?=kol)/g;
+const TUADE_OBLIQUE_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?e/g;
 const WAIT_WORD_RE = /intezaa?r/g;
 const OPTIONAL_SUBJECT_PREFIXES = ["tusi", "main", "asi"] as const;
 
@@ -181,6 +183,8 @@ export function canonicalizePunjabi(s: string): string {
   t = t.split("taiyaar").join("tyaar");
   t = normalizePluralAuxiliary(t);
   t = collapseDoubledLetters(t);
+  t = t.replace(TUADA_BEFORE_KOL_RE, "tuade");
+  t = t.replace(TUADE_OBLIQUE_RE, "tuade");
   t = t.replace(TUADA_MASC_RE, "tuadha");
   t = t.replace(TUADA_FEM_RE, "tuadhi");
   for (const [variant, canonical] of PUNJABI_SUBSTRING_CANONICALS) {

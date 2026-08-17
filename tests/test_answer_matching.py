@@ -274,6 +274,27 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         for variant in fem_variants:
             self.assertEqual(canonicalize_punjabi(variant), canonicalize_punjabi("tuadhi"))
 
+    def test_tuade_oblique_and_kol_spellings(self) -> None:
+        oblique_variants = ("tuhade", "thuadhe", "tuade", "thuade", "tusade", "tusadhe")
+        for variant in oblique_variants:
+            self.assertEqual(canonicalize_punjabi(variant), canonicalize_punjabi("tuade"))
+        self.assertEqual(
+            canonicalize_punjabi("tuhade kol dudh hai"),
+            canonicalize_punjabi("thuadhe kol dudh hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tuhade kol dudh hai"),
+            canonicalize_punjabi("thuadha kol dudh hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tuhade kol dudh hai"),
+            canonicalize_punjabi("thuadhi kol dudh hai"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("thuadha kam karo"),
+            canonicalize_punjabi("tuade kam karo"),
+        )
+
     def test_optional_leading_eh_oh(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("kitchen vich hai"),
