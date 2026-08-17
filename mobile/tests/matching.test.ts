@@ -28,6 +28,12 @@ describe("canonicalizePunjabi", () => {
     expect(
       canonicalizePunjabi("main darwaza band kar reha hun"),
     ).toBe(canonicalizePunjabi("main darwaza band kar raha hun"));
+    expect(canonicalizePunjabi("main ja rehi hun")).toBe(
+      canonicalizePunjabi("main ja rahi hun"),
+    );
+    expect(canonicalizePunjabi("main ja rehi hun")).toBe(
+      canonicalizePunjabi("main ja raha hun"),
+    );
   });
 
   it("future unga/anga interchange", () => {
@@ -50,6 +56,24 @@ describe("canonicalizePunjabi", () => {
       canonicalizePunjabi("main thuanu call karunga"),
     );
   });
+
+  it("hu suffix and optional subject pronouns", () => {
+    expect(canonicalizePunjabi("main thaka hu")).toBe(
+      canonicalizePunjabi("main thaka hun"),
+    );
+    expect(canonicalizePunjabi("khaunga")).toBe(
+      canonicalizePunjabi("main khaunga"),
+    );
+    expect(canonicalizePunjabi("khaoge")).toBe(
+      canonicalizePunjabi("tusi khaoge"),
+    );
+    expect(canonicalizePunjabi("kadon aaoge")).toBe(
+      canonicalizePunjabi("tusi kadon aaoge"),
+    );
+    expect(canonicalizePunjabi("paani chaida hai")).not.toBe(
+      canonicalizePunjabi("mainu paani chaida hai"),
+    );
+  });
 });
 
 describe("answersMatch", () => {
@@ -59,8 +83,17 @@ describe("answersMatch", () => {
       answersMatch("main darwaza band kar reha hun", "main darwaza band kar raha hun", true),
     ).toBe(true);
     expect(
+      answersMatch("main ja rehi hun", "main ja raha hun", true),
+    ).toBe(true);
+    expect(
       answersMatch("main khaanga", "main khaunga", true),
     ).toBe(true);
+    expect(answersMatch("khaunga", "main khaunga", true)).toBe(true);
+    expect(answersMatch("khaoge", "tusi khaoge", true)).toBe(true);
+    expect(answersMatch("main thaka hu", "main thaka hun", true)).toBe(true);
+    expect(
+      answersMatch("paani chaida hai", "mainu paani chaida hai", true),
+    ).toBe(false);
   });
 });
 

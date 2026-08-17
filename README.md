@@ -56,3 +56,20 @@ The project is expected under **`~/Projects/Quizlet App`** (not under `Documents
 ---
 
 That opens the app in your browser.
+
+---
+
+## iPhone (offline, home-screen icon)
+
+A **Capacitor** mobile app lives in [`mobile/`](mobile/). It bundles all `punjabi_vocab/*.csv` files and runs fully offline on your phone — no Streamlit, no Mac server.
+
+```bash
+cd mobile
+npm install
+npm run cap:sync
+npm run cap:open
+```
+
+In **Xcode**: set your signing team, connect your iPhone, press Run.
+
+Full steps (CocoaPods, cert refresh, app icon): **[mobile/README.md](mobile/README.md)**.

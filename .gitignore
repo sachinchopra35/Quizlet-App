@@ -15,3 +15,10 @@ __pycache__/
 *.docx
 ~$*.doc*
 ~$*.docx
+
+# Mobile app
+mobile/node_modules/
+mobile/dist/
+mobile/ios/
+mobile/public/data/*.csv
+mobile/.capacitor/

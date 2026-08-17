@@ -37,12 +37,25 @@ const FUTURE_ONGE_TO_OGE: [string, string][] = [
   ["kroge", "karoge"],
 ];
 
-const I_AM_SUFFIX_RAW_RE = /(hoon|hoo|hun)\s*$/i;
+const I_AM_SUFFIX_RAW_RE = /(hoon|hoo|hun|hu)\s*$/i;
 const COPULA_STEM_HAI_RAW_RE =
-  /(lag rahi|lag raha|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
+  /(lag rahi|lag rehi|lag raha|lag reha|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
 const TUADA_MASC_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?a/g;
 const TUADA_FEM_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?i/g;
 const WAIT_WORD_RE = /intezaa?r/g;
+const OPTIONAL_SUBJECT_PREFIXES = ["tusi", "main", "asi"] as const;
+
+function stripOptionalSubjectPrefix(s: string): string {
+  for (const prefix of OPTIONAL_SUBJECT_PREFIXES) {
+    if (s.startsWith(prefix)) {
+      if (prefix === "main" && (s.startsWith("mainu") || s.startsWith("menu"))) {
+        continue;
+      }
+      return s.slice(prefix.length);
+    }
+  }
+  return s;
+}
 
 function stripForCompare(s: string): string {
   let out = "";
@@ -86,6 +99,7 @@ export function canonicalizePunjabi(s: string): string {
   t = stripForCompare(t);
   t = t.split("rehi").join("rahi");
   t = t.split("reha").join("raha");
+  t = t.split("rahi").join("raha");
   t = t.split("tenu").join("thuanu");
   t = t.split("tainu").join("thuanu");
   t = normalizeFutureRomanization(t);
@@ -105,6 +119,7 @@ export function canonicalizePunjabi(s: string): string {
   if (t.startsWith("oh") && !t.startsWith("ohn")) {
     t = t.slice(2);
   }
+  t = stripOptionalSubjectPrefix(t);
   return t;
 }
 

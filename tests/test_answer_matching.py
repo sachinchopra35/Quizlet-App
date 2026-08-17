@@ -112,6 +112,10 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi(f"{base} hun"),
             canonicalize_punjabi(f"{base} hoo"),
         )
+        self.assertEqual(
+            canonicalize_punjabi(f"{base} hun"),
+            canonicalize_punjabi(f"{base} hu"),
+        )
 
     def test_leya_lya_interchange(self) -> None:
         self.assertEqual(canonicalize_punjabi("kha leya"), canonicalize_punjabi("kha lya"))
@@ -147,6 +151,14 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(
             canonicalize_punjabi("oh ki kar reha hai"),
             canonicalize_punjabi("oh ki kar raha hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main ja rehi hun"),
+            canonicalize_punjabi("main ja rahi hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main ja rehi hun"),
+            canonicalize_punjabi("main ja raha hun"),
         )
 
     def test_future_spelling_interchange(self) -> None:
@@ -251,6 +263,30 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(
             canonicalize_punjabi("eh na lo"),
             canonicalize_punjabi("eh na lo"),
+        )
+
+    def test_optional_leading_subject_pronouns(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("khaunga"),
+            canonicalize_punjabi("main khaunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("khaoge"),
+            canonicalize_punjabi("tusi khaoge"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("kadon aaoge"),
+            canonicalize_punjabi("tusi kadon aaoge"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("thaka hun"),
+            canonicalize_punjabi("main thaka hu"),
+        )
+
+    def test_optional_leading_subject_pronouns_preserves_mainu(self) -> None:
+        self.assertNotEqual(
+            canonicalize_punjabi("paani chaida hai"),
+            canonicalize_punjabi("mainu paani chaida hai"),
         )
 
     def test_trailing_lo_o_imperatives(self) -> None:
@@ -376,6 +412,15 @@ class TestAnswersMatch(unittest.TestCase):
             answers_match("kitthe hai", "oh kitthe hai", punjabi=True),
         )
         self.assertFalse(answers_match("ehnu dedo", "nu dedo", punjabi=True))
+
+    def test_optional_leading_subject_pronouns_in_phrase(self) -> None:
+        self.assertTrue(answers_match("khaunga", "main khaunga", punjabi=True))
+        self.assertTrue(answers_match("khaoge", "tusi khaoge", punjabi=True))
+        self.assertTrue(answers_match("kadon aaoge", "tusi kadon aaoge", punjabi=True))
+        self.assertTrue(answers_match("main thaka hu", "main thaka hun", punjabi=True))
+        self.assertFalse(
+            answers_match("paani chaida hai", "mainu paani chaida hai", punjabi=True),
+        )
 
     def test_trailing_lo_o_in_phrase(self) -> None:
         self.assertTrue(

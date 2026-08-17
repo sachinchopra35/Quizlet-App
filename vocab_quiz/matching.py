@@ -18,10 +18,10 @@ PUNJABI_SUBSTRING_CANONICALS = (
     ("eh", "oh"),
 )
 PUNJABI_CHAR_CANONICAL = str.maketrans("rR", "dd")
-I_AM_SUFFIX_RAW_RE = re.compile(r"(hoon|hoo|hun)\s*$", re.IGNORECASE)
+I_AM_SUFFIX_RAW_RE = re.compile(r"(hoon|hoo|hun|hu)\s*$", re.IGNORECASE)
 # 3rd-person copula hai — normalize on raw text before doubled-letter collapse eats haan.
 COPULA_STEM_HAI_RAW_RE = re.compile(
-    r"(lag rahi|lag raha|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$",
+    r"(lag rahi|lag rehi|lag raha|lag reha|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$",
     re.IGNORECASE,
 )
 # Formal "your" (tuhada / tuada / tusada …) — masc ends in a, fem ends in i.
@@ -51,6 +51,16 @@ FUTURE_ONGE_TO_OGE = (
     ("kroge", "karoge"),
 )
 WAIT_WORD_RE = re.compile(r"intezaa?r")
+OPTIONAL_SUBJECT_PREFIXES = ("tusi", "main", "asi")
+
+
+def _strip_optional_subject_prefix(s: str) -> str:
+    for prefix in OPTIONAL_SUBJECT_PREFIXES:
+        if s.startswith(prefix):
+            if prefix == "main" and (s.startswith("mainu") or s.startswith("menu")):
+                continue
+            return s[len(prefix) :]
+    return s
 
 
 def _normalize_future_romanization(s: str) -> str:
@@ -90,6 +100,7 @@ def canonicalize_punjabi(s: str) -> str:
     s = _strip_for_compare(s)
     s = s.replace("rehi", "rahi")
     s = s.replace("reha", "raha")
+    s = s.replace("rahi", "raha")
     s = s.replace("tenu", "thuanu")
     s = s.replace("tainu", "thuanu")
     # Future-tense romanization shortcuts (before doubled-letter collapse).
@@ -108,6 +119,7 @@ def canonicalize_punjabi(s: str) -> str:
     s = s.replace("nakaro", "nakar")
     if s.startswith("oh") and not s.startswith("ohn"):
         s = s[2:]
+    s = _strip_optional_subject_prefix(s)
     return s
 
 
