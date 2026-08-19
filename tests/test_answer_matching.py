@@ -111,6 +111,20 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         )
         self.assertNotEqual(canonicalize_punjabi("le ke rakh do"), canonicalize_punjabi("lik rakh do"))
 
+    def test_agar_je_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("agar tusi aaoge taan asi khaange"),
+            canonicalize_punjabi("je tusi aaoge taan asi khaange"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("ki hove je?"),
+            canonicalize_punjabi("ki hove agar?"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("je nahi taan koi gal nahi"),
+            canonicalize_punjabi("agar nahi taan koi gal nahi"),
+        )
+
     def test_vich_ch_does_not_break_ch_prefix_words(self) -> None:
         self.assertEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("chaku"))
         self.assertNotEqual(canonicalize_punjabi("chaku"), canonicalize_punjabi("vaku"))

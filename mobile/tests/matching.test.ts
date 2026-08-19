@@ -94,6 +94,13 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("agar and je if", () => {
+    expect(canonicalizePunjabi("agar tusi aaoge taan asi khaange")).toBe(
+      canonicalizePunjabi("je tusi aaoge taan asi khaange"),
+    );
+    expect(canonicalizePunjabi("ki hove je")).toBe(canonicalizePunjabi("ki hove agar"));
+  });
+
   it("hu suffix and optional subject pronouns", () => {
     expect(canonicalizePunjabi("main thaka hu")).toBe(
       canonicalizePunjabi("main thaka hun"),

@@ -118,6 +118,10 @@ function normalizeBaithSitting(s: string): string {
   return s;
 }
 
+function normalizeConditionals(s: string): string {
+  return s.split("agar").join("je");
+}
+
 function normalizeIkEk(s: string): string {
   s = s.replace(/^ek/, "ik");
   s = s.split("ekmin").join("ikmin");
@@ -184,6 +188,7 @@ export function canonicalizePunjabi(s: string): string {
   t = t.replace(I_AM_SUFFIX_RAW_RE, "hun");
   t = normalizeCopulaRaw(t);
   t = stripForCompare(t);
+  t = normalizeConditionals(t);
   t = normalizeIkEk(t);
   t = normalizeLocationAdverbs(t);
   t = normalizeImperativeKar(t);
