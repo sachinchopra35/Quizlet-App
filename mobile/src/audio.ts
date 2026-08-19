@@ -110,7 +110,7 @@ export function speakWrongThenQuestion(
   synth.cancel();
   speakDelayTimer = setTimeout(() => {
     speakDelayTimer = null;
-    const u1 = new SpeechSynthesisUtterance(`The correct answer was ${answer}.`);
+    const u1 = new SpeechSynthesisUtterance("Incorrect.");
     u1.lang = "en-GB";
     u1.rate = 0.88;
     u1.onend = () => {

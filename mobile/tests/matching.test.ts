@@ -55,6 +55,9 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("tusi ki karonge")).toBe(
       canonicalizePunjabi("tusi ki karoge"),
     );
+    expect(canonicalizePunjabi("main jaldi bhej dauga")).toBe(
+      canonicalizePunjabi("main jaldi bhej daunga"),
+    );
   });
 
   it("tenu to thuanu", () => {
@@ -79,6 +82,12 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("itte hai")).toBe(canonicalizePunjabi("itthe hai"));
     expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otte hai"));
     expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otthe hai"));
+    expect(canonicalizePunjabi("otte kinvein jaaie")).toBe(
+      canonicalizePunjabi("othe kivein jaaie"),
+    );
+    expect(canonicalizePunjabi("chalo ikathe khaaie")).toBe(
+      canonicalizePunjabi("chalo kathe khaaie"),
+    );
   });
 
   it("ik minute and ik mind", () => {
@@ -94,11 +103,48 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("ton and toh from", () => {
+    expect(canonicalizePunjabi("main ghar ton kaam kar raha hun")).toBe(
+      canonicalizePunjabi("main ghar toh kaam kar raha hun"),
+    );
+    expect(canonicalizePunjabi("maitoh lelo")).toBe(canonicalizePunjabi("maiton lelo"));
+  });
+
   it("agar and je if", () => {
     expect(canonicalizePunjabi("agar tusi aaoge taan asi khaange")).toBe(
       canonicalizePunjabi("je tusi aaoge taan asi khaange"),
     );
     expect(canonicalizePunjabi("ki hove je")).toBe(canonicalizePunjabi("ki hove agar"));
+  });
+
+  it("chahde ho and chaho", () => {
+    expect(canonicalizePunjabi("je tusi chaho taan aao")).toBe(
+      canonicalizePunjabi("je tusi chahde ho taan aao"),
+    );
+    expect(canonicalizePunjabi("tusi kitthe khana chaho?")).toBe(
+      canonicalizePunjabi("tusi kitthe khana chahde ho?"),
+    );
+  });
+
+  it("ie and iye cohortative", () => {
+    expect(canonicalizePunjabi("chalo ikathe khaaie")).toBe(
+      canonicalizePunjabi("chalo ikathe khaaiye"),
+    );
+    expect(canonicalizePunjabi("paidal chaliye")).toBe(
+      canonicalizePunjabi("paidal chalie"),
+    );
+  });
+
+  it("karda and karnda habitual", () => {
+    expect(canonicalizePunjabi("main karda hun")).toBe(
+      canonicalizePunjabi("main karnda hun"),
+    );
+    expect(canonicalizePunjabi("main chai chahda hun")).toBe(
+      canonicalizePunjabi("main chai chahnda hun"),
+    );
+    expect(canonicalizePunjabi("main jada hun")).toBe(
+      canonicalizePunjabi("main janda hun"),
+    );
   });
 
   it("hu suffix and optional subject pronouns", () => {

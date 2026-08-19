@@ -73,6 +73,30 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi("itthe hai"),
         )
         self.assertEqual(
+            canonicalize_punjabi("otte jaaie"),
+            canonicalize_punjabi("othe jaaie"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("otte kinvein jaaie"),
+            canonicalize_punjabi("othe kivein jaaie"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main eh kivein karda hun"),
+            canonicalize_punjabi("main eh kinvein karda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("chalo ikathe khaaie"),
+            canonicalize_punjabi("chalo kathe khaaie"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("asi ikathe ja rahe han"),
+            canonicalize_punjabi("asi katha ja rahe han"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("asi ikathe chal gye"),
+            canonicalize_punjabi("asi ikatha chal gye"),
+        )
+        self.assertEqual(
             canonicalize_punjabi("itte rakh lo"),
             canonicalize_punjabi("itthe rakh lo"),
         )
@@ -111,6 +135,20 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         )
         self.assertNotEqual(canonicalize_punjabi("le ke rakh do"), canonicalize_punjabi("lik rakh do"))
 
+    def test_ton_toh_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main ghar ton kaam kar raha hun"),
+            canonicalize_punjabi("main ghar toh kaam kar raha hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("maitoh lelo"),
+            canonicalize_punjabi("maiton lelo"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("eh toh lelo"),
+            canonicalize_punjabi("eh ton lelo"),
+        )
+
     def test_agar_je_interchange(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("agar tusi aaoge taan asi khaange"),
@@ -123,6 +161,86 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(
             canonicalize_punjabi("je nahi taan koi gal nahi"),
             canonicalize_punjabi("agar nahi taan koi gal nahi"),
+        )
+
+    def test_chahde_ho_chaho_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("je tusi chaho taan aao"),
+            canonicalize_punjabi("je tusi chahde ho taan aao"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi kitthe khana chaho?"),
+            canonicalize_punjabi("tusi kitthe khana chahde ho?"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("tusi bahar khana chaho"),
+            canonicalize_punjabi("tusi bahar khana chahde ho"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("asi khana chahde han"),
+            canonicalize_punjabi("asi khana chaho"),
+        )
+
+    def test_ie_iye_cohortative_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("chalo ikathe khaaie"),
+            canonicalize_punjabi("chalo ikathe khaaiye"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("chalo ghoom ke aaiye"),
+            canonicalize_punjabi("chalo ghoom ke aaie"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("paidal chaliye"),
+            canonicalize_punjabi("paidal chalie"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("table book karie"),
+            canonicalize_punjabi("table book kariye"),
+        )
+
+    def test_karda_karnda_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main karda hun"),
+            canonicalize_punjabi("main karnda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main eh bahut pasand karda hun"),
+            canonicalize_punjabi("main eh bahut pasand karnda hun"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("paani thanda hai"),
+            canonicalize_punjabi("paani thada hai"),
+        )
+
+    def test_habitual_nda_da_interchange(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main chai chahda hun"),
+            canonicalize_punjabi("main chai chahnda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main piano vajada hun"),
+            canonicalize_punjabi("main piano vajanda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main jada hun"),
+            canonicalize_punjabi("main janda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main eh kivein kehda hun"),
+            canonicalize_punjabi("main eh kivein kehnda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("eh kivein kehde ho"),
+            canonicalize_punjabi("eh kivein kehnde ho"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("paani thanda hai"),
+            canonicalize_punjabi("andar aa jao"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("main tandarust hun"),
+            canonicalize_punjabi("main tadarust hun"),
         )
 
     def test_vich_ch_does_not_break_ch_prefix_words(self) -> None:
@@ -276,6 +394,10 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(
             canonicalize_punjabi("jaldi aa janga"),
             canonicalize_punjabi("jaldi aa jaaunga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main jaldi bhej dauga"),
+            canonicalize_punjabi("main jaldi bhej daunga"),
         )
         self.assertEqual(
             canonicalize_punjabi("main tenu call karunga"),

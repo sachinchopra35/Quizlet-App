@@ -36,6 +36,7 @@ const FUTURE_ANGA_TO_UNGA: [string, string][] = [
   ["karanga", "karunga"],
   ["kranga", "karunga"],
   ["daanga", "daunga"],
+  ["dauga", "daunga"],
 ];
 
 const FUTURE_ONGE_TO_OGE: [string, string][] = [
@@ -122,9 +123,48 @@ function normalizeConditionals(s: string): string {
   return s.split("agar").join("je");
 }
 
+const HABITUAL_NDA_TO_DA: [string, string][] = [
+  ["chahnda", "chahda"],
+  ["vajanda", "vajada"],
+  ["karnda", "karda"],
+  ["kehnda", "kehda"],
+  ["khanda", "khada"],
+  ["aunda", "auda"],
+  ["janda", "jada"],
+  ["pinda", "pida"],
+  ["sunda", "suda"],
+];
+
+const HABITUAL_NDE_TO_DE: [string, string][] = [
+  ["chahnde", "chahde"],
+  ["karnde", "karde"],
+  ["kehnde", "kehde"],
+  ["jande", "jade"],
+  ["aunde", "aude"],
+];
+
+function normalizeChahnaTusi(s: string): string {
+  return s.split("chahdeho").join("chaho");
+}
+
+function normalizeCohortativeY(s: string): string {
+  return s.split("iye").join("ie");
+}
+
+function normalizeHabitualDa(s: string): string {
+  for (const [variant, canonical] of HABITUAL_NDA_TO_DA) {
+    s = s.split(variant).join(canonical);
+  }
+  for (const [variant, canonical] of HABITUAL_NDE_TO_DE) {
+    s = s.split(variant).join(canonical);
+  }
+  return s;
+}
+
 function normalizeIkEk(s: string): string {
   s = s.replace(/^ek/, "ik");
   s = s.split("ekmin").join("ikmin");
+  s = s.split("toh").join("ton");
   return s;
 }
 
@@ -132,6 +172,10 @@ function normalizeLocationAdverbs(s: string): string {
   s = s.split("itthe").join("itte");
   s = s.split("otte").join("othe");
   s = s.split("ikmind").join("ikminute");
+  s = s.split("kinvein").join("kivein");
+  s = s.split("ikatha").join("ikathe");
+  s = s.split("kathe").join("ikathe");
+  s = s.split("katha").join("ikathe");
   return s;
 }
 
@@ -189,6 +233,9 @@ export function canonicalizePunjabi(s: string): string {
   t = normalizeCopulaRaw(t);
   t = stripForCompare(t);
   t = normalizeConditionals(t);
+  t = normalizeChahnaTusi(t);
+  t = normalizeCohortativeY(t);
+  t = normalizeHabitualDa(t);
   t = normalizeIkEk(t);
   t = normalizeLocationAdverbs(t);
   t = normalizeImperativeKar(t);

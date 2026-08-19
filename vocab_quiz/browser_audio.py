@@ -74,7 +74,7 @@ def speak_wrong_then_question(answer: str, question: str, question_lang: str | N
           synth.cancel();
           wnd.__vqSpeakDelayTimer = setTimeout(() => {{
             wnd.__vqSpeakDelayTimer = null;
-            const first = "The correct answer was " + p.answer + ".";
+            const first = "Incorrect.";
             const u1 = new SpeechSynthesisUtterance(first);
             u1.lang = "en-GB";
             u1.rate = 0.88;

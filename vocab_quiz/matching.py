@@ -47,6 +47,7 @@ FUTURE_ANGA_TO_UNGA = (
     ("karanga", "karunga"),
     ("kranga", "karunga"),
     ("daanga", "daunga"),
+    ("dauga", "daunga"),
 )
 # Future questions (tusi): CSV uses -oge; also accept gf's -onge (aaonge, karonge, …).
 FUTURE_ONGE_TO_OGE = (
@@ -103,10 +104,51 @@ def _normalize_conditionals(s: str) -> str:
     return s.replace("agar", "je")
 
 
+# Present habitual — -nda/-da and -nde/-de (romanization only; longest first).
+HABITUAL_NDA_TO_DA = (
+    ("chahnda", "chahda"),
+    ("vajanda", "vajada"),
+    ("karnda", "karda"),
+    ("kehnda", "kehda"),
+    ("khanda", "khada"),
+    ("aunda", "auda"),
+    ("janda", "jada"),
+    ("pinda", "pida"),
+    ("sunda", "suda"),
+)
+HABITUAL_NDE_TO_DE = (
+    ("chahnde", "chahde"),
+    ("karnde", "karde"),
+    ("kehnde", "kehde"),
+    ("jande", "jade"),
+    ("aunde", "aude"),
+)
+
+
+def _normalize_chahna_tusi(s: str) -> str:
+    """You want — chahde ho / chaho (tusi)."""
+    return s.replace("chahdeho", "chaho")
+
+
+def _normalize_cohortative_y(s: str) -> str:
+    """Let's / shall we — -ie / -iye (same sound; romanization only)."""
+    return s.replace("iye", "ie")
+
+
+def _normalize_habitual_da(s: str) -> str:
+    """Present habitual — karda/karnda, chahda/chahnda, … (romanization only)."""
+    for variant, canonical in HABITUAL_NDA_TO_DA:
+        s = s.replace(variant, canonical)
+    for variant, canonical in HABITUAL_NDE_TO_DE:
+        s = s.replace(variant, canonical)
+    return s
+
+
 def _normalize_ik_ek(s: str) -> str:
     """One — ik / ek (avoid bare ek→ik inside words like leke)."""
     s = re.sub(r"^ek", "ik", s)
     s = s.replace("ekmin", "ikmin")
+    s = s.replace("toh", "ton")
     return s
 
 
@@ -115,6 +157,10 @@ def _normalize_location_adverbs(s: str) -> str:
     s = s.replace("itthe", "itte")
     s = s.replace("otte", "othe")
     s = s.replace("ikmind", "ikminute")
+    s = s.replace("kinvein", "kivein")
+    s = s.replace("ikatha", "ikathe")
+    s = s.replace("kathe", "ikathe")
+    s = s.replace("katha", "ikathe")
     return s
 
 
@@ -194,6 +240,9 @@ def canonicalize_punjabi(s: str) -> str:
     s = _normalize_copula_raw(s)
     s = _strip_for_compare(s)
     s = _normalize_conditionals(s)
+    s = _normalize_chahna_tusi(s)
+    s = _normalize_cohortative_y(s)
+    s = _normalize_habitual_da(s)
     s = _normalize_ik_ek(s)
     s = _normalize_location_adverbs(s)
     s = _normalize_imperative_kar(s)
