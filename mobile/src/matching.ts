@@ -52,6 +52,19 @@ const FUTURE_COMPOUND_AA: [string, string][] = [
   ["aajauga", "auga"],
 ];
 
+const DRINK_PEE_PI: [string, string][] = [
+  ["pionge", "peeoge"],
+  ["piunge", "peeunge"],
+  ["pioge", "peeoge"],
+  ["piunga", "peeunga"],
+  ["pienga", "peeunga"],
+  ["peeleya", "peelaya"],
+  ["pileya", "peelaya"],
+  ["pilea", "peelaya"],
+  ["piee", "peeie"],
+  ["pio", "pee"],
+];
+
 const I_AM_SUFFIX_RAW_RE = /(hoon|hoo|hun|hu)\s*$/i;
 const COPULA_STEM_HAI_RAW_RE =
   /(lag rahi|lag rehi|lag raha|lag reha|lag rahe|lag rehe|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
@@ -151,6 +164,17 @@ function normalizeCohortativeY(s: string): string {
   return s.split("iye").join("ie");
 }
 
+function normalizeDrinkPeePi(s: string): string {
+  for (const [variant, canonical] of DRINK_PEE_PI) {
+    s = s.split(variant).join(canonical);
+  }
+  return s;
+}
+
+function normalizeChaiTea(s: string): string {
+  return s.replace(/chai(?!d)/g, "cha");
+}
+
 function normalizeHabitualDa(s: string): string {
   for (const [variant, canonical] of HABITUAL_NDA_TO_DA) {
     s = s.split(variant).join(canonical);
@@ -161,6 +185,10 @@ function normalizeHabitualDa(s: string): string {
   return s;
 }
 
+function normalizePluralIyan(s: string): string {
+  return s.split("iyan").join("ian");
+}
+
 function normalizeIkEk(s: string): string {
   s = s.replace(/^ek/, "ik");
   s = s.split("ekmin").join("ikmin");
@@ -168,7 +196,16 @@ function normalizeIkEk(s: string): string {
   return s;
 }
 
+function normalizePostpositions(s: string): string {
+  s = s.split("debaad").join("tobaad");
+  s = s.split("depehla").join("tonpehla");
+  s = s.split("topehla").join("tonpehla");
+  s = s.replace(/to(?!baad)/g, "ton");
+  return s;
+}
+
 function normalizeLocationAdverbs(s: string): string {
+  s = s.split("kitthe").join("kithe");
   s = s.split("itthe").join("itte");
   s = s.split("otte").join("othe");
   s = s.split("ikmind").join("ikminute");
@@ -176,6 +213,7 @@ function normalizeLocationAdverbs(s: string): string {
   s = s.split("ikatha").join("ikathe");
   s = s.split("kathe").join("ikathe");
   s = s.split("katha").join("ikathe");
+  s = s.split("paer").join("pair");
   return s;
 }
 
@@ -235,8 +273,12 @@ export function canonicalizePunjabi(s: string): string {
   t = normalizeConditionals(t);
   t = normalizeChahnaTusi(t);
   t = normalizeCohortativeY(t);
+  t = normalizeDrinkPeePi(t);
+  t = normalizeChaiTea(t);
   t = normalizeHabitualDa(t);
+  t = normalizePluralIyan(t);
   t = normalizeIkEk(t);
+  t = normalizePostpositions(t);
   t = normalizeLocationAdverbs(t);
   t = normalizeImperativeKar(t);
   t = normalizeBaithSitting(t);

@@ -42,6 +42,20 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("pee and pi drink", () => {
+    expect(canonicalizePunjabi("chai peeoge")).toBe(canonicalizePunjabi("cha pioge"));
+    expect(canonicalizePunjabi("main peeunga")).toBe(canonicalizePunjabi("main piunga"));
+  });
+
+  it("cha and chai tea", () => {
+    expect(canonicalizePunjabi("main chai chahnda hun")).toBe(
+      canonicalizePunjabi("main cha chahnda hun"),
+    );
+    expect(canonicalizePunjabi("mainu chai chaidi hai")).toBe(
+      canonicalizePunjabi("mainu cha chaidi hai"),
+    );
+  });
+
   it("future unga/anga interchange", () => {
     expect(canonicalizePunjabi("main khaanga")).toBe(
       canonicalizePunjabi("main khaunga"),
@@ -88,6 +102,10 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("chalo ikathe khaaie")).toBe(
       canonicalizePunjabi("chalo kathe khaaie"),
     );
+    expect(canonicalizePunjabi("mere pair dard kar rahe ne")).toBe(
+      canonicalizePunjabi("mere paer dard kar rahe ne"),
+    );
+    expect(canonicalizePunjabi("kitthe hai")).toBe(canonicalizePunjabi("kithe hai"));
   });
 
   it("ik minute and ik mind", () => {
@@ -108,6 +126,18 @@ describe("canonicalizePunjabi", () => {
       canonicalizePunjabi("main ghar toh kaam kar raha hun"),
     );
     expect(canonicalizePunjabi("maitoh lelo")).toBe(canonicalizePunjabi("maiton lelo"));
+  });
+
+  it("de/to postpositions baad and pehla", () => {
+    expect(canonicalizePunjabi("gym to baad main thak gya")).toBe(
+      canonicalizePunjabi("gym de baad main thak gya"),
+    );
+    expect(canonicalizePunjabi("main ghar ton kaam kar raha hun")).toBe(
+      canonicalizePunjabi("main ghar to kaam kar raha hun"),
+    );
+    expect(canonicalizePunjabi("main kaam ton pehla khaunga")).toBe(
+      canonicalizePunjabi("main kaam de pehla khaunga"),
+    );
   });
 
   it("agar and je if", () => {
@@ -144,6 +174,12 @@ describe("canonicalizePunjabi", () => {
     );
     expect(canonicalizePunjabi("main jada hun")).toBe(
       canonicalizePunjabi("main janda hun"),
+    );
+  });
+
+  it("plural ian and iyan", () => {
+    expect(canonicalizePunjabi("meriyan unglian thandian ne")).toBe(
+      canonicalizePunjabi("meriyan ungliyan thandiyan ne"),
     );
   });
 

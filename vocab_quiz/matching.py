@@ -62,6 +62,20 @@ FUTURE_COMPOUND_AA = (
     ("aajayegi", "ayegi"),
     ("aajauga", "auga"),
 )
+# Drink — pee / pi (romanization only; longest first).
+DRINK_PEE_PI = (
+    ("pionge", "peeoge"),
+    ("piunge", "peeunge"),
+    ("pioge", "peeoge"),
+    ("piunga", "peeunga"),
+    ("pienga", "peeunga"),
+    ("peeleya", "peelaya"),
+    ("pileya", "peelaya"),
+    ("pilea", "peelaya"),
+    ("piee", "peeie"),
+    ("pio", "pee"),
+)
+CHAI_TEA_RE = re.compile(r"chai(?!d)")
 WAIT_WORD_RE = re.compile(r"intezaa?r")
 OPTIONAL_SUBJECT_PREFIXES = ("tusi", "main", "asi")
 
@@ -97,6 +111,18 @@ def _normalize_baje_time_auxiliary(s: str) -> str:
     s = re.sub(r"bajohain$", "bajohan", s)
     s = re.sub(r"bajene$", "bajohan", s)
     return s
+
+
+def _normalize_drink_pee_pi(s: str) -> str:
+    """Drink — pee / pi (peeoge, piunga, pio, …)."""
+    for variant, canonical in DRINK_PEE_PI:
+        s = s.replace(variant, canonical)
+    return s
+
+
+def _normalize_chai_tea(s: str) -> str:
+    """Tea — cha / chai (not chaida / chaidi)."""
+    return CHAI_TEA_RE.sub("cha", s)
 
 
 def _normalize_conditionals(s: str) -> str:
@@ -144,6 +170,11 @@ def _normalize_habitual_da(s: str) -> str:
     return s
 
 
+def _normalize_plural_iyan(s: str) -> str:
+    """Plural / oblique — -ian / -iyan (romanization only)."""
+    return s.replace("iyan", "ian")
+
+
 def _normalize_ik_ek(s: str) -> str:
     """One — ik / ek (avoid bare ek→ik inside words like leke)."""
     s = re.sub(r"^ek", "ik", s)
@@ -152,8 +183,18 @@ def _normalize_ik_ek(s: str) -> str:
     return s
 
 
+def _normalize_postpositions(s: str) -> str:
+    """From/after/before — ton/toh/to; de baad ↔ to baad; de pehla ↔ ton pehla."""
+    s = s.replace("debaad", "tobaad")
+    s = s.replace("depehla", "tonpehla")
+    s = s.replace("topehla", "tonpehla")
+    s = re.sub(r"to(?!baad)", "ton", s)
+    return s
+
+
 def _normalize_location_adverbs(s: str) -> str:
     """here/there adverbs — itthe↔itte; otte↔othe (otthe already collapses to othe)."""
+    s = s.replace("kitthe", "kithe")
     s = s.replace("itthe", "itte")
     s = s.replace("otte", "othe")
     s = s.replace("ikmind", "ikminute")
@@ -161,6 +202,7 @@ def _normalize_location_adverbs(s: str) -> str:
     s = s.replace("ikatha", "ikathe")
     s = s.replace("kathe", "ikathe")
     s = s.replace("katha", "ikathe")
+    s = s.replace("paer", "pair")
     return s
 
 
@@ -242,8 +284,12 @@ def canonicalize_punjabi(s: str) -> str:
     s = _normalize_conditionals(s)
     s = _normalize_chahna_tusi(s)
     s = _normalize_cohortative_y(s)
+    s = _normalize_drink_pee_pi(s)
+    s = _normalize_chai_tea(s)
     s = _normalize_habitual_da(s)
+    s = _normalize_plural_iyan(s)
     s = _normalize_ik_ek(s)
+    s = _normalize_postpositions(s)
     s = _normalize_location_adverbs(s)
     s = _normalize_imperative_kar(s)
     s = _normalize_baith_sitting(s)
