@@ -130,10 +130,11 @@ def _normalize_conditionals(s: str) -> str:
     return s.replace("agar", "je")
 
 
-# Present habitual — -nda/-da and -nde/-de (romanization only; longest first).
+# Present habitual — -nda/-da, -nde/-de, -ndi/-di (romanization only; longest first).
 HABITUAL_NDA_TO_DA = (
     ("chahnda", "chahda"),
     ("vajanda", "vajada"),
+    ("tureda", "turda"),
     ("karnda", "karda"),
     ("kehnda", "kehda"),
     ("khanda", "khada"),
@@ -144,10 +145,21 @@ HABITUAL_NDA_TO_DA = (
 )
 HABITUAL_NDE_TO_DE = (
     ("chahnde", "chahde"),
+    ("khande", "khade"),
     ("karnde", "karde"),
     ("kehnde", "kehde"),
     ("jande", "jade"),
     ("aunde", "aude"),
+)
+HABITUAL_NDI_TO_DI = (
+    ("chahndi", "chahdi"),
+    ("karndi", "kardi"),
+    ("kehndi", "kehdi"),
+    ("khandi", "khadi"),
+    ("jandi", "jadi"),
+    ("pindi", "pidi"),
+    ("sundi", "sudi"),
+    ("aundi", "audi"),
 )
 
 
@@ -162,10 +174,12 @@ def _normalize_cohortative_y(s: str) -> str:
 
 
 def _normalize_habitual_da(s: str) -> str:
-    """Present habitual — karda/karnda, chahda/chahnda, … (romanization only)."""
+    """Present habitual — karda/karnda, kardi/karndi, … (romanization only)."""
     for variant, canonical in HABITUAL_NDA_TO_DA:
         s = s.replace(variant, canonical)
     for variant, canonical in HABITUAL_NDE_TO_DE:
+        s = s.replace(variant, canonical)
+    for variant, canonical in HABITUAL_NDI_TO_DI:
         s = s.replace(variant, canonical)
     return s
 
@@ -180,6 +194,7 @@ def _normalize_ik_ek(s: str) -> str:
     s = re.sub(r"^ek", "ik", s)
     s = s.replace("ekmin", "ikmin")
     s = s.replace("toh", "ton")
+    s = s.replace("nahin", "nahi")
     return s
 
 

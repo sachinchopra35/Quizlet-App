@@ -67,6 +67,16 @@ class TestCanonicalizePunjabi(unittest.TestCase):
             canonicalize_punjabi("apniyan akhan ch eyedrop"),
         )
 
+    def test_nahi_nahin_not(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main kade nahin janda"),
+            canonicalize_punjabi("main kade nahi janda"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main nahin janda"),
+            canonicalize_punjabi("main nahi janda"),
+        )
+
     def test_itte_itthe_and_othe_otte_interchange(self) -> None:
         self.assertEqual(
             canonicalize_punjabi("itte hai"),
@@ -267,6 +277,26 @@ class TestCanonicalizePunjabi(unittest.TestCase):
         self.assertEqual(
             canonicalize_punjabi("eh kivein kehde ho"),
             canonicalize_punjabi("eh kivein kehnde ho"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("oh kade masah nahi khandi"),
+            canonicalize_punjabi("oh kade masah nahi khadi"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("oh kabhi kabhi call karndi hai"),
+            canonicalize_punjabi("oh kabhi kabhi call kardi hai"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main kabhi kabhi tureda hun"),
+            canonicalize_punjabi("main kabhi kabhi turda hun"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("asi kade bahar nahi khade"),
+            canonicalize_punjabi("asi kade bahar nahi khande"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main kade nahi janda"),
+            canonicalize_punjabi("main kade nahi jada"),
         )
         self.assertNotEqual(
             canonicalize_punjabi("paani thanda hai"),

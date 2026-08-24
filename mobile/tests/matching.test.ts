@@ -92,6 +92,15 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("nahi and nahin not", () => {
+    expect(canonicalizePunjabi("main kade nahin janda")).toBe(
+      canonicalizePunjabi("main kade nahi janda"),
+    );
+    expect(canonicalizePunjabi("main nahin janda")).toBe(
+      canonicalizePunjabi("main nahi janda"),
+    );
+  });
+
   it("itte/itthe and othe/otte here-there", () => {
     expect(canonicalizePunjabi("itte hai")).toBe(canonicalizePunjabi("itthe hai"));
     expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otte hai"));
@@ -174,6 +183,18 @@ describe("canonicalizePunjabi", () => {
     );
     expect(canonicalizePunjabi("main jada hun")).toBe(
       canonicalizePunjabi("main janda hun"),
+    );
+    expect(canonicalizePunjabi("oh kade masah nahi khadi")).toBe(
+      canonicalizePunjabi("oh kade masah nahi khandi"),
+    );
+    expect(canonicalizePunjabi("oh kabhi kabhi call kardi hai")).toBe(
+      canonicalizePunjabi("oh kabhi kabhi call karndi hai"),
+    );
+    expect(canonicalizePunjabi("main kabhi kabhi turda hun")).toBe(
+      canonicalizePunjabi("main kabhi kabhi tureda hun"),
+    );
+    expect(canonicalizePunjabi("asi kade bahar nahi khande")).toBe(
+      canonicalizePunjabi("asi kade bahar nahi khade"),
     );
   });
 

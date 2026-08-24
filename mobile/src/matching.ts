@@ -139,6 +139,7 @@ function normalizeConditionals(s: string): string {
 const HABITUAL_NDA_TO_DA: [string, string][] = [
   ["chahnda", "chahda"],
   ["vajanda", "vajada"],
+  ["tureda", "turda"],
   ["karnda", "karda"],
   ["kehnda", "kehda"],
   ["khanda", "khada"],
@@ -150,10 +151,22 @@ const HABITUAL_NDA_TO_DA: [string, string][] = [
 
 const HABITUAL_NDE_TO_DE: [string, string][] = [
   ["chahnde", "chahde"],
+  ["khande", "khade"],
   ["karnde", "karde"],
   ["kehnde", "kehde"],
   ["jande", "jade"],
   ["aunde", "aude"],
+];
+
+const HABITUAL_NDI_TO_DI: [string, string][] = [
+  ["chahndi", "chahdi"],
+  ["karndi", "kardi"],
+  ["kehndi", "kehdi"],
+  ["khandi", "khadi"],
+  ["jandi", "jadi"],
+  ["pindi", "pidi"],
+  ["sundi", "sudi"],
+  ["aundi", "audi"],
 ];
 
 function normalizeChahnaTusi(s: string): string {
@@ -182,6 +195,9 @@ function normalizeHabitualDa(s: string): string {
   for (const [variant, canonical] of HABITUAL_NDE_TO_DE) {
     s = s.split(variant).join(canonical);
   }
+  for (const [variant, canonical] of HABITUAL_NDI_TO_DI) {
+    s = s.split(variant).join(canonical);
+  }
   return s;
 }
 
@@ -193,6 +209,7 @@ function normalizeIkEk(s: string): string {
   s = s.replace(/^ek/, "ik");
   s = s.split("ekmin").join("ikmin");
   s = s.split("toh").join("ton");
+  s = s.split("nahin").join("nahi");
   return s;
 }
 
