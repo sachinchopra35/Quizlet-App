@@ -1,6 +1,6 @@
 import { BEAST_MODE_SELECTION, STYLE_FROM_EN, STYLE_TO_EN } from "./config";
 import { escapeAttr, escapeHtml } from "./html";
-import { BEAST_LEVEL_EMOJI, levelEmoji, levelOffset, medalTier } from "./levels";
+import { BEAST_LEVEL_EMOJI, levelEmoji, levelOffset, medalTier, stageClass, stageDividerLabel, stageNumber } from "./levels";
 import type { Medal } from "./rounds";
 import type { VocabRow } from "./vocab";
 
@@ -29,6 +29,7 @@ export interface MapHandlers {
   onToggleMute(muted: boolean): void;
   onStart(): void;
   onDismissCompletion(): void;
+  onButtonPress?(): void;
 }
 
 export function levelLabel(name: string): string {
@@ -36,23 +37,49 @@ export function levelLabel(name: string): string {
   return name.replace(/\.csv$/i, "");
 }
 
+function nodeColorClass(index: number, medal: Medal | undefined): string {
+  if (medal) return `tier-${medalTier(medal.emoji)}`;
+  return stageClass(index);
+}
+
 function nodeHtml(csv: string, index: number, medal: Medal | undefined, beast: boolean): string {
-  const tier = medalTier(medal?.emoji);
+  const colorClass = beast ? "" : nodeColorClass(index, medal);
   const emoji = beast ? BEAST_LEVEL_EMOJI : levelEmoji(csv);
   const offset = beast ? 0 : levelOffset(index);
   const label = levelLabel(csv);
   const badge = medal ? `<span class="level-score">${escapeHtml(medal.label)}</span>` : "";
+  const beastClass = beast ? " level-beast" : "";
   return `
     <div class="level-slot" style="transform: translateX(${offset}px)">
       <button
         type="button"
-        class="level-node tier-${tier}${beast ? " level-beast" : ""}"
+        class="level-node ${colorClass}${beastClass}"
         data-csv="${escapeAttr(csv)}"
         aria-label="${escapeAttr(label)}"
       ><span class="level-emoji">${emoji}</span></button>
       ${badge}
     </div>
   `;
+}
+
+function stageDividerHtml(stageNum: number): string {
+  const label = stageDividerLabel(stageNum);
+  return `
+    <div class="stage-divider" role="separator">
+      <span class="stage-divider-line"></span>
+      <span class="stage-divider-label">${escapeHtml(label)}</span>
+      <span class="stage-divider-line"></span>
+    </div>
+  `;
+}
+
+function levelsHtml(csvNames: string[], levelMedals: Record<string, Medal>): string {
+  const parts: string[] = [];
+  for (let i = 0; i < csvNames.length; i++) {
+    if (i % 10 === 0) parts.push(stageDividerHtml(stageNumber(i)));
+    parts.push(nodeHtml(csvNames[i]!, i, levelMedals[csvNames[i]!], false));
+  }
+  return parts.join("");
 }
 
 function settingsHtml(vm: MapViewModel): string {
@@ -111,12 +138,10 @@ function completionHtml(vm: MapViewModel): string {
 }
 
 export function mapHtml(vm: MapViewModel): string {
-  const levels = vm.csvNames
-    .map((csv, i) => nodeHtml(csv, i, vm.levelMedals[csv], false))
-    .join("");
+  const levels = levelsHtml(vm.csvNames, vm.levelMedals);
   const beast = nodeHtml(BEAST_MODE_SELECTION, 0, vm.levelMedals[BEAST_MODE_SELECTION], true);
   return `
-    <header class="map-header"><h1>Punjabi Vocab</h1></header>
+    <header class="map-header"><h1>Learn Punjabi</h1></header>
     <div class="level-map">
       ${levels}
       <div class="map-divider"></div>
@@ -128,18 +153,21 @@ export function mapHtml(vm: MapViewModel): string {
 }
 
 /** iOS WebView fires :active unreliably, so track the press explicitly. */
-function bindPressFeedback(node: HTMLElement): void {
-  const press = () => node.classList.add("is-pressed");
+function bindPressFeedback(node: HTMLElement, onPress?: () => void): void {
   const release = () => node.classList.remove("is-pressed");
-  node.addEventListener("pointerdown", press);
+  node.addEventListener("pointerdown", (e) => {
+    node.classList.add("is-pressed");
+    node.setPointerCapture(e.pointerId);
+    onPress?.();
+  });
   node.addEventListener("pointerup", release);
   node.addEventListener("pointercancel", release);
-  node.addEventListener("pointerleave", release);
+  node.addEventListener("lostpointercapture", release);
 }
 
 export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLElement>(".level-node").forEach((node) => {
-    bindPressFeedback(node);
+    bindPressFeedback(node, handlers.onButtonPress);
     node.addEventListener("click", () => {
       handlers.onOpenLevel(node.dataset.csv!);
     });
@@ -164,7 +192,7 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
 
   const start = root.querySelector<HTMLElement>("#popup-start");
   if (start) {
-    bindPressFeedback(start);
+    bindPressFeedback(start, handlers.onButtonPress);
     start.addEventListener("click", () => handlers.onStart());
   }
 

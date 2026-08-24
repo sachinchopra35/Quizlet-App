@@ -26,6 +26,50 @@ export function ensureAudioUnlock(): void {
   document.addEventListener("keydown", unlockAudio, { capture: true, once: false });
 }
 
+/** Short mechanical pop for map level buttons. */
+export function playButtonClick(): void {
+  unlockAudio();
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const play = () => {
+    const t0 = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.value = 0.2;
+    master.connect(ctx.destination);
+
+    const body = ctx.createOscillator();
+    body.type = "sine";
+    body.frequency.setValueAtTime(540, t0);
+    body.frequency.exponentialRampToValueAtTime(300, t0 + 0.045);
+    const bodyGain = ctx.createGain();
+    bodyGain.gain.setValueAtTime(0.0001, t0);
+    bodyGain.gain.exponentialRampToValueAtTime(0.55, t0 + 0.003);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.065);
+    body.connect(bodyGain);
+    bodyGain.connect(master);
+    body.start(t0);
+    body.stop(t0 + 0.07);
+
+    const click = ctx.createOscillator();
+    click.type = "triangle";
+    click.frequency.setValueAtTime(1150, t0);
+    click.frequency.exponentialRampToValueAtTime(780, t0 + 0.025);
+    const clickGain = ctx.createGain();
+    clickGain.gain.setValueAtTime(0.0001, t0);
+    clickGain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.001);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.035);
+    click.connect(clickGain);
+    clickGain.connect(master);
+    click.start(t0);
+    click.stop(t0 + 0.04);
+  };
+  if (ctx.state === "suspended") {
+    void ctx.resume().then(play);
+  } else {
+    play();
+  }
+}
+
 export function playChime(kind: "correct" | "wrong"): void {
   unlockAudio();
   const ctx = audioCtx;

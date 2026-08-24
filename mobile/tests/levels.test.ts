@@ -5,6 +5,10 @@ import {
   levelOffset,
   medalTier,
   roundProgress,
+  stageClass,
+  stageDividerLabel,
+  stageNumber,
+  stagePaletteIndex,
 } from "../src/levels";
 import {
   createInitialState,
@@ -17,18 +21,26 @@ import type { VocabRow } from "../src/vocab";
 describe("levelEmoji", () => {
   it("matches topic keywords", () => {
     expect(levelEmoji("01 Numbers.csv")).toBe("🔢");
-    expect(levelEmoji("60 Gym and Exercise.csv")).toBe("💪");
-    expect(levelEmoji("52 Nature - Landscape.csv")).toBe("🌳");
-    expect(levelEmoji("74 Learning.csv")).toBe("📚");
+    expect(levelEmoji("72 Gym and Exercise.csv")).toBe("💪");
+    expect(levelEmoji("64 Nature - Landscape.csv")).toBe("🌳");
+    expect(levelEmoji("86 Learning.csv")).toBe("📚");
   });
 
   it("prefers the more specific living room over room", () => {
-    expect(levelEmoji("18 In My Living Room - Present.csv")).toBe("🛋️");
-    expect(levelEmoji("16 In My Room - Present.csv")).toBe("🛏️");
+    expect(levelEmoji("30 In My Living Room - Present.csv")).toBe("🛋️");
+    expect(levelEmoji("28 In My Room - Present.csv")).toBe("🛏️");
   });
 
   it("falls back to a star", () => {
-    expect(levelEmoji("48 Mere Kol.csv")).toBe(DEFAULT_LEVEL_EMOJI);
+    expect(levelEmoji("60 Mere Kol.csv")).toBe(DEFAULT_LEVEL_EMOJI);
+  });
+
+  it("matches early beginner list topics", () => {
+    expect(levelEmoji("04 Possessives - My.csv")).toBe("🤲");
+    expect(levelEmoji("07 Fruits and Vegetables.csv")).toBe("🥕");
+    expect(levelEmoji("11 Continuous Present 01.csv")).toBe("⏳");
+    expect(levelEmoji("13 Animals.csv")).toBe("🐾");
+    expect(levelEmoji("15 Family.csv")).toBe("👪");
   });
 });
 
@@ -49,9 +61,31 @@ describe("medalTier", () => {
 describe("levelOffset", () => {
   it("snakes and repeats every eight levels", () => {
     expect(levelOffset(0)).toBe(0);
-    expect(levelOffset(2)).toBe(74);
-    expect(levelOffset(6)).toBe(-74);
+    expect(levelOffset(2)).toBe(118);
+    expect(levelOffset(6)).toBe(-118);
     expect(levelOffset(8)).toBe(levelOffset(0));
+  });
+});
+
+describe("stage helpers", () => {
+  it("groups levels into stages of ten", () => {
+    expect(stageNumber(0)).toBe(1);
+    expect(stageNumber(9)).toBe(1);
+    expect(stageNumber(10)).toBe(2);
+    expect(stageNumber(59)).toBe(6);
+  });
+
+  it("cycles palette every six stages", () => {
+    expect(stagePaletteIndex(0)).toBe(0);
+    expect(stagePaletteIndex(59)).toBe(5);
+    expect(stagePaletteIndex(60)).toBe(0);
+    expect(stageClass(60)).toBe("stage-0");
+  });
+
+  it("labels stage dividers", () => {
+    expect(stageDividerLabel(1)).toBe("Stage 1: Getting Started");
+    expect(stageDividerLabel(2)).toBe("Stage 2");
+    expect(stageDividerLabel(8)).toBe("Stage 8");
   });
 });
 

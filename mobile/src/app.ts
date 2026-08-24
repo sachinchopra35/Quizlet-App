@@ -1,6 +1,7 @@
 import { BEAST_MODE_SELECTION, directionFromStyle } from "./config";
 import {
   ensureAudioUnlock,
+  playButtonClick,
   playChime,
   playConfetti,
   speakText,
@@ -128,6 +129,9 @@ export class VocabApp {
       onDismissCompletion: () => {
         this.completion = null;
         this.render();
+      },
+      onButtonPress: () => {
+        if (!this.state.audioMuted) playButtonClick();
       },
     });
   }

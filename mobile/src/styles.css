@@ -26,7 +26,7 @@ body {
 }
 
 #app {
-  max-width: 32rem;
+  max-width: 36rem;
   margin: 0 auto;
   padding: 1rem 1rem 2rem;
 }
@@ -276,19 +276,47 @@ button.primary {
   z-index: 5;
   background: #0e1117;
   padding: 0.25rem 0 0.75rem;
+  text-align: center;
 }
 
 .map-header h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
 .level-map {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.15rem;
+  gap: 1.65rem;
   padding: 0.5rem 0 3rem;
+}
+
+.stage-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.stage-divider:first-child {
+  margin-top: 0;
+}
+
+.stage-divider-line {
+  flex: 1;
+  height: 1px;
+  background: #3d4450;
+}
+
+.stage-divider-label {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+  white-space: nowrap;
 }
 
 .level-slot {
@@ -308,13 +336,14 @@ button.primary {
 .level-node {
   --node-face: #4aa3f0;
   --node-shade: #2b73b3;
-  width: 4.25rem;
-  height: 4.25rem;
+  --node-depth: 9px;
+  width: 5.25rem;
+  height: 5.25rem;
   padding: 0;
   border: none;
   border-radius: 50%;
   background: var(--node-face);
-  box-shadow: 0 6px 0 var(--node-shade);
+  box-shadow: 0 var(--node-depth) 0 var(--node-shade);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,18 +357,48 @@ button.primary {
 }
 
 .level-node.is-pressed {
-  transform: translateY(5px);
+  transform: translateY(calc(var(--node-depth) - 1px));
   box-shadow: 0 1px 0 var(--node-shade);
 }
 
 .level-emoji {
-  font-size: 1.9rem;
+  font-size: 2.25rem;
   line-height: 1;
 }
 
 .level-score {
   font-size: 0.75rem;
   opacity: 0.7;
+}
+
+.level-node.stage-0 {
+  --node-face: #4a9e38;
+  --node-shade: #3a7a2c;
+}
+
+.level-node.stage-1 {
+  --node-face: #4aa3f0;
+  --node-shade: #2b73b3;
+}
+
+.level-node.stage-2 {
+  --node-face: #9b59f5;
+  --node-shade: #6b3fc9;
+}
+
+.level-node.stage-3 {
+  --node-face: #2ec4b6;
+  --node-shade: #1a8f85;
+}
+
+.level-node.stage-4 {
+  --node-face: #f472b6;
+  --node-shade: #be3d82;
+}
+
+.level-node.stage-5 {
+  --node-face: #6366f1;
+  --node-shade: #4338ca;
 }
 
 .level-node.tier-bronze {

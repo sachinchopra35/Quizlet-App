@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +7,11 @@ const src = join(root, "punjabi_vocab");
 const dest = join(dirname(fileURLToPath(import.meta.url)), "../public/data");
 
 mkdirSync(dest, { recursive: true });
+for (const name of readdirSync(dest)) {
+  if (name.endsWith(".csv")) {
+    rmSync(join(dest, name));
+  }
+}
 const names = [];
 for (const name of readdirSync(src)) {
   if (name.endsWith(".csv")) {

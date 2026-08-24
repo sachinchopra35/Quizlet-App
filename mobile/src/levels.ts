@@ -5,12 +5,20 @@ export type LevelTier = "blue" | "bronze" | "silver" | "gold" | "goldstar";
 /** Keyword to emoji. Longest / most specific keys first — first match wins. */
 const EMOJI_RULES: [string, string][] = [
   ["living room", "🛋️"],
+  ["fruits and vegetables", "🥕"],
+  ["adjective and noun", "🧩"],
+  ["continuous present", "⏳"],
+  ["body basics", "👤"],
+  ["common things", "🏠"],
+  ["possessives", "🤲"],
   ["numbers", "🔢"],
   ["colours", "🎨"],
   ["kitchen", "🍳"],
   ["bathroom", "🛁"],
   ["room", "🛏️"],
   ["nature", "🌳"],
+  ["animals", "🐾"],
+  ["family", "👪"],
   ["gym", "💪"],
   ["exercise", "💪"],
   ["body", "🧍"],
@@ -76,11 +84,34 @@ export function medalTier(medal: string | null | undefined): LevelTier {
 }
 
 /** Horizontal offsets (px) that make the level column snake down the page. */
-const SERPENTINE_OFFSETS = [0, 44, 74, 44, 0, -44, -74, -44];
+const SERPENTINE_OFFSETS = [0, 70, 118, 70, 0, -70, -118, -70];
 
 export function levelOffset(index: number): number {
   const n = SERPENTINE_OFFSETS.length;
   return SERPENTINE_OFFSETS[((index % n) + n) % n]!;
+}
+
+const STAGE_SIZE = 10;
+const STAGE_PALETTE_COUNT = 6;
+
+/** 1-based stage number for labels (Stage 1, Stage 2, …). */
+export function stageNumber(index: number): number {
+  return Math.floor(index / STAGE_SIZE) + 1;
+}
+
+/** 0-based palette slot, cycling every 6 stages. */
+export function stagePaletteIndex(index: number): number {
+  return Math.floor(index / STAGE_SIZE) % STAGE_PALETTE_COUNT;
+}
+
+/** CSS class for an unplayed level's stage colour. */
+export function stageClass(index: number): string {
+  return `stage-${stagePaletteIndex(index)}`;
+}
+
+export function stageDividerLabel(stageNum: number): string {
+  if (stageNum === 1) return "Stage 1: Getting Started";
+  return `Stage ${stageNum}`;
 }
 
 /** Fraction of the round cleared, 0..1. Wrong cards go back on the queue. */
