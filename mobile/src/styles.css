@@ -267,3 +267,247 @@ button.primary {
   color: #ff6b6b;
   font-size: 0.9rem;
 }
+
+/* ---------- Level map ---------- */
+
+.map-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #0e1117;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.map-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.level-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15rem;
+  padding: 0.5rem 0 3rem;
+}
+
+.level-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.map-divider {
+  width: 60%;
+  height: 1px;
+  background: #2a303a;
+  margin: 1.25rem 0;
+}
+
+.level-node {
+  --node-face: #4aa3f0;
+  --node-shade: #2b73b3;
+  width: 4.25rem;
+  height: 4.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--node-face);
+  box-shadow: 0 6px 0 var(--node-shade);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.06s ease-out,
+    box-shadow 0.06s ease-out;
+}
+
+.level-node.is-pressed {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--node-shade);
+}
+
+.level-emoji {
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.level-score {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.level-node.tier-bronze {
+  --node-face: #cd7f32;
+  --node-shade: #8c5420;
+}
+
+.level-node.tier-silver {
+  --node-face: #c3ccd8;
+  --node-shade: #8b94a3;
+}
+
+.level-node.tier-gold {
+  --node-face: #f0c02e;
+  --node-shade: #b3871a;
+}
+
+.level-node.tier-goldstar {
+  --node-face: #ffe066;
+  --node-shade: #d9a520;
+}
+
+.level-node.level-beast {
+  --node-face: #f2683c;
+  --node-shade: #b0431f;
+}
+
+/* ---------- Popups ---------- */
+
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.popup {
+  width: 100%;
+  max-width: 22rem;
+  background: #1a1f28;
+  border: 1px solid #3d4450;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.popup-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.icon-button {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.4rem;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.popup-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #2a303a;
+}
+
+.popup-settings .segmented {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.popup-settings .segmented button {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 0.55rem 0.4rem;
+}
+
+.popup-settings .segmented button.active {
+  border-color: var(--accent-border);
+  outline: 1px solid var(--accent-border);
+  background: rgba(91, 159, 212, 0.15);
+}
+
+.word-scroll {
+  max-height: 12rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.popup-start {
+  width: 100%;
+  margin-top: 0.85rem;
+  box-shadow: 0 4px 0 #2b73b3;
+  transition:
+    transform 0.06s ease-out,
+    box-shadow 0.06s ease-out;
+}
+
+.popup-start.is-pressed {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #2b73b3;
+}
+
+.popup-complete {
+  text-align: center;
+}
+
+.complete-medal {
+  font-size: 3.25rem;
+  line-height: 1.1;
+  animation: medal-pop 0.55s ease-out;
+  display: inline-block;
+}
+
+.complete-score {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.35rem 0 0.25rem;
+}
+
+/* ---------- Quiz screen ---------- */
+
+.quiz-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 70vh;
+}
+
+.quiz-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.progress-track {
+  flex: 1;
+  height: 1rem;
+  border-radius: 999px;
+  background: #262b36;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #58cc02;
+  transition: width 0.3s ease-out;
+}
+
+.quiz-body .prompt {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0.5rem 0 1.25rem;
+}

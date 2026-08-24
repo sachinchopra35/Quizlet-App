@@ -15,7 +15,11 @@ export interface Medal {
   label: string;
 }
 
+export type Screen = "map" | "quiz";
+
 export interface QuizState {
+  screen: Screen;
+  levelMedals: Record<string, Medal>;
   vocabRows: VocabRow[];
   queue: number[];
   firstAttemptOk: Record<number, boolean | null>;
@@ -37,6 +41,8 @@ export interface QuizState {
 
 export function createInitialState(): QuizState {
   return {
+    screen: "map",
+    levelMedals: {},
     vocabRows: [],
     queue: [],
     firstAttemptOk: {},
@@ -87,6 +93,7 @@ export function startRound(
       [...Array(n).keys()].map((i) => [i, null as boolean | null]),
     ),
     roundActive: true,
+    screen: "quiz",
     beastMode: false,
     lastFeedback: null,
     feedbackSoundGen: 0,
@@ -131,7 +138,9 @@ export function recordRoundMedal(state: QuizState, correct: number, total: numbe
     emoji: medalForRound(correct, total),
     label: `${correct}/${total}`,
   };
-  return { ...state, roundMedals: [...state.roundMedals, medal] };
+  const levelMedals = { ...state.levelMedals };
+  if (state.selectedCsv) levelMedals[state.selectedCsv] = medal;
+  return { ...state, roundMedals: [...state.roundMedals, medal], levelMedals };
 }
 
 export function processAnswer(state: QuizState, userText: string): QuizState {
@@ -176,6 +185,7 @@ export function completeRoundNaturally(state: QuizState): QuizState {
   return {
     ...withMedal,
     roundActive: false,
+    screen: "map",
     beastMode: false,
     lastFeedback: null,
     roundMessage: `Round complete. First-try accuracy: ${c} / ${t} (${pct.toFixed(1)}%).`,
@@ -189,6 +199,7 @@ export function stopRoundEarly(state: QuizState): QuizState {
   return {
     ...state,
     roundActive: false,
+    screen: "map",
     beastMode: false,
     queue: [],
     lastFeedback: null,
