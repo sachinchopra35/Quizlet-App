@@ -1,6 +1,17 @@
 import { BEAST_MODE_SELECTION, STYLE_FROM_EN, STYLE_TO_EN } from "./config";
-import { escapeAttr, escapeHtml } from "./html";
-import { BEAST_LEVEL_EMOJI, levelEmoji, levelOffset, medalTier, stageClass, stageDividerLabel, stageNumber } from "./levels";
+import { courseFooterHtml, escapeAttr, escapeHtml } from "./html";
+import { introPanelBodyHtml } from "./introContent";
+import {
+  BEAST_LEVEL_EMOJI,
+  courseGoldProgress,
+  levelEmoji,
+  levelLandmark,
+  levelOffset,
+  medalTier,
+  stageClass,
+  stageDividerLabel,
+  stageNumber,
+} from "./levels";
 import type { Medal } from "./rounds";
 import type { VocabRow } from "./vocab";
 
@@ -14,16 +25,21 @@ export interface MapViewModel {
   csvNames: string[];
   levelMedals: Record<string, Medal>;
   popupCsv: string | null;
+  popupOrigin: { x: number; y: number } | null;
+  popupAnimate: boolean;
   gearOpen: boolean;
   questionStyle: string;
   audioMuted: boolean;
   popupRows: VocabRow[];
   completion: CompletionSummary | null;
+  infoOpen: boolean;
 }
 
 export interface MapHandlers {
-  onOpenLevel(csv: string): void;
+  onOpenLevel(csv: string, origin: { x: number; y: number }): void;
   onClosePopup(): void;
+  onOpenInfo(): void;
+  onCloseInfo(): void;
   onToggleGear(): void;
   onSetStyle(style: string): void;
   onToggleMute(muted: boolean): void;
@@ -42,6 +58,13 @@ function nodeColorClass(index: number, medal: Medal | undefined): string {
   return stageClass(index);
 }
 
+function landmarkHtml(index: number, beast: boolean): string {
+  if (beast) return "";
+  const landmark = levelLandmark(index);
+  if (!landmark) return "";
+  return `<span class="level-landmark landmark-${landmark.side}" aria-hidden="true">${landmark.emoji}</span>`;
+}
+
 function nodeHtml(csv: string, index: number, medal: Medal | undefined, beast: boolean): string {
   const colorClass = beast ? "" : nodeColorClass(index, medal);
   const emoji = beast ? BEAST_LEVEL_EMOJI : levelEmoji(csv);
@@ -51,6 +74,7 @@ function nodeHtml(csv: string, index: number, medal: Medal | undefined, beast: b
   const beastClass = beast ? " level-beast" : "";
   return `
     <div class="level-slot" style="transform: translateX(${offset}px)">
+      ${landmarkHtml(index, beast)}
       <button
         type="button"
         class="level-node ${colorClass}${beastClass}"
@@ -105,11 +129,21 @@ function wordListHtml(vm: MapViewModel): string {
   return `<details class="expander"><summary>Show words list</summary><div class="word-scroll"><table class="word-table">${rows}</table></div></details>`;
 }
 
+function popupPanelAttrs(vm: MapViewModel): string {
+  const classes = ["popup"];
+  if (vm.popupAnimate) classes.push("popup-open");
+  if (!vm.popupOrigin) return `class="${classes.join(" ")}"`;
+  const dx = Math.round(vm.popupOrigin.x - window.innerWidth / 2);
+  const dy = Math.round(vm.popupOrigin.y - window.innerHeight / 2);
+  return `class="${classes.join(" ")}" style="--pop-dx: ${dx}px; --pop-dy: ${dy}px"`;
+}
+
 function popupHtml(vm: MapViewModel): string {
   if (!vm.popupCsv) return "";
+  const backdropClass = vm.popupAnimate ? "popup-backdrop backdrop-open" : "popup-backdrop";
   return `
-    <div class="popup-backdrop" id="popup-backdrop">
-      <div class="popup" role="dialog" aria-modal="true">
+    <div class="${backdropClass}" id="popup-backdrop">
+      <div ${popupPanelAttrs(vm)} role="dialog" aria-modal="true">
         <div class="popup-head">
           <h2>${escapeHtml(levelLabel(vm.popupCsv))}</h2>
           <button type="button" class="icon-button" id="popup-gear" aria-label="Settings">⚙️</button>
@@ -137,11 +171,34 @@ function completionHtml(vm: MapViewModel): string {
   `;
 }
 
+function infoPanelHtml(vm: MapViewModel): string {
+  if (!vm.infoOpen) return "";
+  return `
+    <div class="popup-backdrop" id="info-backdrop">
+      <div class="info-panel" role="dialog" aria-modal="true" aria-label="About this app">
+        <button type="button" class="icon-button info-close" id="info-close" aria-label="Close">×</button>
+        <div class="info-scroll">
+          <div class="info-hero" aria-hidden="true">💡</div>
+          <div class="info-body">
+            ${introPanelBodyHtml()}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function mapHtml(vm: MapViewModel): string {
   const levels = levelsHtml(vm.csvNames, vm.levelMedals);
   const beast = nodeHtml(BEAST_MODE_SELECTION, 0, vm.levelMedals[BEAST_MODE_SELECTION], true);
   return `
-    <header class="map-header"><h1>Learn Punjabi</h1></header>
+    <header class="map-header">
+      <div class="map-header-row">
+        <span class="map-header-spacer" aria-hidden="true"></span>
+        <h1>Learn Punjabi</h1>
+        <button type="button" class="info-button" id="map-info" aria-label="About this app">i</button>
+      </div>
+    </header>
     <div class="level-map">
       ${levels}
       <div class="map-divider"></div>
@@ -149,6 +206,8 @@ export function mapHtml(vm: MapViewModel): string {
     </div>
     ${popupHtml(vm)}
     ${completionHtml(vm)}
+    ${infoPanelHtml(vm)}
+    ${courseFooterHtml(courseGoldProgress(vm.csvNames, vm.levelMedals))}
   `;
 }
 
@@ -169,7 +228,11 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLElement>(".level-node").forEach((node) => {
     bindPressFeedback(node, handlers.onButtonPress);
     node.addEventListener("click", () => {
-      handlers.onOpenLevel(node.dataset.csv!);
+      const r = node.getBoundingClientRect();
+      handlers.onOpenLevel(node.dataset.csv!, {
+        x: r.left + r.width / 2,
+        y: r.top + r.height / 2,
+      });
     });
   });
 
@@ -198,5 +261,18 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
 
   root.querySelector("#completion-close")?.addEventListener("click", () => {
     handlers.onDismissCompletion();
+  });
+
+  root.querySelector("#map-info")?.addEventListener("click", () => {
+    handlers.onOpenInfo();
+  });
+
+  const infoBackdrop = root.querySelector<HTMLElement>("#info-backdrop");
+  infoBackdrop?.addEventListener("click", (e) => {
+    if (e.target === infoBackdrop) handlers.onCloseInfo();
+  });
+
+  root.querySelector("#info-close")?.addEventListener("click", () => {
+    handlers.onCloseInfo();
   });
 }

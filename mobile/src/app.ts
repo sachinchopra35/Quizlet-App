@@ -4,6 +4,7 @@ import {
   playButtonClick,
   playChime,
   playConfetti,
+  stopSpeech,
   speakText,
   speakWrongThenQuestion,
 } from "./audio";
@@ -36,8 +37,12 @@ export class VocabApp {
   private csvCache = new Map<string, VocabRow[]>();
   private root: HTMLElement;
   private popupCsv: string | null = null;
+  private popupOrigin: { x: number; y: number } | null = null;
+  private popupAnimate = false;
   private gearOpen = false;
+  private infoOpen = false;
   private completion: CompletionSummary | null = null;
+  private scrollToLevelCsv: string | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -93,22 +98,42 @@ export class VocabApp {
       csvNames: this.state.csvNames,
       levelMedals: this.state.levelMedals,
       popupCsv: this.popupCsv,
+      popupOrigin: this.popupOrigin,
+      popupAnimate: this.popupAnimate,
       gearOpen: this.gearOpen,
       questionStyle: this.state.questionStyle,
       audioMuted: this.state.audioMuted,
       popupRows: this.rowsFor(this.popupCsv),
       completion: this.completion,
+      infoOpen: this.infoOpen,
     };
 
     this.root.innerHTML = mapHtml(vm);
     bindMapEvents(this.root, {
-      onOpenLevel: (csv) => {
+      onOpenLevel: (csv, origin) => {
         this.popupCsv = csv;
         this.gearOpen = false;
-        this.setState({ ...this.state, selectedCsv: csv });
+        this.infoOpen = false;
+        this.popupOrigin = origin;
+        this.popupAnimate = true;
+        this.state = { ...this.state, selectedCsv: csv };
+        this.renderMap();
+        this.popupAnimate = false;
       },
       onClosePopup: () => {
         this.popupCsv = null;
+        this.popupOrigin = null;
+        this.render();
+      },
+      onOpenInfo: () => {
+        this.popupCsv = null;
+        this.popupOrigin = null;
+        this.gearOpen = false;
+        this.infoOpen = true;
+        this.render();
+      },
+      onCloseInfo: () => {
+        this.infoOpen = false;
         this.render();
       },
       onToggleGear: () => {
@@ -134,6 +159,19 @@ export class VocabApp {
         if (!this.state.audioMuted) playButtonClick();
       },
     });
+
+    if (this.scrollToLevelCsv) {
+      const csv = this.scrollToLevelCsv;
+      this.scrollToLevelCsv = null;
+      requestAnimationFrame(() => this.scrollToLevel(csv));
+    }
+  }
+
+  private scrollToLevel(csv: string): void {
+    const node = this.root.querySelector<HTMLElement>(
+      `.level-node[data-csv="${CSS.escape(csv)}"]`,
+    );
+    node?.scrollIntoView({ block: "center", behavior: "auto" });
   }
 
   private startSelectedRound(): void {
@@ -141,6 +179,7 @@ export class VocabApp {
     if (!name) return;
     this.popupCsv = null;
     this.completion = null;
+    this.scrollToLevelCsv = name;
     const direction = this.state.direction;
     if (name === BEAST_MODE_SELECTION) {
       const combined = loadCombinedFromMap(this.csvCache);
@@ -161,6 +200,10 @@ export class VocabApp {
     bindQuizEvents(this.root, {
       onQuit: () => this.setState(stopRoundEarly(this.state)),
       onSubmit: (guess) => this.setState(processAnswer(this.state, guess)),
+      onToggleMute: (muted) => {
+        if (muted) stopSpeech();
+        this.setState({ ...this.state, audioMuted: muted });
+      },
     });
 
     requestAnimationFrame(() => {

@@ -119,6 +119,15 @@ export function playChime(kind: "correct" | "wrong"): void {
   }
 }
 
+export function stopSpeech(): void {
+  const synth = window.speechSynthesis;
+  if (speakDelayTimer) {
+    clearTimeout(speakDelayTimer);
+    speakDelayTimer = null;
+  }
+  synth?.cancel();
+}
+
 export function speakText(
   text: string,
   opts?: { lang?: string; rate?: number; delayMs?: number },

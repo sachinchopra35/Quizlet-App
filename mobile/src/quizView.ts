@@ -1,10 +1,11 @@
-import { escapeHtml } from "./html";
-import { roundProgress } from "./levels";
+import { courseFooterHtml, escapeHtml } from "./html";
+import { courseGoldProgress, roundProgress } from "./levels";
 import { currentRowIndex, type QuizState } from "./rounds";
 
 export interface QuizHandlers {
   onQuit(): void;
   onSubmit(guess: string): void;
+  onToggleMute(muted: boolean): void;
 }
 
 export interface QuizPrompt {
@@ -33,9 +34,20 @@ export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
 
   return `
     <div class="quiz-screen">
-      <div class="quiz-top">
-        <button type="button" class="icon-button" id="quiz-quit" aria-label="Quit round">←</button>
-        <div class="progress-track"><div class="progress-fill" style="width: ${pct}%"></div></div>
+      <div class="quiz-header">
+        <div class="quiz-top">
+          <button type="button" class="icon-button" id="quiz-quit" aria-label="Quit round">←</button>
+          <div class="progress-track"><div class="progress-fill" style="width: ${pct}%"></div></div>
+        </div>
+        <div class="quiz-mute-row">
+          <button
+            type="button"
+            class="icon-button"
+            id="quiz-mute"
+            aria-label="Mute audio"
+            aria-pressed="${state.audioMuted ? "true" : "false"}"
+          >${state.audioMuted ? "🔇" : "🔊"}</button>
+        </div>
       </div>
       <div class="quiz-body">
         ${feedbackHtml}
@@ -49,17 +61,25 @@ export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
             autocapitalize="off"
             autocorrect="off"
             spellcheck="false"
+            enterkeyhint="go"
             placeholder="Your answer"
           />
           <button type="submit" class="primary">Check</button>
         </form>
       </div>
     </div>
+    ${courseFooterHtml(courseGoldProgress(state.csvNames, state.levelMedals))}
   `;
 }
 
 export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void {
   root.querySelector("#quiz-quit")?.addEventListener("click", () => handlers.onQuit());
+
+  root.querySelector("#quiz-mute")?.addEventListener("click", () => {
+    const btn = root.querySelector<HTMLButtonElement>("#quiz-mute");
+    if (!btn) return;
+    handlers.onToggleMute(btn.getAttribute("aria-pressed") !== "true");
+  });
 
   root.querySelector("#answer-form")?.addEventListener("submit", (e) => {
     e.preventDefault();

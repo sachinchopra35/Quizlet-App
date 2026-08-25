@@ -1000,5 +1000,81 @@ class TestAnswersMatch(unittest.TestCase):
         )
 
 
+class TestLanguageTweakCanonicals(unittest.TestCase):
+    def test_doggy_and_kutta(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("mera kutta"),
+            canonicalize_punjabi("mera doggy"),
+        )
+
+    def test_cow_ga_gan_gay_gaye(self) -> None:
+        self.assertEqual(canonicalize_punjabi("ik gan"), canonicalize_punjabi("ik ga"))
+        self.assertEqual(canonicalize_punjabi("ik gay"), canonicalize_punjabi("ik ga"))
+        self.assertEqual(canonicalize_punjabi("ohdi gaye"), canonicalize_punjabi("ohdi ga"))
+        self.assertNotEqual(
+            canonicalize_punjabi("meriyan akhhan thak gayan"),
+            canonicalize_punjabi("ik ga"),
+        )
+
+    def test_nose_nak_nakh_nakk(self) -> None:
+        self.assertEqual(canonicalize_punjabi("mera nak"), canonicalize_punjabi("mera nakk"))
+        self.assertEqual(canonicalize_punjabi("mera nakh"), canonicalize_punjabi("mera nakk"))
+
+    def test_rice_chawal_chawl_chaul(self) -> None:
+        self.assertEqual(canonicalize_punjabi("chawal"), canonicalize_punjabi("chawl"))
+        self.assertEqual(canonicalize_punjabi("chaul"), canonicalize_punjabi("chawl"))
+
+    def test_past_copula_si_sige_siga_san(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("main thaka siga"),
+            canonicalize_punjabi("main thaka si"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("main thaka san"),
+            canonicalize_punjabi("main thaka si"),
+        )
+        self.assertNotEqual(
+            canonicalize_punjabi("oh darwaze te sige"),
+            canonicalize_punjabi("oh darwaze te san"),
+        )
+        self.assertFalse(
+            answers_match("oh darwaze te san", "oh darwaze te sige", punjabi=True),
+        )
+
+    def test_houga_hoga_and_kharidlya(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("eh aukha hoga"),
+            canonicalize_punjabi("eh aukha houga"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("ohne apne aap kharidlya"),
+            canonicalize_punjabi("ohne apne aap kharidya"),
+        )
+
+    def test_optional_leading_ki_on_questions(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("ki oh othe si"),
+            canonicalize_punjabi("oh othe si"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("ki kar leya"),
+            canonicalize_punjabi("kar leya"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("kithe hai"),
+            canonicalize_punjabi("kithe hai"),
+        )
+
+    def test_gai_in_ho_gya_family(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("der ho gai"),
+            canonicalize_punjabi("der ho gayi"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("kyunki der ho gai"),
+            canonicalize_punjabi("kyunki der ho gayi"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

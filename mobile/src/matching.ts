@@ -5,6 +5,11 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["mez", "table"],
   ["garam", "garm"],
   ["nakaro", "nakar"],
+  ["kharidlya", "kharidya"],
+  ["chawal", "chawl"],
+  ["chaul", "chawl"],
+  ["kutta", "doggy"],
+  ["hoga", "houga"],
   ["liya", "leya"],
   ["liyi", "leya"],
   ["leyi", "leya"],
@@ -14,7 +19,7 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["eh", "oh"],
 ];
 
-const GYA_FORM_VARIANTS = ["gayi", "gaye", "gaya", "gyi", "gye"] as const;
+const GYA_FORM_VARIANTS = ["gayi", "gaye", "gaya", "gai", "gyi", "gye"] as const;
 const PROGRESSIVE_PLURAL_AUX_MARKERS = [
   "rahehan",
   "rahehain",
@@ -74,6 +79,9 @@ const TUADA_BEFORE_KOL_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?[aei](?=kol)/g;
 const TUADE_OBLIQUE_RE = /t(?:h)?u(?:h|s(?:i)?)?a(?:d)?h?e/g;
 const WAIT_WORD_RE = /intezaa?r/g;
 const OPTIONAL_SUBJECT_PREFIXES = ["tusi", "main", "asi"] as const;
+const KI_QUESTION_BLOCKLIST = ["kithe", "kitthe", "kivein", "kinvein", "kinne"] as const;
+const COW_GAN_GAY_RE = /\b(?:gan|gay)\b/gi;
+const COW_GAYE_POSSESSIVE_RE = /\b(ik|ohdi|meri|ohda|mera|ohde) gaye\b/gi;
 
 function stripOptionalTrailingHun(s: string): string {
   return s.endsWith("hun") ? s.slice(0, -3) : s;
@@ -89,6 +97,30 @@ function stripOptionalSubjectPrefix(s: string): string {
     }
   }
   return s;
+}
+
+function stripOptionalQuestionKiRaw(s: string): string {
+  const trimmed = s.trim();
+  if (!/^ki(\s|$)/i.test(trimmed)) return s;
+  const afterKi = trimmed.replace(/^ki\s*/i, "");
+  const lower = afterKi.toLowerCase();
+  for (const blocked of KI_QUESTION_BLOCKLIST) {
+    if (lower.startsWith(blocked)) return s;
+  }
+  return afterKi;
+}
+
+function normalizeCowWordsRaw(s: string): string {
+  s = s.replace(COW_GAYE_POSSESSIVE_RE, "$1 ga");
+  return s.replace(COW_GAN_GAY_RE, "ga");
+}
+
+function normalizeDoggyKutta(s: string): string {
+  return s.split("kutta").join("doggy").split("kuta").join("doggy");
+}
+
+function normalizeNoseNakk(s: string): string {
+  return s.replace(/nakh/g, "nakk").replace(/nak(?!k)/g, "nakk");
 }
 
 function normalizePluralAuxiliary(s: string): string {
@@ -250,6 +282,13 @@ function normalizeGyaForms(s: string): string {
   return s;
 }
 
+function normalizePastCopula(s: string): string {
+  if (s.endsWith("sige")) return s;
+  if (s.endsWith("siga")) return `${s.slice(0, -4)}si`;
+  if (s.endsWith("san")) return `${s.slice(0, -3)}si`;
+  return s;
+}
+
 function normalizeProgressiveParticiple(s: string): string {
   s = s.split("rehi").join("rahi");
   s = s.split("rehe").join("rahe");
@@ -286,6 +325,8 @@ export function canonicalizePunjabi(s: string): string {
   let t = (s || "").trim();
   t = t.replace(I_AM_SUFFIX_RAW_RE, "hun");
   t = normalizeCopulaRaw(t);
+  t = stripOptionalQuestionKiRaw(t);
+  t = normalizeCowWordsRaw(t);
   t = stripForCompare(t);
   t = normalizeConditionals(t);
   t = normalizeChahnaTusi(t);
@@ -300,6 +341,7 @@ export function canonicalizePunjabi(s: string): string {
   t = normalizeImperativeKar(t);
   t = normalizeBaithSitting(t);
   t = normalizeGyaForms(t);
+  t = normalizePastCopula(t);
   t = normalizeProgressiveParticiple(t);
   t = t.split("tenu").join("thuanu");
   t = t.split("tainu").join("thuanu");
@@ -308,6 +350,7 @@ export function canonicalizePunjabi(s: string): string {
   t = t.replace(WAIT_WORD_RE, "udeek");
   t = t.split("taiyaar").join("tyaar");
   t = normalizePluralAuxiliary(t);
+  t = normalizeDoggyKutta(t);
   t = collapseDoubledLetters(t);
   t = t.replace(TUADA_BEFORE_KOL_RE, "tuade");
   t = t.replace(TUADE_OBLIQUE_RE, "tuade");
@@ -316,6 +359,7 @@ export function canonicalizePunjabi(s: string): string {
   for (const [variant, canonical] of PUNJABI_SUBSTRING_CANONICALS) {
     t = t.split(variant).join(canonical);
   }
+  t = normalizeNoseNakk(t);
   t = translatePunjabiChars(t);
   t = normalizeBajeTimeAuxiliary(t);
   t = t.replace(/lo$/, "o");

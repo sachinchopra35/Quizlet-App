@@ -324,6 +324,70 @@ describe("canonicalizePunjabi", () => {
   });
 });
 
+describe("language tweak canonicals", () => {
+  it("doggy and kutta", () => {
+    expect(canonicalizePunjabi("mera kutta")).toBe(canonicalizePunjabi("mera doggy"));
+  });
+
+  it("cow ga gan gay gaye", () => {
+    expect(canonicalizePunjabi("ik gan")).toBe(canonicalizePunjabi("ik ga"));
+    expect(canonicalizePunjabi("ik gay")).toBe(canonicalizePunjabi("ik ga"));
+    expect(canonicalizePunjabi("ohdi gaye")).toBe(canonicalizePunjabi("ohdi ga"));
+    expect(canonicalizePunjabi("meriyan akhhan thak gayan")).not.toBe(
+      canonicalizePunjabi("ik ga"),
+    );
+  });
+
+  it("nose nak nakh nakk", () => {
+    expect(canonicalizePunjabi("mera nak")).toBe(canonicalizePunjabi("mera nakk"));
+    expect(canonicalizePunjabi("mera nakh")).toBe(canonicalizePunjabi("mera nakk"));
+  });
+
+  it("rice chawal chawl chaul", () => {
+    expect(canonicalizePunjabi("chawal")).toBe(canonicalizePunjabi("chawl"));
+    expect(canonicalizePunjabi("chaul")).toBe(canonicalizePunjabi("chawl"));
+  });
+
+  it("past copula si sige siga san", () => {
+    expect(canonicalizePunjabi("main thaka siga")).toBe(
+      canonicalizePunjabi("main thaka si"),
+    );
+    expect(canonicalizePunjabi("main thaka san")).toBe(
+      canonicalizePunjabi("main thaka si"),
+    );
+    expect(canonicalizePunjabi("oh darwaze te sige")).not.toBe(
+      canonicalizePunjabi("oh darwaze te san"),
+    );
+    expect(answersMatch("oh darwaze te san", "oh darwaze te sige", true)).toBe(false);
+  });
+
+  it("houga hoga and kharidlya", () => {
+    expect(canonicalizePunjabi("eh aukha hoga")).toBe(
+      canonicalizePunjabi("eh aukha houga"),
+    );
+    expect(canonicalizePunjabi("ohne apne aap kharidlya")).toBe(
+      canonicalizePunjabi("ohne apne aap kharidya"),
+    );
+  });
+
+  it("optional leading ki on questions", () => {
+    expect(canonicalizePunjabi("ki oh othe si")).toBe(
+      canonicalizePunjabi("oh othe si"),
+    );
+    expect(canonicalizePunjabi("ki kar leya")).toBe(canonicalizePunjabi("kar leya"));
+    expect(canonicalizePunjabi("kithe hai")).toBe(canonicalizePunjabi("kithe hai"));
+  });
+
+  it("gai in ho gya family", () => {
+    expect(canonicalizePunjabi("der ho gai")).toBe(
+      canonicalizePunjabi("der ho gayi"),
+    );
+    expect(canonicalizePunjabi("kyunki der ho gai")).toBe(
+      canonicalizePunjabi("kyunki der ho gayi"),
+    );
+  });
+});
+
 describe("answersMatch", () => {
   it("punjabi canonical rules", () => {
     expect(answersMatch("ohnu dekho", "ehnu dekho", true)).toBe(true);

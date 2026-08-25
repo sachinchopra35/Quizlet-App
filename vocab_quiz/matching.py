@@ -9,6 +9,11 @@ PUNJABI_SUBSTRING_CANONICALS = (
     ("mez", "table"),
     ("garam", "garm"),
     ("nakaro", "nakar"),
+    ("kharidlya", "kharidya"),
+    ("chawal", "chawl"),
+    ("chaul", "chawl"),
+    ("kutta", "doggy"),
+    ("hoga", "houga"),
     ("liya", "leya"),
     ("liyi", "leya"),
     ("leyi", "leya"),
@@ -18,7 +23,7 @@ PUNJABI_SUBSTRING_CANONICALS = (
     ("eh", "oh"),
 )
 # Past participle / ho gya family — longest first (gayi before gyi).
-GYA_FORM_VARIANTS = ("gayi", "gaye", "gaya", "gyi", "gye")
+GYA_FORM_VARIANTS = ("gayi", "gaye", "gaya", "gai", "gyi", "gye")
 PROGRESSIVE_PLURAL_AUX_MARKERS = ("rahehan", "rahehain", "rahene", "baithyehan", "baithyene")
 PUNJABI_CHAR_CANONICAL = str.maketrans("rR", "dd")
 I_AM_SUFFIX_RAW_RE = re.compile(r"(hoon|hoo|hun|hu)\s*$", re.IGNORECASE)
@@ -78,6 +83,11 @@ DRINK_PEE_PI = (
 CHAI_TEA_RE = re.compile(r"chai(?!d)")
 WAIT_WORD_RE = re.compile(r"intezaa?r")
 OPTIONAL_SUBJECT_PREFIXES = ("tusi", "main", "asi")
+KI_QUESTION_BLOCKLIST = ("kithe", "kitthe", "kivein", "kinvein", "kinne")
+COW_GAN_GAY_RE = re.compile(r"\b(?:gan|gay)\b", re.IGNORECASE)
+COW_GAYE_POSSESSIVE_RE = re.compile(
+    r"\b(ik|ohdi|meri|ohda|mera|ohde) gaye\b", re.IGNORECASE
+)
 
 
 def _strip_optional_trailing_hun(s: str) -> str:
@@ -93,6 +103,32 @@ def _strip_optional_subject_prefix(s: str) -> str:
                 continue
             return s[len(prefix) :]
     return s
+
+
+def _strip_optional_question_ki_raw(s: str) -> str:
+    trimmed = s.strip()
+    if not re.match(r"^ki(\s|$)", trimmed, re.IGNORECASE):
+        return s
+    after_ki = re.sub(r"^ki\s*", "", trimmed, flags=re.IGNORECASE)
+    lower = after_ki.casefold()
+    for blocked in KI_QUESTION_BLOCKLIST:
+        if lower.startswith(blocked):
+            return s
+    return after_ki
+
+
+def _normalize_cow_words_raw(s: str) -> str:
+    s = COW_GAYE_POSSESSIVE_RE.sub(r"\1 ga", s)
+    return COW_GAN_GAY_RE.sub("ga", s)
+
+
+def _normalize_doggy_kutta(s: str) -> str:
+    return s.replace("kutta", "doggy").replace("kuta", "doggy")
+
+
+def _normalize_nose_nakk(s: str) -> str:
+    s = s.replace("nakh", "nakk")
+    return re.sub(r"nak(?!k)", "nakk", s)
 
 
 def _normalize_plural_auxiliary(s: str) -> str:
@@ -249,6 +285,16 @@ def _normalize_gya_forms(s: str) -> str:
     return s
 
 
+def _normalize_past_copula(s: str) -> str:
+    if s.endswith("sige"):
+        return s
+    if s.endswith("siga"):
+        return f"{s[:-4]}si"
+    if s.endswith("san"):
+        return f"{s[:-3]}si"
+    return s
+
+
 def _normalize_progressive_participle(s: str) -> str:
     s = s.replace("rehi", "rahi")
     s = s.replace("rehe", "rahe")
@@ -295,6 +341,8 @@ def canonicalize_punjabi(s: str) -> str:
     s = (s or "").strip()
     s = I_AM_SUFFIX_RAW_RE.sub("hun", s)
     s = _normalize_copula_raw(s)
+    s = _strip_optional_question_ki_raw(s)
+    s = _normalize_cow_words_raw(s)
     s = _strip_for_compare(s)
     s = _normalize_conditionals(s)
     s = _normalize_chahna_tusi(s)
@@ -309,6 +357,7 @@ def canonicalize_punjabi(s: str) -> str:
     s = _normalize_imperative_kar(s)
     s = _normalize_baith_sitting(s)
     s = _normalize_gya_forms(s)
+    s = _normalize_past_copula(s)
     s = _normalize_progressive_participle(s)
     s = s.replace("tenu", "thuanu")
     s = s.replace("tainu", "thuanu")
@@ -318,6 +367,7 @@ def canonicalize_punjabi(s: str) -> str:
     s = WAIT_WORD_RE.sub("udeek", s)
     s = s.replace("taiyaar", "tyaar")
     s = _normalize_plural_auxiliary(s)
+    s = _normalize_doggy_kutta(s)
     s = _collapse_doubled_letters(s)
     s = TUADA_BEFORE_KOL_RE.sub("tuade", s)
     s = TUADE_OBLIQUE_RE.sub("tuade", s)
@@ -325,6 +375,7 @@ def canonicalize_punjabi(s: str) -> str:
     s = TUADA_FEM_RE.sub("tuadhi", s)
     for variant, canonical in PUNJABI_SUBSTRING_CANONICALS:
         s = s.replace(variant, canonical)
+    s = _normalize_nose_nakk(s)
     s = s.translate(PUNJABI_CHAR_CANONICAL)
     s = _normalize_baje_time_auxiliary(s)
     s = re.sub(r"lo$", "o", s)

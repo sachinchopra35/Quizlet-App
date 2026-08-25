@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  courseGoldProgress,
+  courseProgressTier,
   DEFAULT_LEVEL_EMOJI,
   levelEmoji,
+  levelLandmark,
   levelOffset,
   medalTier,
+  PERFECT_MEDAL,
   roundProgress,
   stageClass,
   stageDividerLabel,
@@ -59,11 +63,84 @@ describe("medalTier", () => {
 });
 
 describe("levelOffset", () => {
-  it("snakes and repeats every eight levels", () => {
+  it("follows a sine wave with 12-level wavelength and 118px amplitude", () => {
     expect(levelOffset(0)).toBe(0);
-    expect(levelOffset(2)).toBe(118);
-    expect(levelOffset(6)).toBe(-118);
-    expect(levelOffset(8)).toBe(levelOffset(0));
+    expect(levelOffset(3)).toBe(118);
+    expect(levelOffset(9)).toBe(-118);
+    expect(levelOffset(12)).toBe(levelOffset(0));
+    expect(levelOffset(1)).toBe(59);
+    expect(levelOffset(2)).toBe(102);
+  });
+});
+
+describe("levelLandmark", () => {
+  it("places a landmark on the left at the rightmost curve peak", () => {
+    expect(levelLandmark(3)).toEqual({ emoji: "🌳", side: "left" });
+    expect(levelLandmark(15)).toEqual({ emoji: "🌲", side: "left" });
+  });
+
+  it("places a landmark on the right at the leftmost curve peak", () => {
+    expect(levelLandmark(9)).toEqual({ emoji: "🏔️", side: "right" });
+    expect(levelLandmark(21)).toEqual({ emoji: "🦚", side: "right" });
+  });
+
+  it("returns null between curve peaks", () => {
+    expect(levelLandmark(5)).toBeNull();
+    expect(levelLandmark(0)).toBeNull();
+  });
+
+  it("skips stage divider rows", () => {
+    expect(levelLandmark(30)).toBeNull();
+    expect(levelLandmark(60)).toBeNull();
+  });
+
+  it("is deterministic for the same index", () => {
+    expect(levelLandmark(3)).toEqual(levelLandmark(3));
+    expect(levelLandmark(9)).toEqual(levelLandmark(9));
+  });
+});
+
+describe("courseGoldProgress", () => {
+  const levels = ["01 Numbers.csv", "02 Colours.csv", "03 To Be.csv"];
+
+  it("is zero when no levels have a perfect medal", () => {
+    expect(courseGoldProgress(levels, {})).toBe(0);
+    expect(
+      courseGoldProgress(levels, {
+        "01 Numbers.csv": { emoji: "🥇", label: "9/10" },
+      }),
+    ).toBe(0);
+  });
+
+  it("counts only perfect gold-star medals", () => {
+    expect(
+      courseGoldProgress(levels, {
+        "01 Numbers.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
+        "02 Colours.csv": { emoji: "🥇", label: "9/10" },
+      }),
+    ).toBeCloseTo(1 / 3);
+    expect(
+      courseGoldProgress(levels, {
+        "01 Numbers.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
+        "02 Colours.csv": { emoji: PERFECT_MEDAL, label: "8/8" },
+        "03 To Be.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
+      }),
+    ).toBe(1);
+  });
+});
+
+describe("courseProgressTier", () => {
+  it("steps through medal colours at 70/80/90/95 percent", () => {
+    expect(courseProgressTier(0)).toBe("green");
+    expect(courseProgressTier(0.69)).toBe("green");
+    expect(courseProgressTier(0.7)).toBe("bronze");
+    expect(courseProgressTier(0.79)).toBe("bronze");
+    expect(courseProgressTier(0.8)).toBe("silver");
+    expect(courseProgressTier(0.89)).toBe("silver");
+    expect(courseProgressTier(0.9)).toBe("gold");
+    expect(courseProgressTier(0.94)).toBe("gold");
+    expect(courseProgressTier(0.95)).toBe("goldstar");
+    expect(courseProgressTier(1)).toBe("goldstar");
   });
 });
 

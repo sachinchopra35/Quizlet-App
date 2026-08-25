@@ -1,4 +1,4 @@
-import type { QuizState } from "./rounds";
+import type { Medal, QuizState } from "./rounds";
 
 export type LevelTier = "blue" | "bronze" | "silver" | "gold" | "goldstar";
 
@@ -83,15 +83,36 @@ export function medalTier(medal: string | null | undefined): LevelTier {
   }
 }
 
-/** Horizontal offsets (px) that make the level column snake down the page. */
-const SERPENTINE_OFFSETS = [0, 70, 118, 70, 0, -70, -118, -70];
+/** Peak horizontal displacement (px) — unchanged from the prior map. */
+const MAP_WAVE_AMPLITUDE = 118;
+/** Levels per full left-right-left cycle (was 8; 1.5× longer = gentler curve). */
+const MAP_WAVE_LENGTH = 12;
 
+/** Horizontal offset for level index — smooth sine path down the map. */
 export function levelOffset(index: number): number {
-  const n = SERPENTINE_OFFSETS.length;
-  return SERPENTINE_OFFSETS[((index % n) + n) % n]!;
+  const angle = (2 * Math.PI * index) / MAP_WAVE_LENGTH;
+  const offset = Math.round(MAP_WAVE_AMPLITUDE * Math.sin(angle));
+  return offset === 0 ? 0 : offset;
 }
 
 const STAGE_SIZE = 10;
+
+const LANDMARKS = ["🌳", "🏔️", "🌲", "🦚", "🌴", "🗻", "🌵", "🏕️"];
+
+export type LandmarkSide = "left" | "right";
+
+/** Decorative emoji opposite the curve peak at sine extrema. */
+export function levelLandmark(index: number): { emoji: string; side: LandmarkSide } | null {
+  const phase = index % MAP_WAVE_LENGTH;
+  if (phase !== 3 && phase !== 9) return null;
+  if (index % STAGE_SIZE === 0) return null;
+  const cycle = Math.floor(index / MAP_WAVE_LENGTH);
+  const pick = phase === 3 ? cycle * 2 : cycle * 2 + 1;
+  return {
+    emoji: LANDMARKS[pick % LANDMARKS.length]!,
+    side: phase === 3 ? "left" : "right",
+  };
+}
 const STAGE_PALETTE_COUNT = 6;
 
 /** 1-based stage number for labels (Stage 1, Stage 2, …). */
@@ -112,6 +133,30 @@ export function stageClass(index: number): string {
 export function stageDividerLabel(stageNum: number): string {
   if (stageNum === 1) return "Stage 1: Getting Started";
   return `Stage ${stageNum}`;
+}
+
+/** Medal emoji for a flawless round (0 wrong answers). */
+export const PERFECT_MEDAL = "🏅";
+
+/** Share of vocab levels cleared with a perfect (gold star) score, 0..1. */
+export function courseGoldProgress(
+  csvNames: string[],
+  levelMedals: Record<string, Medal>,
+): number {
+  if (!csvNames.length) return 0;
+  const perfect = csvNames.filter((name) => levelMedals[name]?.emoji === PERFECT_MEDAL).length;
+  return perfect / csvNames.length;
+}
+
+export type CourseProgressTier = "green" | "bronze" | "silver" | "gold" | "goldstar";
+
+/** Footer bar colour tier from overall perfect-level progress. */
+export function courseProgressTier(progress: number): CourseProgressTier {
+  if (progress >= 0.95) return "goldstar";
+  if (progress >= 0.9) return "gold";
+  if (progress >= 0.8) return "silver";
+  if (progress >= 0.7) return "bronze";
+  return "green";
 }
 
 /** Fraction of the round cleared, 0..1. Wrong cards go back on the queue. */
