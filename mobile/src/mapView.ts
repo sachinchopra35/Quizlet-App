@@ -195,7 +195,7 @@ export function mapHtml(vm: MapViewModel): string {
     <header class="map-header">
       <div class="map-header-row">
         <span class="map-header-spacer" aria-hidden="true"></span>
-        <h1>Learn Punjabi</h1>
+        <h1>Simple Punjabi</h1>
         <button type="button" class="info-button" id="map-info" aria-label="About this app">i</button>
       </div>
     </header>

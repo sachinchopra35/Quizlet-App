@@ -1,4 +1,4 @@
-# Punjabi Vocab on iPhone (offline)
+# Simple Punjabi on iPhone (offline)
 
 This folder is a **phone version** of your vocab quiz. It does **not** use Streamlit. Your word lists are copied from `punjabi_vocab/` and baked into the app when you build it.
 
@@ -104,7 +104,7 @@ Then in **Xcode** (not Terminal):
 6. Click the **Play ▶** button.
 7. On the iPhone: if asked, tap **Trust** / allow the developer.
 
-You should get a **Punjabi Vocab** icon on your home screen. It works **offline** — no Mac needed after install.
+You should get a **Simple Punjabi** icon on your home screen. It works **offline** — no Mac needed after install.
 
 **Free Apple ID:** the app may stop opening after about **7 days**. Plug in the phone and press **Play ▶** in Xcode again (about a minute).
 
@@ -171,9 +171,15 @@ Then run `pod install` again. You may need your Mac password for `sudo`.
 
 ---
 
-## Custom app icon (optional)
+## App icon
 
-The default icon is generic. To use the ਪ Dock icon later: generate it with `scripts/build_dock_icon.py` from the project root, then drag a 1024×1024 PNG into **Xcode → App → Assets → AppIcon**.
+The shipped icon is **ਪ on off-white** (`mobile/icon-variants/02-pa-off-white.png`). Regenerate all variants or reinstall into Xcode assets:
+
+```bash
+./venv/bin/python scripts/build_icon_variants.py --install-ios
+```
+
+Then rebuild in Xcode (Product → Clean Build Folder → Run).
 
 ---
 
