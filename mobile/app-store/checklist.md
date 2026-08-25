@@ -11,9 +11,9 @@ Use this as your master list. Tick items as you go.
 
 - [x] Take screenshots (map, quiz with roman text, medal screen; optional: info panel)
 - [x] Draft store copy → [listing.md](listing.md)
-- [ ] Publish privacy & support → follow [docs/github-pages-setup.md](../../docs/github-pages-setup.md)
-- [ ] Privacy URL (same for Support): `https://sachinchopra35.github.io/Quizlet-App/`
-- [ ] QA on device: offline, persistence, mute, beast mode, scroll-after-round
+- [x] Publish privacy & support → follow [docs/github-pages-setup.md](../../docs/github-pages-setup.md)
+- [x] Privacy URL (same for Support): `https://sachinchopra35.github.io/Quizlet-App/`
+- [x] QA on device: offline, persistence, mute, beast mode, scroll-after-round
 
 ---
 
