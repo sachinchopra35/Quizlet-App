@@ -4,6 +4,8 @@ This folder is a **phone version** of your vocab quiz. It does **not** use Strea
 
 Your Mac desktop app (`run_app.sh` / Dock) is unchanged. Use that to edit CSVs as usual.
 
+**App Store:** listing copy, privacy policy, support page, and a submission checklist live in [`app-store/`](app-store/).
+
 ---
 
 ## Words you’ll see
