@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.local.punjabi.vocab",
+  appId: "com.sachchopra.simplepunjabi",
   appName: "Simple Punjabi",
   webDir: "dist",
   ios: {
