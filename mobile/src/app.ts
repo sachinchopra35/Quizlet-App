@@ -16,6 +16,12 @@ import {
 } from "./mapView";
 import { bindQuizEvents, promptFor, quizHtml, type QuizPrompt } from "./quizView";
 import {
+  applySaved,
+  loadProgress,
+  pickPersistable,
+  saveProgress,
+} from "./progress";
+import {
   completeRoundNaturally,
   consumeIdleMessages,
   createInitialState,
@@ -52,12 +58,16 @@ export class VocabApp {
   async init(): Promise<void> {
     const names = await listCsvNames();
     this.csvCache = await loadAllCsvs(names);
-    this.state = { ...this.state, csvNames: names };
+    const saved = loadProgress();
+    this.state = saved
+      ? applySaved({ ...this.state, csvNames: names }, saved, names)
+      : { ...this.state, csvNames: names };
     this.render();
   }
 
   private setState(next: QuizState): void {
     this.state = next;
+    saveProgress(pickPersistable(this.state));
     this.render();
   }
 

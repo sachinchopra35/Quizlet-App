@@ -18,8 +18,8 @@ export function introPanelBodyHtml(): string {
       <li>At the end of each level you earn a medal: a gold star for a perfect round, then gold, silver, or bronze depending on how many you missed.</li>
       <li><strong>Beast Mode</strong> at the bottom of the map gives you 10 random questions drawn from every list.</li>
       <li>Questions can be read aloud automatically. You can mute audio in the level settings or during a round.</li>
-      <li>Your progress (medals and the tree bar at the bottom) is saved for this session only — it resets when you close or refresh the app.</li>
-      <li>The vocab is bundled in the app, so you can practise offline (except links like the one above).</li>
+      <li>Your progress and your settings are saved on your device. Deleting the app clears them.</li>
+      <li>This app works fully offline.</li>
       <li>If you're not sure how to pronounce certain words, Google and YouTube are your friends! And of course, any AI can help break down the pronunciation of any word for you.</li>
       <li>Everything is in English lettering. There is nothing written in Gurmukhi (ਗੁਰਮੁਖੀ) or Shahmukhi (شاہ مکھی). That's because this app is all about speaking the language. No need to overcomplicate things!</li>
       <li>There are often many ways to spell words (for example, "hot" is "garam" or "garm"). I've made sure this app is quite forgiving, and often accepts several spellings for words like this.</li>
