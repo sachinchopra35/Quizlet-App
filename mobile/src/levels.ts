@@ -95,7 +95,7 @@ export function levelOffset(index: number): number {
   return offset === 0 ? 0 : offset;
 }
 
-const STAGE_SIZE = 10;
+export const STAGE_SIZE = 10;
 
 const LANDMARKS = ["🌳", "🏔️", "🌲", "🦚", "🌴", "🗻", "🌵", "🏕️"];
 
@@ -133,6 +133,21 @@ export function stageClass(index: number): string {
 export function stageDividerLabel(stageNum: number): string {
   if (stageNum === 1) return "Stage 1: Getting Started";
   return `Stage ${stageNum}`;
+}
+
+export function stageLevelNames(csvNames: string[], stage: number): string[] {
+  if (stage < 1) return [];
+  const start = (stage - 1) * STAGE_SIZE;
+  return csvNames.slice(start, start + STAGE_SIZE);
+}
+
+export function stageMastered(
+  csvNames: string[],
+  levelMedals: Record<string, Medal>,
+  stage: number,
+): boolean {
+  const names = stageLevelNames(csvNames, stage);
+  return names.length > 0 && names.every((name) => levelMedals[name]?.emoji === PERFECT_MEDAL);
 }
 
 /** Medal emoji for a flawless round (0 wrong answers). */

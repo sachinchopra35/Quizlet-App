@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BEAST_MODE_SELECTION, STYLE_TO_EN } from "../src/config";
+import {
+  BEAST_MODE_SELECTION,
+  parseStagePracticeKey,
+  stagePracticeKey,
+  STYLE_TO_EN,
+} from "../src/config";
 import {
   applySaved,
   clearProgress,
@@ -49,11 +54,18 @@ describe("progress persistence", () => {
     levelMedals: {
       "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
       [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+      [stagePracticeKey(1)]: { emoji: "🥈", label: "8/10" },
       "stale.csv": { emoji: "🥉", label: "7/10" },
     },
     audioMuted: true,
     questionStyle: STYLE_TO_EN,
   };
+
+  it("round-trips valid stage practice keys", () => {
+    expect(parseStagePracticeKey(stagePracticeKey(3))).toBe(3);
+    expect(parseStagePracticeKey("__stage_practice_0__")).toBeNull();
+    expect(parseStagePracticeKey("__stage_practice_3_extra__")).toBeNull();
+  });
 
   it("round-trips save and load", () => {
     saveProgress(sample);
@@ -73,11 +85,12 @@ describe("progress persistence", () => {
     expect(loadProgress()).toBeNull();
   });
 
-  it("pruneMedals drops unknown CSV keys but keeps beast mode", () => {
+  it("pruneMedals drops unknown CSV keys but keeps practice and beast mode", () => {
     const pruned = pruneMedals(sample.levelMedals, ["01 Numbers.csv"]);
     expect(pruned).toEqual({
       "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
       [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+      [stagePracticeKey(1)]: { emoji: "🥈", label: "8/10" },
     });
   });
 

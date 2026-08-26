@@ -12,6 +12,8 @@ import {
   roundProgressTier,
   stageClass,
   stageDividerLabel,
+  stageLevelNames,
+  stageMastered,
   stageNumber,
   stagePaletteIndex,
 } from "../src/levels";
@@ -19,6 +21,7 @@ import {
   createInitialState,
   processAnswer,
   startRound,
+  sampleRows,
   type QuizState,
 } from "../src/rounds";
 import type { VocabRow } from "../src/vocab";
@@ -165,6 +168,21 @@ describe("stage helpers", () => {
     expect(stageDividerLabel(2)).toBe("Stage 2");
     expect(stageDividerLabel(8)).toBe("Stage 8");
   });
+
+  it("slices full and short stages", () => {
+    const names = Array.from({ length: 12 }, (_, i) => `${i + 1}.csv`);
+    expect(stageLevelNames(names, 1)).toHaveLength(10);
+    expect(stageLevelNames(names, 2)).toEqual(["11.csv", "12.csv"]);
+    expect(stageLevelNames(names, 3)).toEqual([]);
+  });
+
+  it("requires every level in a non-empty stage to be perfect", () => {
+    const names = ["one.csv", "two.csv", "three.csv"];
+    const perfect = Object.fromEntries(names.map((name) => [name, { emoji: PERFECT_MEDAL, label: "10/10" }]));
+    expect(stageMastered(names, perfect, 1)).toBe(true);
+    expect(stageMastered(names, { ...perfect, "two.csv": { emoji: "🥇", label: "9/10" } }, 1)).toBe(false);
+    expect(stageMastered(names, perfect, 2)).toBe(false);
+  });
 });
 
 describe("roundProgress", () => {
@@ -200,6 +218,18 @@ describe("roundProgress", () => {
       state = processAnswer(state, rows[idx]!.lang);
     }
     expect(roundProgress(state)).toBe(1);
+  });
+});
+
+describe("sampleRows", () => {
+  it("caps samples and does not mutate the source", () => {
+    const rows: VocabRow[] = Array.from({ length: 12 }, (_, i) => ({
+      en: `${i}`,
+      lang: `${i}`,
+    }));
+    expect(sampleRows(rows, 10)).toHaveLength(10);
+    expect(sampleRows(rows, 20)).toHaveLength(12);
+    expect(rows).toHaveLength(12);
   });
 });
 

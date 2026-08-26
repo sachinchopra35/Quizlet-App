@@ -76,6 +76,10 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+export function sampleRows(rows: VocabRow[], count: number): VocabRow[] {
+  return shuffle(rows).slice(0, Math.max(0, count));
+}
+
 export function startRound(
   state: QuizState,
   rows: VocabRow[],
@@ -106,9 +110,7 @@ export function startBeastRound(
   combined: VocabRow[],
   direction: Direction,
 ): QuizState {
-  const n = beastSampleSize(combined.length);
-  const shuffled = shuffle(combined);
-  const sample = shuffled.slice(0, n);
+  const sample = sampleRows(combined, beastSampleSize(combined.length));
   const next = startRound(state, sample, direction);
   return { ...next, beastMode: true };
 }

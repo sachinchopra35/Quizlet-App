@@ -3,7 +3,7 @@
   --accent-border: #6eb0e0;
   --node-depth: 9px;
   --landmark-size: 6.5rem;
-  --landmark-gap: 9rem;
+  --landmark-gap: 11rem;
   --course-footer-bar-height: 0.5rem;
   --course-footer-height: 2.15rem;
 }
@@ -653,6 +653,71 @@ button.primary {
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.28));
 }
 
+.level-trophy {
+  position: absolute;
+  top: 2.625rem;
+  width: 5.25rem;
+  height: 5.25rem;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.trophy-left {
+  right: calc(100% + 3.2rem);
+}
+
+.trophy-right {
+  left: calc(100% + 3.2rem);
+}
+
+.level-trophy .level-emoji {
+  font-size: 2.25rem;
+}
+
+.level-trophy.is-locked {
+  --node-face: #555b66;
+  --node-shade: #353a43;
+  background: var(--node-face);
+  box-shadow: 0 var(--node-depth) 0 var(--node-shade);
+}
+
+.level-trophy.is-locked .level-emoji {
+  opacity: 0.28;
+}
+
+.level-trophy.is-locked.is-pressed {
+  transform: translateY(-50%);
+  box-shadow: 0 var(--node-depth) 0 var(--node-shade);
+}
+
+.level-trophy.is-won {
+  background: var(--node-face);
+  box-shadow: 0 var(--node-depth) 0 var(--node-shade), 0 0 14px 3px rgba(255, 205, 60, 0.55);
+}
+
+.level-trophy.is-won .level-emoji {
+  opacity: 1;
+}
+
+.level-trophy.is-won.stage-0 { --node-face: #7fbd70; --node-shade: #4f8b42; }
+.level-trophy.is-won.stage-1 { --node-face: #7dbcf5; --node-shade: #4f86b7; }
+.level-trophy.is-won.stage-2 { --node-face: #bb8af5; --node-shade: #7e5bb6; }
+.level-trophy.is-won.stage-3 { --node-face: #72d9d0; --node-shade: #3d9e98; }
+.level-trophy.is-won.stage-4 { --node-face: #f58fc3; --node-shade: #b65e8c; }
+.level-trophy.is-won.stage-5 { --node-face: #9294f4; --node-shade: #5f62b8; }
+
+.trophy-score {
+  position: absolute;
+  top: calc(2.625rem + 2.625rem + 0.35rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
 .landmark-left {
   right: calc(100% + var(--landmark-gap));
 }
@@ -689,6 +754,11 @@ button.primary {
 .level-node.stage-5 {
   --node-face: #6366f1;
   --node-shade: #4338ca;
+}
+
+.level-node.level-trophy.is-locked {
+  --node-face: #555b66;
+  --node-shade: #353a43;
 }
 
 .level-node.tier-bronze {
@@ -754,6 +824,21 @@ button.primary {
 
 .popup.popup-open {
   animation: popup-grow 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.popup-trophy {
+  text-align: center;
+}
+
+.popup-trophy-hero {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin: 0.25rem 0 1rem;
+}
+
+.popup-trophy p {
+  margin: 0 0 1.25rem;
+  line-height: 1.45;
 }
 
 .info-panel.popup-open,

@@ -1,4 +1,8 @@
-import { BEAST_MODE_SELECTION, directionFromStyle } from "./config";
+import {
+  BEAST_MODE_SELECTION,
+  directionFromStyle,
+  parseStagePracticeKey,
+} from "./config";
 import {
   ensureAudioUnlock,
   playButtonClick,
@@ -29,9 +33,11 @@ import {
   processAnswer,
   startBeastRound,
   startRound,
+  sampleRows,
   stopRoundEarly,
   type QuizState,
 } from "./rounds";
+import { stageLevelNames } from "./levels";
 import {
   loadAllCsvs,
   loadCombinedFromMap,
@@ -58,6 +64,9 @@ export class VocabApp {
   private quitConfirmOpen = false;
   private quitConfirmAnimate = false;
   private quitConfirmOrigin: { x: number; y: number } | null = null;
+  private trophyMessage: { stage: number } | null = null;
+  private trophyMessageOrigin: { x: number; y: number } | null = null;
+  private trophyMessageAnimate = false;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
 
@@ -83,7 +92,7 @@ export class VocabApp {
   }
 
   private rowsFor(name: string | null): VocabRow[] {
-    if (!name || name === BEAST_MODE_SELECTION) return [];
+    if (!name || name === BEAST_MODE_SELECTION || parseStagePracticeKey(name) !== null) return [];
     return this.csvCache.get(name) ?? [];
   }
 
@@ -139,6 +148,9 @@ export class VocabApp {
       resetConfirmAnimate: this.resetConfirmAnimate,
       resetTypeOpen: this.resetTypeOpen,
       resetTypeAnimate: this.resetTypeAnimate,
+      trophyMessage: this.trophyMessage,
+      trophyMessageOrigin: this.trophyMessageOrigin,
+      trophyMessageAnimate: this.trophyMessageAnimate,
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -148,6 +160,8 @@ export class VocabApp {
         this.gearOpen = false;
         this.infoOpen = false;
         this.settingsOpen = false;
+        this.trophyMessage = null;
+        this.trophyMessageOrigin = null;
         this.closeResetFlow();
         this.popupOrigin = origin;
         this.popupAnimate = true;
@@ -160,9 +174,25 @@ export class VocabApp {
         this.popupOrigin = null;
         this.render();
       },
+      onLockedTrophy: (stage, origin) => {
+        this.popupCsv = null;
+        this.popupOrigin = null;
+        this.trophyMessage = { stage };
+        this.trophyMessageOrigin = origin;
+        this.trophyMessageAnimate = true;
+        this.render();
+        this.trophyMessageAnimate = false;
+      },
+      onCloseTrophyMessage: () => {
+        this.trophyMessage = null;
+        this.trophyMessageOrigin = null;
+        this.render();
+      },
       onOpenInfo: () => {
         this.popupCsv = null;
         this.popupOrigin = null;
+        this.trophyMessage = null;
+        this.trophyMessageOrigin = null;
         this.gearOpen = false;
         this.settingsOpen = false;
         this.closeResetFlow();
@@ -178,6 +208,8 @@ export class VocabApp {
       onOpenSettings: () => {
         this.popupCsv = null;
         this.popupOrigin = null;
+        this.trophyMessage = null;
+        this.trophyMessageOrigin = null;
         this.gearOpen = false;
         this.infoOpen = false;
         this.settingsOpen = true;
@@ -273,6 +305,12 @@ export class VocabApp {
     if (name === BEAST_MODE_SELECTION) {
       const combined = loadCombinedFromMap(this.csvCache);
       this.setState(startBeastRound(this.state, combined, direction));
+    } else if (parseStagePracticeKey(name) !== null) {
+      const stage = parseStagePracticeKey(name)!;
+      const rows = stageLevelNames(this.state.csvNames, stage).flatMap(
+        (csv) => this.csvCache.get(csv) ?? [],
+      );
+      this.setState(startRound(this.state, sampleRows(rows, 10), direction));
     } else {
       this.setState(startRound(this.state, this.rowsFor(name), direction));
     }
