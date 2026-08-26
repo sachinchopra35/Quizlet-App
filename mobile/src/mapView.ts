@@ -33,6 +33,13 @@ export interface MapViewModel {
   popupRows: VocabRow[];
   completion: CompletionSummary | null;
   infoOpen: boolean;
+  infoAnimate: boolean;
+  settingsOpen: boolean;
+  settingsAnimate: boolean;
+  resetConfirmOpen: boolean;
+  resetConfirmAnimate: boolean;
+  resetTypeOpen: boolean;
+  resetTypeAnimate: boolean;
 }
 
 export interface MapHandlers {
@@ -40,6 +47,13 @@ export interface MapHandlers {
   onClosePopup(): void;
   onOpenInfo(): void;
   onCloseInfo(): void;
+  onOpenSettings(): void;
+  onCloseSettings(): void;
+  onRequestResetProgress(): void;
+  onCancelResetConfirm(): void;
+  onConfirmResetSure(): void;
+  onCancelResetType(): void;
+  onSubmitResetType(value: string): void;
   onToggleGear(): void;
   onSetStyle(style: string): void;
   onToggleMute(muted: boolean): void;
@@ -173,14 +187,113 @@ function completionHtml(vm: MapViewModel): string {
 
 function infoPanelHtml(vm: MapViewModel): string {
   if (!vm.infoOpen) return "";
+  const backdropClass = vm.infoAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const panelClass = vm.infoAnimate ? "info-panel popup-open" : "info-panel";
   return `
-    <div class="popup-backdrop" id="info-backdrop">
-      <div class="info-panel" role="dialog" aria-modal="true" aria-label="About this app">
-        <button type="button" class="icon-button info-close" id="info-close" aria-label="Close">×</button>
+    <div class="${backdropClass}" id="info-backdrop">
+      <div class="${panelClass}" role="dialog" aria-modal="true" aria-label="About this app">
+        <div class="info-panel-top">
+          <button type="button" class="panel-close" id="info-close" aria-label="Close">×</button>
+        </div>
         <div class="info-scroll">
           <div class="info-hero" aria-hidden="true">💡</div>
           <div class="info-body">
             ${introPanelBodyHtml()}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function settingsPanelHtml(vm: MapViewModel): string {
+  if (!vm.settingsOpen) return "";
+  const backdropClass = vm.settingsAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const panelClass = vm.settingsAnimate ? "settings-panel popup-open" : "settings-panel";
+  return `
+    <div class="${backdropClass}" id="settings-backdrop">
+      <div class="${panelClass}" role="dialog" aria-modal="true" aria-label="App settings">
+        <div class="popup-head">
+          <h2>Settings</h2>
+          <button type="button" class="panel-close" id="settings-close" aria-label="Close">×</button>
+        </div>
+        <div class="popup-settings settings-panel-body">
+          <p class="settings-label">Question direction</p>
+          <div class="segmented">
+            <button type="button" data-style="${escapeAttr(STYLE_FROM_EN)}" class="${vm.questionStyle === STYLE_FROM_EN ? "active" : ""}">From English</button>
+            <button type="button" data-style="${escapeAttr(STYLE_TO_EN)}" class="${vm.questionStyle === STYLE_TO_EN ? "active" : ""}">To English</button>
+          </div>
+          <label class="mute-row"><input type="checkbox" id="settings-mute" ${vm.audioMuted ? "checked" : ""} /> Mute audio</label>
+          <button type="button" class="settings-reset" id="settings-reset">Reset all progress</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function resetConfirmPanelHtml(vm: MapViewModel): string {
+  if (!vm.resetConfirmOpen) return "";
+  const backdropClass = vm.resetConfirmAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const panelClass = vm.resetConfirmAnimate ? "info-panel popup-open" : "info-panel";
+  return `
+    <div class="${backdropClass}" id="reset-confirm-backdrop">
+      <div class="${panelClass}" role="dialog" aria-modal="true" aria-label="Reset progress confirmation">
+        <div class="info-panel-top">
+          <button type="button" class="panel-close" id="reset-confirm-close" aria-label="Close">×</button>
+        </div>
+        <div class="info-scroll">
+          <div class="info-body reset-confirm-body">
+            <h3>Are you sure?</h3>
+            <p>All medals and level completion progress will be cleared from this device. Your mute and question-direction settings are kept.</p>
+            <p class="caption">You will need one more step after this to confirm.</p>
+            <div class="reset-panel-actions">
+              <button type="button" class="settings-cancel" id="reset-confirm-cancel">Cancel</button>
+              <button type="button" class="primary" id="reset-confirm-yes">Yes, continue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function resetTypePanelHtml(vm: MapViewModel): string {
+  if (!vm.resetTypeOpen) return "";
+  const backdropClass = vm.resetTypeAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const panelClass = vm.resetTypeAnimate ? "info-panel popup-open" : "info-panel";
+  return `
+    <div class="${backdropClass}" id="reset-type-backdrop">
+      <div class="${panelClass}" role="dialog" aria-modal="true" aria-label="Type reset to confirm">
+        <div class="info-panel-top">
+          <button type="button" class="panel-close" id="reset-type-close" aria-label="Close">×</button>
+        </div>
+        <div class="info-scroll">
+          <div class="info-hero" aria-hidden="true">🤨</div>
+          <div class="info-body reset-type-body">
+            <p>Type <strong>reset</strong> to reset all level completion progress.</p>
+            <form class="reset-type-form" id="reset-type-form">
+              <input
+                type="text"
+                id="reset-type-input"
+                name="resetConfirm"
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="done"
+                placeholder="reset"
+              />
+              <button type="submit" class="settings-reset-confirm-btn" id="reset-type-submit" disabled>Reset all progress</button>
+            </form>
+            <button type="button" class="settings-cancel reset-type-cancel" id="reset-type-cancel">Cancel</button>
           </div>
         </div>
       </div>
@@ -194,7 +307,7 @@ export function mapHtml(vm: MapViewModel): string {
   return `
     <header class="map-header">
       <div class="map-header-row">
-        <span class="map-header-spacer" aria-hidden="true"></span>
+        <button type="button" class="settings-button" id="map-settings" aria-label="App settings">⚙️</button>
         <h1>Simple Punjabi</h1>
         <button type="button" class="info-button" id="map-info" aria-label="About this app">i</button>
       </div>
@@ -207,6 +320,9 @@ export function mapHtml(vm: MapViewModel): string {
     ${popupHtml(vm)}
     ${completionHtml(vm)}
     ${infoPanelHtml(vm)}
+    ${settingsPanelHtml(vm)}
+    ${resetConfirmPanelHtml(vm)}
+    ${resetTypePanelHtml(vm)}
     ${courseFooterHtml(courseGoldProgress(vm.csvNames, vm.levelMedals))}
   `;
 }
@@ -267,6 +383,10 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
     handlers.onOpenInfo();
   });
 
+  root.querySelector("#map-settings")?.addEventListener("click", () => {
+    handlers.onOpenSettings();
+  });
+
   const infoBackdrop = root.querySelector<HTMLElement>("#info-backdrop");
   infoBackdrop?.addEventListener("click", (e) => {
     if (e.target === infoBackdrop) handlers.onCloseInfo();
@@ -274,5 +394,73 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
 
   root.querySelector("#info-close")?.addEventListener("click", () => {
     handlers.onCloseInfo();
+  });
+
+  const settingsBackdrop = root.querySelector<HTMLElement>("#settings-backdrop");
+  settingsBackdrop?.addEventListener("click", (e) => {
+    if (e.target === settingsBackdrop) handlers.onCloseSettings();
+  });
+
+  root.querySelector("#settings-close")?.addEventListener("click", () => {
+    handlers.onCloseSettings();
+  });
+
+  root.querySelector("#settings-reset")?.addEventListener("click", () => {
+    handlers.onRequestResetProgress();
+  });
+
+  const resetConfirmBackdrop = root.querySelector<HTMLElement>("#reset-confirm-backdrop");
+  resetConfirmBackdrop?.addEventListener("click", (e) => {
+    if (e.target === resetConfirmBackdrop) handlers.onCancelResetConfirm();
+  });
+
+  root.querySelector("#reset-confirm-close")?.addEventListener("click", () => {
+    handlers.onCancelResetConfirm();
+  });
+
+  root.querySelector("#reset-confirm-cancel")?.addEventListener("click", () => {
+    handlers.onCancelResetConfirm();
+  });
+
+  root.querySelector("#reset-confirm-yes")?.addEventListener("click", () => {
+    handlers.onConfirmResetSure();
+  });
+
+  const resetTypeBackdrop = root.querySelector<HTMLElement>("#reset-type-backdrop");
+  resetTypeBackdrop?.addEventListener("click", (e) => {
+    if (e.target === resetTypeBackdrop) handlers.onCancelResetType();
+  });
+
+  root.querySelector("#reset-type-close")?.addEventListener("click", () => {
+    handlers.onCancelResetType();
+  });
+
+  root.querySelector("#reset-type-cancel")?.addEventListener("click", () => {
+    handlers.onCancelResetType();
+  });
+
+  const resetTypeInput = root.querySelector<HTMLInputElement>("#reset-type-input");
+  const resetTypeSubmit = root.querySelector<HTMLButtonElement>("#reset-type-submit");
+  resetTypeInput?.addEventListener("input", () => {
+    if (!resetTypeSubmit || !resetTypeInput) return;
+    resetTypeSubmit.disabled = resetTypeInput.value.trim().toLowerCase() !== "reset";
+  });
+
+  root.querySelector("#reset-type-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!resetTypeInput || resetTypeSubmit?.disabled) return;
+    handlers.onSubmitResetType(resetTypeInput.value);
+  });
+
+  requestAnimationFrame(() => {
+    resetTypeInput?.focus({ preventScroll: true });
+  });
+
+  root.querySelectorAll<HTMLElement>("#settings-backdrop [data-style]").forEach((el) => {
+    el.addEventListener("click", () => handlers.onSetStyle(el.dataset.style!));
+  });
+
+  root.querySelector("#settings-mute")?.addEventListener("change", (e) => {
+    handlers.onToggleMute((e.target as HTMLInputElement).checked);
   });
 }

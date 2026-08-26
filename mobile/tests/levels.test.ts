@@ -9,6 +9,7 @@ import {
   medalTier,
   PERFECT_MEDAL,
   roundProgress,
+  roundProgressTier,
   stageClass,
   stageDividerLabel,
   stageNumber,
@@ -199,5 +200,16 @@ describe("roundProgress", () => {
       state = processAnswer(state, rows[idx]!.lang);
     }
     expect(roundProgress(state)).toBe(1);
+  });
+});
+
+describe("roundProgressTier", () => {
+  it("maps remaining queue length to medal colours", () => {
+    expect(roundProgressTier(10)).toBe("green");
+    expect(roundProgressTier(4)).toBe("green");
+    expect(roundProgressTier(3)).toBe("bronze");
+    expect(roundProgressTier(2)).toBe("silver");
+    expect(roundProgressTier(1)).toBe("gold");
+    expect(roundProgressTier(0)).toBe("goldstar");
   });
 });

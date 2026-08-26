@@ -1,11 +1,47 @@
 import { courseFooterHtml, escapeHtml } from "./html";
-import { courseGoldProgress, roundProgress } from "./levels";
+import { courseGoldProgress, roundProgress, roundProgressTier } from "./levels";
 import { currentRowIndex, type QuizState } from "./rounds";
 
 export interface QuizHandlers {
-  onQuit(): void;
+  onRequestQuit(origin: { x: number; y: number }): void;
+  onCancelQuit(): void;
+  onConfirmQuit(): void;
   onSubmit(guess: string): void;
   onToggleMute(muted: boolean): void;
+}
+
+export interface QuizOverlay {
+  quitConfirmOpen: boolean;
+  quitConfirmAnimate: boolean;
+  quitConfirmOrigin: { x: number; y: number } | null;
+}
+
+function quitConfirmPanelAttrs(overlay: QuizOverlay): string {
+  const classes = ["popup", "quiz-quit-popup"];
+  if (overlay.quitConfirmAnimate) classes.push("popup-open");
+  if (!overlay.quitConfirmOrigin) return `class="${classes.join(" ")}"`;
+  const dx = Math.round(overlay.quitConfirmOrigin.x - window.innerWidth / 2);
+  const dy = Math.round(overlay.quitConfirmOrigin.y - window.innerHeight / 2);
+  return `class="${classes.join(" ")}" style="--pop-dx: ${dx}px; --pop-dy: ${dy}px"`;
+}
+
+function quitConfirmHtml(overlay: QuizOverlay): string {
+  if (!overlay.quitConfirmOpen) return "";
+  const backdropClass = overlay.quitConfirmAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  return `
+    <div class="${backdropClass}" id="quiz-quit-backdrop">
+      <div ${quitConfirmPanelAttrs(overlay)} role="dialog" aria-modal="true" aria-label="End quiz">
+        <h2 class="quiz-quit-title">End Quiz?</h2>
+        <p class="caption quiz-quit-message">You'll lose all progress in this round.</p>
+        <div class="reset-panel-actions">
+          <button type="button" class="settings-cancel" id="quiz-quit-cancel">Keep playing</button>
+          <button type="button" class="settings-reset-confirm-btn" id="quiz-quit-confirm">End quiz</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 export interface QuizPrompt {
@@ -22,8 +58,17 @@ export function promptFor(state: QuizState): QuizPrompt | null {
     : { text: row.lang, ttsLang: undefined };
 }
 
-export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
+export function quizHtml(
+  state: QuizState,
+  prompt: QuizPrompt,
+  overlay: QuizOverlay = {
+    quitConfirmOpen: false,
+    quitConfirmAnimate: false,
+    quitConfirmOrigin: null,
+  },
+): string {
   const pct = Math.round(roundProgress(state) * 100);
+  const tier = roundProgressTier(state.queue.length);
   const fb = state.lastFeedback;
   const feedbackHtml =
     fb && fb[0] === "wrong"
@@ -36,8 +81,8 @@ export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
     <div class="quiz-screen">
       <div class="quiz-header">
         <div class="quiz-top">
-          <button type="button" class="icon-button" id="quiz-quit" aria-label="Quit round">←</button>
-          <div class="progress-track"><div class="progress-fill" style="width: ${pct}%"></div></div>
+          <button type="button" class="icon-button quiz-quit" id="quiz-quit" aria-label="Quit round">←</button>
+          <div class="progress-track"><div class="progress-fill progress-fill-${tier}" style="width: ${pct}%"></div></div>
         </div>
         <div class="quiz-mute-row">
           <button
@@ -50,7 +95,7 @@ export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
         </div>
       </div>
       <div class="quiz-body">
-        ${feedbackHtml}
+        <div class="feedback-slot" aria-live="polite">${feedbackHtml}</div>
         <p class="prompt">${escapeHtml(prompt.text)}</p>
         <form class="answer-form" id="answer-form">
           <input
@@ -68,12 +113,33 @@ export function quizHtml(state: QuizState, prompt: QuizPrompt): string {
         </form>
       </div>
     </div>
+    ${quitConfirmHtml(overlay)}
     ${courseFooterHtml(courseGoldProgress(state.csvNames, state.levelMedals))}
   `;
 }
 
 export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void {
-  root.querySelector("#quiz-quit")?.addEventListener("click", () => handlers.onQuit());
+  root.querySelector("#quiz-quit")?.addEventListener("click", (e) => {
+    const btn = e.currentTarget as HTMLElement;
+    const r = btn.getBoundingClientRect();
+    handlers.onRequestQuit({
+      x: r.left + r.width / 2,
+      y: r.top + r.height / 2,
+    });
+  });
+
+  const quitBackdrop = root.querySelector<HTMLElement>("#quiz-quit-backdrop");
+  quitBackdrop?.addEventListener("click", (ev) => {
+    if (ev.target === quitBackdrop) handlers.onCancelQuit();
+  });
+
+  root.querySelector("#quiz-quit-cancel")?.addEventListener("click", () => {
+    handlers.onCancelQuit();
+  });
+
+  root.querySelector("#quiz-quit-confirm")?.addEventListener("click", () => {
+    handlers.onConfirmQuit();
+  });
 
   root.querySelector("#quiz-mute")?.addEventListener("click", () => {
     const btn = root.querySelector<HTMLButtonElement>("#quiz-mute");

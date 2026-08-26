@@ -17,6 +17,7 @@ import {
 import { bindQuizEvents, promptFor, quizHtml, type QuizPrompt } from "./quizView";
 import {
   applySaved,
+  clearProgress,
   loadProgress,
   pickPersistable,
   saveProgress,
@@ -47,6 +48,16 @@ export class VocabApp {
   private popupAnimate = false;
   private gearOpen = false;
   private infoOpen = false;
+  private infoAnimate = false;
+  private settingsOpen = false;
+  private settingsAnimate = false;
+  private resetConfirmOpen = false;
+  private resetConfirmAnimate = false;
+  private resetTypeOpen = false;
+  private resetTypeAnimate = false;
+  private quitConfirmOpen = false;
+  private quitConfirmAnimate = false;
+  private quitConfirmOrigin: { x: number; y: number } | null = null;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
 
@@ -74,6 +85,11 @@ export class VocabApp {
   private rowsFor(name: string | null): VocabRow[] {
     if (!name || name === BEAST_MODE_SELECTION) return [];
     return this.csvCache.get(name) ?? [];
+  }
+
+  private closeResetFlow(): void {
+    this.resetConfirmOpen = false;
+    this.resetTypeOpen = false;
   }
 
   private render(): void {
@@ -116,6 +132,13 @@ export class VocabApp {
       popupRows: this.rowsFor(this.popupCsv),
       completion: this.completion,
       infoOpen: this.infoOpen,
+      infoAnimate: this.infoAnimate,
+      settingsOpen: this.settingsOpen,
+      settingsAnimate: this.settingsAnimate,
+      resetConfirmOpen: this.resetConfirmOpen,
+      resetConfirmAnimate: this.resetConfirmAnimate,
+      resetTypeOpen: this.resetTypeOpen,
+      resetTypeAnimate: this.resetTypeAnimate,
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -124,6 +147,8 @@ export class VocabApp {
         this.popupCsv = csv;
         this.gearOpen = false;
         this.infoOpen = false;
+        this.settingsOpen = false;
+        this.closeResetFlow();
         this.popupOrigin = origin;
         this.popupAnimate = true;
         this.state = { ...this.state, selectedCsv: csv };
@@ -139,12 +164,66 @@ export class VocabApp {
         this.popupCsv = null;
         this.popupOrigin = null;
         this.gearOpen = false;
+        this.settingsOpen = false;
+        this.closeResetFlow();
         this.infoOpen = true;
+        this.infoAnimate = true;
         this.render();
+        this.infoAnimate = false;
       },
       onCloseInfo: () => {
         this.infoOpen = false;
         this.render();
+      },
+      onOpenSettings: () => {
+        this.popupCsv = null;
+        this.popupOrigin = null;
+        this.gearOpen = false;
+        this.infoOpen = false;
+        this.settingsOpen = true;
+        this.settingsAnimate = true;
+        this.closeResetFlow();
+        this.render();
+        this.settingsAnimate = false;
+      },
+      onCloseSettings: () => {
+        this.settingsOpen = false;
+        this.render();
+      },
+      onRequestResetProgress: () => {
+        this.settingsOpen = false;
+        this.resetConfirmOpen = true;
+        this.resetConfirmAnimate = true;
+        this.render();
+        this.resetConfirmAnimate = false;
+      },
+      onCancelResetConfirm: () => {
+        this.resetConfirmOpen = false;
+        this.settingsOpen = true;
+        this.settingsAnimate = true;
+        this.render();
+        this.settingsAnimate = false;
+      },
+      onConfirmResetSure: () => {
+        this.resetConfirmOpen = false;
+        this.resetTypeOpen = true;
+        this.resetTypeAnimate = true;
+        this.render();
+        this.resetTypeAnimate = false;
+      },
+      onCancelResetType: () => {
+        this.resetTypeOpen = false;
+        this.settingsOpen = true;
+        this.settingsAnimate = true;
+        this.render();
+        this.settingsAnimate = false;
+      },
+      onSubmitResetType: (value) => {
+        if (value.trim().toLowerCase() !== "reset") return;
+        clearProgress();
+        this.closeResetFlow();
+        this.settingsOpen = false;
+        this.setState({ ...this.state, levelMedals: {} });
       },
       onToggleGear: () => {
         this.gearOpen = !this.gearOpen;
@@ -206,9 +285,30 @@ export class VocabApp {
       return;
     }
 
-    this.root.innerHTML = quizHtml(this.state, prompt);
+    this.root.innerHTML = quizHtml(this.state, prompt, {
+      quitConfirmOpen: this.quitConfirmOpen,
+      quitConfirmAnimate: this.quitConfirmAnimate,
+      quitConfirmOrigin: this.quitConfirmOrigin,
+    });
     bindQuizEvents(this.root, {
-      onQuit: () => this.setState(stopRoundEarly(this.state)),
+      onRequestQuit: (origin) => {
+        this.quitConfirmOrigin = origin;
+        this.quitConfirmOpen = true;
+        this.quitConfirmAnimate = true;
+        this.renderQuiz();
+        this.quitConfirmAnimate = false;
+      },
+      onCancelQuit: () => {
+        this.quitConfirmOpen = false;
+        this.quitConfirmOrigin = null;
+        this.renderQuiz();
+      },
+      onConfirmQuit: () => {
+        this.quitConfirmOpen = false;
+        this.quitConfirmOrigin = null;
+        stopSpeech();
+        this.setState(stopRoundEarly(this.state));
+      },
       onSubmit: (guess) => this.setState(processAnswer(this.state, guess)),
       onToggleMute: (muted) => {
         if (muted) stopSpeech();
@@ -217,7 +317,10 @@ export class VocabApp {
     });
 
     requestAnimationFrame(() => {
-      this.root.querySelector<HTMLInputElement>("#guess")?.focus();
+      window.scrollTo(0, 0);
+      if (!this.quitConfirmOpen) {
+        this.root.querySelector<HTMLInputElement>("#guess")?.focus({ preventScroll: true });
+      }
       this.playPromptAudio(prompt);
     });
   }

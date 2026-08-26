@@ -68,3 +68,11 @@ export function saveProgress(data: SavedProgress): void {
     /* quota / private mode — ignore */
   }
 }
+
+export function clearProgress(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BEAST_MODE_SELECTION, STYLE_TO_EN } from "../src/config";
 import {
   applySaved,
+  clearProgress,
   loadProgress,
   pickPersistable,
   pruneMedals,
@@ -107,5 +108,13 @@ describe("progress persistence", () => {
       audioMuted: true,
       questionStyle: STYLE_TO_EN,
     });
+  });
+
+  it("clearProgress removes saved data", () => {
+    saveProgress(sample);
+    clearProgress();
+    expect(loadProgress()).toBeNull();
+    saveProgress({ ...sample, levelMedals: {} });
+    expect(loadProgress()?.levelMedals).toEqual({});
   });
 });

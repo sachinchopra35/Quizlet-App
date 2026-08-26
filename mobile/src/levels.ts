@@ -150,12 +150,23 @@ export function courseGoldProgress(
 
 export type CourseProgressTier = "green" | "bronze" | "silver" | "gold" | "goldstar";
 
+export type RoundProgressTier = CourseProgressTier;
+
 /** Footer bar colour tier from overall perfect-level progress. */
 export function courseProgressTier(progress: number): CourseProgressTier {
   if (progress >= 0.95) return "goldstar";
   if (progress >= 0.9) return "gold";
   if (progress >= 0.8) return "silver";
   if (progress >= 0.7) return "bronze";
+  return "green";
+}
+
+/** In-round bar colour from questions still in the queue. */
+export function roundProgressTier(remaining: number): RoundProgressTier {
+  if (remaining <= 0) return "goldstar";
+  if (remaining === 1) return "gold";
+  if (remaining === 2) return "silver";
+  if (remaining === 3) return "bronze";
   return "green";
 }
 
