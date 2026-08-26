@@ -3,7 +3,7 @@
   --accent-border: #6eb0e0;
   --node-depth: 9px;
   --landmark-size: 6.5rem;
-  --landmark-gap: 11rem;
+  --landmark-gap: 9rem;
   --course-footer-bar-height: 0.5rem;
   --course-footer-height: 2.15rem;
 }
@@ -667,11 +667,11 @@ button.primary {
 }
 
 .trophy-left {
-  right: calc(100% + 3.2rem);
+  right: calc(100% + 2.2rem);
 }
 
 .trophy-right {
-  left: calc(100% + 3.2rem);
+  left: calc(100% + 2.2rem);
 }
 
 .level-trophy .level-emoji {
