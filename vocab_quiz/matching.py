@@ -126,6 +126,14 @@ def _normalize_doggy_kutta(s: str) -> str:
     return s.replace("kutta", "doggy").replace("kuta", "doggy")
 
 
+def _normalize_car_gaddi(s: str) -> str:
+    return re.sub(r"car", "gaddi", s)
+
+
+def _normalize_roz_har_din(s: str) -> str:
+    return s.replace("hardin", "roz")
+
+
 def _normalize_nose_nakk(s: str) -> str:
     s = s.replace("nakh", "nakk")
     return re.sub(r"nak(?!k)", "nakk", s)
@@ -368,6 +376,8 @@ def canonicalize_punjabi(s: str) -> str:
     s = s.replace("taiyaar", "tyaar")
     s = _normalize_plural_auxiliary(s)
     s = _normalize_doggy_kutta(s)
+    s = _normalize_car_gaddi(s)
+    s = _normalize_roz_har_din(s)
     s = _collapse_doubled_letters(s)
     s = TUADA_BEFORE_KOL_RE.sub("tuade", s)
     s = TUADE_OBLIQUE_RE.sub("tuade", s)

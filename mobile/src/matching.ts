@@ -119,6 +119,14 @@ function normalizeDoggyKutta(s: string): string {
   return s.split("kutta").join("doggy").split("kuta").join("doggy");
 }
 
+function normalizeCarGaddi(s: string): string {
+  return s.replace(/car/g, "gaddi");
+}
+
+function normalizeRozHarDin(s: string): string {
+  return s.split("hardin").join("roz");
+}
+
 function normalizeNoseNakk(s: string): string {
   return s.replace(/nakh/g, "nakk").replace(/nak(?!k)/g, "nakk");
 }
@@ -351,6 +359,8 @@ export function canonicalizePunjabi(s: string): string {
   t = t.split("taiyaar").join("tyaar");
   t = normalizePluralAuxiliary(t);
   t = normalizeDoggyKutta(t);
+  t = normalizeCarGaddi(t);
+  t = normalizeRozHarDin(t);
   t = collapseDoubledLetters(t);
   t = t.replace(TUADA_BEFORE_KOL_RE, "tuade");
   t = t.replace(TUADE_OBLIQUE_RE, "tuade");

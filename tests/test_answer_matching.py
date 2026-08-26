@@ -1075,6 +1075,23 @@ class TestLanguageTweakCanonicals(unittest.TestCase):
             canonicalize_punjabi("kyunki der ho gayi"),
         )
 
+    def test_car_gaddi_and_gaadi(self) -> None:
+        self.assertEqual(
+            canonicalize_punjabi("meri gaddi"),
+            canonicalize_punjabi("meri car"),
+        )
+        self.assertEqual(
+            canonicalize_punjabi("laal gaadi"),
+            canonicalize_punjabi("laal car"),
+        )
+
+    def test_roz_and_har_din(self) -> None:
+        self.assertEqual(canonicalize_punjabi("roz"), canonicalize_punjabi("har din"))
+        self.assertEqual(
+            canonicalize_punjabi("main roz janda hun"),
+            canonicalize_punjabi("main har din janda hun"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

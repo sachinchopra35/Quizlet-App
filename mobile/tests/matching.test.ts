@@ -386,6 +386,18 @@ describe("language tweak canonicals", () => {
       canonicalizePunjabi("kyunki der ho gayi"),
     );
   });
+
+  it("car gaddi and gaadi", () => {
+    expect(canonicalizePunjabi("meri gaddi")).toBe(canonicalizePunjabi("meri car"));
+    expect(canonicalizePunjabi("laal gaadi")).toBe(canonicalizePunjabi("laal car"));
+  });
+
+  it("roz and har din", () => {
+    expect(canonicalizePunjabi("roz")).toBe(canonicalizePunjabi("har din"));
+    expect(canonicalizePunjabi("main roz janda hun")).toBe(
+      canonicalizePunjabi("main har din janda hun"),
+    );
+  });
 });
 
 describe("answersMatch", () => {
