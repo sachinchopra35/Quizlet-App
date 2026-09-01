@@ -172,8 +172,35 @@ function stageDividerHtml(stageNum: number): string {
   `;
 }
 
+const STEPPING_ARROW_DEG: Record<"sm" | "md" | "lg", number> = {
+  sm: 90,
+  md: 80,
+  lg: 72.5,
+};
+
+function steppingArrowHtml(size: "sm" | "md" | "lg"): string {
+  const deg = STEPPING_ARROW_DEG[size];
+  return `<svg class="stepping-arrow" style="--arrow-rotate: ${deg}deg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h11M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function steppingStonesHtml(): string {
+  const stones: { index: number; size: "sm" | "md" | "lg" }[] = [
+    { index: -3, size: "sm" },
+    { index: -2, size: "md" },
+    { index: -1, size: "lg" },
+  ];
+  return stones
+    .map(
+      ({ index, size }) => `
+    <div class="level-slot stepping-slot" style="transform: translateX(${levelOffset(index)}px)">
+      <span class="level-node stepping-stone stepping-stone-${size}" aria-hidden="true">${steppingArrowHtml(size)}</span>
+    </div>`,
+    )
+    .join("");
+}
+
 function levelsHtml(csvNames: string[], levelMedals: Record<string, Medal>): string {
-  const parts: string[] = [];
+  const parts: string[] = [steppingStonesHtml()];
   for (let i = 0; i < csvNames.length; i++) {
     if (i % 10 === 0) parts.push(stageDividerHtml(stageNumber(i)));
     parts.push(nodeHtml(csvNames[i]!, i, levelMedals[csvNames[i]!], false, csvNames, levelMedals));
@@ -472,20 +499,12 @@ export function mapHtml(vm: MapViewModel): string {
         <button type="button" class="info-button" id="map-info" aria-label="About this app">i</button>
       </div>
     </header>
-    <section class="globe-hero" aria-label="Explore the globe">
+    <section class="globe-hero" aria-label="Welcome">
       <div class="globe-stage">
-        <img
-          class="globe-image"
-          src="./globe.png"
-          alt="Earth globe showing Asia and Australia"
-          width="2000"
-          height="2000"
-          decoding="async"
-        />
-        <span class="globe-peacock" role="img" aria-label="Peacock on Punjab, India">🦚</span>
+        <span class="hero-peacock" role="img" aria-label="Peacock">🦚</span>
       </div>
       <div class="globe-scroll-cue">
-        <span>Punjabi course starts below</span>
+        <span>Welcome! Your Punjabi course starts below</span>
         <span class="globe-arrow" aria-hidden="true">&#8595;</span>
       </div>
     </section>
@@ -554,7 +573,7 @@ function bindExpanderAnimations(root: HTMLElement): void {
 }
 
 export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
-  root.querySelectorAll<HTMLElement>(".level-node").forEach((node) => {
+  root.querySelectorAll<HTMLButtonElement>("button.level-node").forEach((node) => {
     const locked = node.classList.contains("is-locked");
     if (!locked) bindPressFeedback(node, handlers.onButtonPress);
     node.addEventListener("click", () => {

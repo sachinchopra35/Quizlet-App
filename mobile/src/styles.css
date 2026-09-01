@@ -5,6 +5,7 @@
   --node-size: 5.25rem;
   --landmark-size: 6.5rem;
   --landmark-gap: 9rem;
+  --hero-peacock-size: calc(var(--landmark-size) * 1.3);
   --trophy-offset: calc(
     (var(--landmark-gap) + var(--landmark-size) / 2 - var(--node-size) / 2) / 2 -
       var(--node-size) / 2
@@ -51,6 +52,10 @@ body {
 
 #app:has(.quiz-screen) {
   padding-bottom: 2rem;
+}
+
+#app:has(.map-header) {
+  padding-top: 0;
 }
 
 h1 {
@@ -317,36 +322,20 @@ button.primary {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  margin: 0 0 1.75rem;
-  padding: 2rem 0 2.25rem;
+  margin: 0 0 2rem;
+  padding: 6rem 0 6.5rem;
 }
 
 .globe-stage {
-  position: relative;
-  width: min(88vw, 26rem);
-  height: min(88vw, 26rem);
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.globe-image {
+.hero-peacock {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.globe-peacock {
-  position: absolute;
-  left: 17%;
-  top: 39%;
-  font-size: min(10vw, 2.75rem);
+  font-size: var(--hero-peacock-size);
   line-height: 1;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
-  pointer-events: none;
 }
 
 .globe-scroll-cue {
@@ -380,7 +369,7 @@ button.primary {
 }
 
 .map-header {
-  padding: 0.15rem 0 0.35rem;
+  padding: 0 0 0.35rem;
 }
 
 .map-header-row {
@@ -708,6 +697,11 @@ button.primary {
   margin: 1.25rem 0;
 }
 
+.stepping-stone {
+  pointer-events: none;
+  cursor: default;
+}
+
 .level-node {
   --node-face: #4aa3f0;
   --node-shade: #2b73b3;
@@ -728,6 +722,37 @@ button.primary {
   transition:
     transform 0.06s ease-out,
     box-shadow 0.06s ease-out;
+}
+
+.level-node.stepping-stone {
+  --node-face: #333840;
+  --node-shade: #1e2126;
+  position: relative;
+}
+
+.stepping-arrow {
+  position: absolute;
+  width: 44%;
+  height: 44%;
+  color: rgba(255, 255, 255, 0.26);
+  transform: rotate(var(--arrow-rotate, 90deg));
+  filter: drop-shadow(0 0.5px 0 rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.level-node.stepping-stone-sm {
+  width: calc(var(--node-size) * 0.55);
+  height: calc(var(--node-size) * 0.55);
+}
+
+.level-node.stepping-stone-md {
+  width: calc(var(--node-size) * 0.75);
+  height: calc(var(--node-size) * 0.75);
+}
+
+.level-node.stepping-stone-lg {
+  width: calc(var(--node-size) * 0.92);
+  height: calc(var(--node-size) * 0.92);
 }
 
 .level-node.is-pressed {
