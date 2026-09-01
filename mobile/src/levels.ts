@@ -4,6 +4,23 @@ export type LevelTier = "blue" | "bronze" | "silver" | "gold" | "goldstar";
 
 /** Keyword to emoji. Longest / most specific keys first — first match wins. */
 const EMOJI_RULES: [string, string][] = [
+  ["plans and next - mixed 03", "👩‍🏫"],
+  ["plans and next - mixed 02", "🧑‍🏫"],
+  ["plans and next - mixed 01", "👨🏽‍🏫"],
+  ["already and not yet", "😏"],
+  ["can and can't", "🥺"],
+  ["checking on people", "👍"],
+  ["out and about", "🚶"],
+  ["people at home", "🏡"],
+  ["wants and needs", "🙏"],
+  ["wants - chahna", "🙏"],
+  ["how and which", "🤷‍♂️"],
+  ["agar - if", "🤷‍♂️"],
+  ["at the door", "👨‍🔧"],
+  ["ke - and then", "👉"],
+  ["with and to", "🧑‍🤝‍🧑"],
+  ["quick replies", "💥"],
+  ["03 to be", "🐝"],
   ["living room", "🛋️"],
   ["fruits and vegetables", "🥕"],
   ["adjective and noun", "🧩"],

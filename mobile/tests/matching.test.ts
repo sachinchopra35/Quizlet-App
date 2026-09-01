@@ -104,8 +104,9 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
-  it("itte/itthe and othe/otte here-there", () => {
+  it("itte/itthe/ithe and othe/otte here-there", () => {
     expect(canonicalizePunjabi("itte hai")).toBe(canonicalizePunjabi("itthe hai"));
+    expect(canonicalizePunjabi("ithe hai")).toBe(canonicalizePunjabi("itte hai"));
     expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otte hai"));
     expect(canonicalizePunjabi("othe hai")).toBe(canonicalizePunjabi("otthe hai"));
     expect(canonicalizePunjabi("otte kinvein jaaie")).toBe(
@@ -210,6 +211,10 @@ describe("canonicalizePunjabi", () => {
   it("hu suffix and optional subject pronouns", () => {
     expect(canonicalizePunjabi("main thaka hu")).toBe(
       canonicalizePunjabi("main thaka hun"),
+    );
+    expect(canonicalizePunjabi("main hoo")).toBe(canonicalizePunjabi("main hun"));
+    expect(canonicalizePunjabi("main kha raha hoo")).toBe(
+      canonicalizePunjabi("main kha raha hun"),
     );
     expect(canonicalizePunjabi("khaunga")).toBe(
       canonicalizePunjabi("main khaunga"),
@@ -378,7 +383,16 @@ describe("language tweak canonicals", () => {
       canonicalizePunjabi("oh othe si"),
     );
     expect(canonicalizePunjabi("ki kar leya")).toBe(canonicalizePunjabi("kar leya"));
+    expect(canonicalizePunjabi("ki kar rahe ho")).toBe(
+      canonicalizePunjabi("tusi ki kar rahe ho"),
+    );
     expect(canonicalizePunjabi("kithe hai")).toBe(canonicalizePunjabi("kithe hai"));
+  });
+
+  it("optional leading eh on adjective phrases", () => {
+    expect(canonicalizePunjabi("vadda hai")).toBe(canonicalizePunjabi("eh vadda hai"));
+    expect(canonicalizePunjabi("nava hai")).toBe(canonicalizePunjabi("eh nava hai"));
+    expect(canonicalizePunjabi("changa hai")).toBe(canonicalizePunjabi("oh changa hai"));
   });
 
   it("gai in ho gya family", () => {

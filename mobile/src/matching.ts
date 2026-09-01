@@ -16,7 +16,6 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["leye", "leya"],
   ["lya", "leya"],
   ["lyi", "leya"],
-  ["eh", "oh"],
 ];
 
 const GYA_FORM_VARIANTS = ["gayi", "gaye", "gaya", "gai", "gyi", "gye"] as const;
@@ -110,6 +109,34 @@ function stripOptionalQuestionKiRaw(s: string): string {
   return afterKi;
 }
 
+function stripOptionalQuestionKiCompact(s: string): string {
+  if (!s.startsWith("ki")) return s;
+  if (
+    s.startsWith("kinne") ||
+    s.startsWith("kithe") ||
+    s.startsWith("kitthe") ||
+    /^ki(nne|ne)baj/.test(s)
+  ) {
+    return s;
+  }
+  const afterKi = s.slice(2);
+  if (afterKi.startsWith("th")) return s;
+  for (const blocked of KI_QUESTION_BLOCKLIST) {
+    if (afterKi.startsWith(blocked)) return s;
+  }
+  return afterKi;
+}
+
+function shouldPreserveLeadingOh(s: string): boolean {
+  return (
+    s.startsWith("ohnu") ||
+    s.startsWith("ohnadi") ||
+    s.startsWith("ohnada") ||
+    s.startsWith("ohnade") ||
+    s.startsWith("ohnane")
+  );
+}
+
 function normalizeCowWordsRaw(s: string): string {
   s = s.replace(COW_GAYE_POSSESSIVE_RE, "$1 ga");
   return s.replace(COW_GAN_GAY_RE, "ga");
@@ -144,6 +171,8 @@ function normalizePluralAuxiliary(s: string): string {
 
 function normalizeBajeTimeAuxiliary(s: string): string {
   s = s.replace(/bajohain$/, "bajohan");
+  s = s.replace(/bajehain$/, "bajohan");
+  s = s.replace(/bajehan$/, "bajohan");
   return s.replace(/bajene$/, "bajohan");
 }
 
@@ -262,9 +291,10 @@ function normalizePostpositions(s: string): string {
 }
 
 function normalizeLocationAdverbs(s: string): string {
-  s = s.split("kitthe").join("kithe");
   s = s.split("itthe").join("itte");
+  s = s.split("ithe").join("itte");
   s = s.split("otte").join("othe");
+  s = s.split("kitthe").join("kithe");
   s = s.split("ikmind").join("ikminute");
   s = s.split("kinvein").join("kivein");
   s = s.split("ikatha").join("ikathe");
@@ -369,6 +399,7 @@ export function canonicalizePunjabi(s: string): string {
   for (const [variant, canonical] of PUNJABI_SUBSTRING_CANONICALS) {
     t = t.split(variant).join(canonical);
   }
+  t = t.split("keeh").join("keoh");
   t = normalizeNoseNakk(t);
   t = translatePunjabiChars(t);
   t = normalizeBajeTimeAuxiliary(t);
@@ -376,10 +407,14 @@ export function canonicalizePunjabi(s: string): string {
   t = t.replace(/soo$/, "so");
   t = t.split("dakhdo").join("dakho");
   t = t.split("nakaro").join("nakar");
-  if (t.startsWith("oh") && !t.startsWith("ohn")) {
+  if (t.startsWith("eh")) {
+    t = `oh${t.slice(2)}`;
+  }
+  if (t.startsWith("oh") && !shouldPreserveLeadingOh(t)) {
     t = t.slice(2);
   }
   t = stripOptionalSubjectPrefix(t);
+  t = stripOptionalQuestionKiCompact(t);
   t = stripOptionalTrailingHun(t);
   return t;
 }

@@ -53,6 +53,26 @@ describe("levelEmoji", () => {
     expect(levelEmoji("13 Animals.csv")).toBe("🐾");
     expect(levelEmoji("15 Family.csv")).toBe("👪");
   });
+
+  it("uses hand-picked emojis for selected levels", () => {
+    expect(levelEmoji("03 To Be.csv")).toBe("🐝");
+    expect(levelEmoji("18 Quick Replies.csv")).toBe("💥");
+    expect(levelEmoji("24 With and To.csv")).toBe("🧑‍🤝‍🧑");
+    expect(levelEmoji("27 Wants and Needs.csv")).toBe("🙏");
+    expect(levelEmoji("48 Ke - And Then.csv")).toBe("👉");
+    expect(levelEmoji("49 People at Home - Mixed.csv")).toBe("🏡");
+    expect(levelEmoji("50 Out and About - Mixed.csv")).toBe("🚶");
+    expect(levelEmoji("51 Checking On People - Mixed.csv")).toBe("👍");
+    expect(levelEmoji("52 Plans and Next - Mixed 01.csv")).toBe("👨🏽‍🏫");
+    expect(levelEmoji("53 Plans and Next - Mixed 02.csv")).toBe("🧑‍🏫");
+    expect(levelEmoji("54 Plans and Next - Mixed 03.csv")).toBe("👩‍🏫");
+    expect(levelEmoji("56 Can and Can't.csv")).toBe("🥺");
+    expect(levelEmoji("57 Already and Not Yet.csv")).toBe("😏");
+    expect(levelEmoji("58 At the Door.csv")).toBe("👨‍🔧");
+    expect(levelEmoji("61 How and Which.csv")).toBe("🤷‍♂️");
+    expect(levelEmoji("62 Agar - If.csv")).toBe("🤷‍♂️");
+    expect(levelEmoji("63 Wants - Chahna.csv")).toBe("🙏");
+  });
 });
 
 describe("medalTier", () => {
