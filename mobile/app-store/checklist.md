@@ -42,6 +42,7 @@ npx cap open ios
 
 - [ ] **Signing & Capabilities** → Team = your paid developer account
 - [ ] **Bundle Identifier** = `com.sachchopra.simplepunjabi`
+- [ ] Export compliance: `ITSAppUsesNonExemptEncryption` = NO (set in `capacitor.config.ts` / Info.plist — skips the encryption questionnaire on upload)
 - [ ] Set **Version** (Marketing) = `1.0.0`, **Build** = `1`
 - [ ] Run on device once to verify signing works
 - [ ] Delete old app from phone if you still have the `com.local...` build

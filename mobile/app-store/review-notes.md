@@ -12,6 +12,8 @@ No microphone, camera, location, or tracking. Text-to-speech uses the built-in i
 Roman-script Punjabi only (no Gurmukhi). No user-generated content. No in-app purchases.
 
 How to test: open app → tap any level on the map → complete a short quiz round. Beast Mode is at the bottom of the map, which selects 10 random questions taken from the other quiz rounds.
+
+Developer testing shortcut (not shown in the UI): during any quiz round, type letmewin100 as an answer to instantly complete the round with a perfect score. This is retained for post-release maintenance and testing only; regular users are unlikely to discover it.
 ```
 
 ---

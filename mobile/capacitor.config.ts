@@ -6,6 +6,9 @@ const config: CapacitorConfig = {
   webDir: "dist",
   ios: {
     contentInset: "automatic",
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
 };
 
