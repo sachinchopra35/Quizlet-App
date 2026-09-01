@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const src = join(root, "punjabi_vocab");
+const src = join(root, "vocab");
 const dest = join(dirname(fileURLToPath(import.meta.url)), "../public/data");
 
 mkdirSync(dest, { recursive: true });

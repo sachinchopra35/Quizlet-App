@@ -1,5 +1,5 @@
-import { courseFooterHtml, escapeHtml } from "./html";
-import { courseGoldProgress, roundProgress, roundProgressTier } from "./levels";
+import { escapeHtml } from "./html";
+import { roundProgress, roundProgressTier } from "./levels";
 import { currentRowIndex, type QuizState } from "./rounds";
 
 export interface QuizHandlers {
@@ -58,6 +58,21 @@ export function promptFor(state: QuizState): QuizPrompt | null {
     : { text: row.lang, ttsLang: undefined };
 }
 
+/** Prompt to show while holding the final frame after the last correct answer. */
+export function finishingPrompt(state: QuizState): QuizPrompt | null {
+  const fb = state.lastFeedback;
+  if (fb) {
+    return state.direction === "en_to_lang"
+      ? { text: fb[1], ttsLang: "en-GB" }
+      : { text: fb[1], ttsLang: undefined };
+  }
+  const row = state.vocabRows[0];
+  if (!row) return null;
+  return state.direction === "en_to_lang"
+    ? { text: row.en, ttsLang: "en-GB" }
+    : { text: row.lang, ttsLang: undefined };
+}
+
 export function quizHtml(
   state: QuizState,
   prompt: QuizPrompt,
@@ -66,6 +81,7 @@ export function quizHtml(
     quitConfirmAnimate: false,
     quitConfirmOrigin: null,
   },
+  finishing = false,
 ): string {
   const pct = Math.round(roundProgress(state) * 100);
   const tier = roundProgressTier(state.queue.length);
@@ -78,7 +94,7 @@ export function quizHtml(
         : "";
 
   return `
-    <div class="quiz-screen">
+    <div class="quiz-screen${finishing ? " quiz-finishing" : ""}">
       <div class="quiz-header">
         <div class="quiz-top">
           <button type="button" class="icon-button quiz-quit" id="quiz-quit" aria-label="Quit round">←</button>
@@ -108,14 +124,36 @@ export function quizHtml(
             spellcheck="false"
             enterkeyhint="go"
             placeholder="Your answer"
+            ${finishing ? "disabled" : ""}
           />
-          <button type="submit" class="primary">Check</button>
+          <button type="submit" class="primary" ${finishing ? "disabled" : ""}>Check</button>
         </form>
       </div>
     </div>
     ${quitConfirmHtml(overlay)}
-    ${courseFooterHtml(courseGoldProgress(state.csvNames, state.levelMedals))}
   `;
+}
+
+export function syncQuizProgressBar(
+  root: HTMLElement,
+  fromPct: number,
+  toPct: number,
+): void {
+  const fill = root.querySelector<HTMLElement>(".progress-fill");
+  if (!fill) return;
+  if (fromPct === toPct) {
+    fill.style.width = `${toPct}%`;
+    return;
+  }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    fill.style.width = `${toPct}%`;
+    return;
+  }
+  fill.style.transition = "none";
+  fill.style.width = `${fromPct}%`;
+  void fill.offsetWidth;
+  fill.style.transition = "";
+  fill.style.width = `${toPct}%`;
 }
 
 export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void {

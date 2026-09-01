@@ -1,1 +1,0 @@
-"""Vocabulary quiz application package."""

@@ -189,9 +189,15 @@ function settingsHtml(vm: MapViewModel): string {
   `;
 }
 
+function wordListExpanderHtml(body: string): string {
+  return `<details class="expander"><summary>Show words list</summary><div class="expander-panel"><div class="expander-panel-inner">${body}</div></div></details>`;
+}
+
 function wordListHtml(vm: MapViewModel): string {
   if (vm.popupCsv === BEAST_MODE_SELECTION) {
-    return `<details class="expander"><summary>Show words list</summary><p class="caption">Beast Mode draws 10 random cards from all lists.</p></details>`;
+    return wordListExpanderHtml(
+      `<p class="caption">Beast Mode draws 10 random cards from all lists.</p>`,
+    );
   }
   const practiceStage = vm.popupCsv ? parseStagePracticeKey(vm.popupCsv) : null;
   if (practiceStage !== null) {
@@ -200,7 +206,9 @@ function wordListHtml(vm: MapViewModel): string {
   const rows = vm.popupRows
     .map((r) => `<tr><td>${escapeHtml(r.en)}</td><td>${escapeHtml(r.lang)}</td></tr>`)
     .join("");
-  return `<details class="expander"><summary>Show words list</summary><div class="word-scroll"><table class="word-table">${rows}</table></div></details>`;
+  return wordListExpanderHtml(
+    `<div class="word-scroll"><table class="word-table">${rows}</table></div>`,
+  );
 }
 
 function popupPanelAttrs(vm: MapViewModel, extraClass?: string): string {
@@ -448,6 +456,40 @@ function bindPressFeedback(node: HTMLElement, onPress?: () => void): void {
   node.addEventListener("lostpointercapture", release);
 }
 
+function bindExpanderAnimations(root: HTMLElement): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  root.querySelectorAll<HTMLDetailsElement>(".expander").forEach((details) => {
+    const summary = details.querySelector("summary");
+    const panel = details.querySelector<HTMLElement>(".expander-panel");
+    if (!summary || !panel) return;
+
+    summary.addEventListener("click", (e) => {
+      if (!details.open) return;
+
+      e.preventDefault();
+      details.classList.add("is-closing");
+
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        details.classList.remove("is-closing");
+        details.open = false;
+      };
+
+      panel.addEventListener(
+        "transitionend",
+        (ev) => {
+          if (ev.propertyName === "grid-template-rows") finish();
+        },
+        { once: true },
+      );
+      window.setTimeout(finish, 320);
+    });
+  });
+}
+
 export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLElement>(".level-node").forEach((node) => {
     const locked = node.classList.contains("is-locked");
@@ -583,4 +625,6 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelector("#settings-mute")?.addEventListener("change", (e) => {
     handlers.onToggleMute((e.target as HTMLInputElement).checked);
   });
+
+  bindExpanderAnimations(root);
 }

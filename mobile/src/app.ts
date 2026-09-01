@@ -2,6 +2,7 @@ import {
   BEAST_MODE_SELECTION,
   directionFromStyle,
   parseStagePracticeKey,
+  ROUND_COMPLETE_HOLD_MS,
   STAGE_PRACTICE_SIZE,
 } from "./config";
 import { stageLevelNames } from "./levels";
@@ -20,7 +21,8 @@ import {
   type CompletionSummary,
   type MapViewModel,
 } from "./mapView";
-import { bindQuizEvents, promptFor, quizHtml, type QuizPrompt } from "./quizView";
+import { bindQuizEvents, finishingPrompt, promptFor, quizHtml, syncQuizProgressBar, type QuizPrompt } from "./quizView";
+import { roundProgress } from "./levels";
 import {
   applySaved,
   clearProgress,
@@ -70,6 +72,8 @@ export class VocabApp {
   private trophyMessageAnimate = false;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
+  private quizProgressPct = 0;
+  private roundCompleteTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -115,6 +119,18 @@ export class VocabApp {
     this.resetTypeOpen = false;
   }
 
+  private clearRoundCompleteTimer(): void {
+    if (this.roundCompleteTimer !== null) {
+      clearTimeout(this.roundCompleteTimer);
+      this.roundCompleteTimer = null;
+    }
+  }
+
+  private roundCompleteHoldMs(): number {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return 150;
+    return ROUND_COMPLETE_HOLD_MS;
+  }
+
   private render(): void {
     if (this.state.screen === "quiz") {
       this.renderQuiz();
@@ -123,24 +139,29 @@ export class VocabApp {
     }
   }
 
+  private celebrateRoundComplete(announce: string | null): void {
+    requestAnimationFrame(() => {
+      playConfetti();
+    });
+    if (this.state.audioMuted) return;
+    playChime("correct");
+    if (announce) {
+      speakText(announce, { lang: "en-GB", rate: 0.88, delayMs: 450 });
+    }
+  }
+
   private renderMap(): void {
     const consumed = consumeIdleMessages(this.state);
     this.state = consumed.state;
-    if (consumed.message && consumed.level === "success") {
+    const shouldCelebrate = Boolean(consumed.message && consumed.level === "success");
+    if (shouldCelebrate) {
       const medals = this.state.roundMedals;
       const last = medals[medals.length - 1];
       this.completion = {
         emoji: last?.emoji ?? "🏅",
         label: last?.label ?? "",
-        message: consumed.message,
+        message: consumed.message!,
       };
-      if (!this.state.audioMuted) {
-        playConfetti();
-        playChime("correct");
-        if (consumed.announce) {
-          speakText(consumed.announce, { lang: "en-GB", rate: 0.88, delayMs: 450 });
-        }
-      }
     }
 
     const vm: MapViewModel = {
@@ -168,6 +189,9 @@ export class VocabApp {
     };
 
     this.root.innerHTML = mapHtml(vm);
+    if (shouldCelebrate) {
+      this.celebrateRoundComplete(consumed.announce);
+    }
     bindMapEvents(this.root, {
       onOpenLevel: (csv, origin) => {
         this.popupCsv = csv;
@@ -309,6 +333,8 @@ export class VocabApp {
     this.popupCsv = null;
     this.completion = null;
     this.scrollToLevelCsv = name;
+    this.quizProgressPct = 0;
+    this.clearRoundCompleteTimer();
     const direction = this.state.direction;
     const practiceStage = parseStagePracticeKey(name);
     if (name === BEAST_MODE_SELECTION) {
@@ -326,9 +352,15 @@ export class VocabApp {
   private renderQuiz(): void {
     const prompt = promptFor(this.state);
     if (!prompt) {
+      if (this.state.roundActive) {
+        this.holdRoundComplete();
+        return;
+      }
       this.setState(completeRoundNaturally(this.state));
       return;
     }
+
+    this.clearRoundCompleteTimer();
 
     this.root.innerHTML = quizHtml(this.state, prompt, {
       quitConfirmOpen: this.quitConfirmOpen,
@@ -361,6 +393,10 @@ export class VocabApp {
       },
     });
 
+    const targetPct = Math.round(roundProgress(this.state) * 100);
+    syncQuizProgressBar(this.root, this.quizProgressPct, targetPct);
+    this.quizProgressPct = targetPct;
+
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
       if (!this.quitConfirmOpen) {
@@ -368,6 +404,64 @@ export class VocabApp {
       }
       this.playPromptAudio(prompt);
     });
+  }
+
+  private holdRoundComplete(): void {
+    if (this.roundCompleteTimer !== null) return;
+
+    const displayPrompt = finishingPrompt(this.state);
+    if (!displayPrompt) {
+      this.setState(completeRoundNaturally(this.state));
+      return;
+    }
+
+    this.root.innerHTML = quizHtml(
+      this.state,
+      displayPrompt,
+      {
+        quitConfirmOpen: this.quitConfirmOpen,
+        quitConfirmAnimate: this.quitConfirmAnimate,
+        quitConfirmOrigin: this.quitConfirmOrigin,
+      },
+      true,
+    );
+    bindQuizEvents(this.root, {
+      onRequestQuit: (origin) => {
+        this.clearRoundCompleteTimer();
+        this.quitConfirmOrigin = origin;
+        this.quitConfirmOpen = true;
+        this.quitConfirmAnimate = true;
+        this.renderQuiz();
+        this.quitConfirmAnimate = false;
+      },
+      onCancelQuit: () => {
+        this.quitConfirmOpen = false;
+        this.quitConfirmOrigin = null;
+        this.clearRoundCompleteTimer();
+        this.holdRoundComplete();
+      },
+      onConfirmQuit: () => {
+        this.clearRoundCompleteTimer();
+        this.quitConfirmOpen = false;
+        this.quitConfirmOrigin = null;
+        stopSpeech();
+        this.setState(stopRoundEarly(this.state));
+      },
+      onSubmit: () => {},
+      onToggleMute: (muted) => {
+        if (muted) stopSpeech();
+        this.setState({ ...this.state, audioMuted: muted });
+      },
+    });
+
+    const targetPct = 100;
+    syncQuizProgressBar(this.root, this.quizProgressPct, targetPct);
+    this.quizProgressPct = targetPct;
+
+    this.roundCompleteTimer = setTimeout(() => {
+      this.roundCompleteTimer = null;
+      this.setState(completeRoundNaturally(this.state));
+    }, this.roundCompleteHoldMs());
   }
 
   private playPromptAudio(prompt: QuizPrompt): void {

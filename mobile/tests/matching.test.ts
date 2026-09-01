@@ -12,6 +12,7 @@ import {
   processAnswer,
   recordRoundMedal,
   startRound,
+  completeRoundNaturally,
 } from "../src/rounds";
 import { parseCsv } from "../src/vocab";
 
@@ -460,6 +461,20 @@ describe("rounds", () => {
     };
     const next = recordRoundMedal(state, 9, 10);
     expect(next.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🏅", label: "10/10" });
+  });
+
+  it("letmewin100 cheat clears the queue with a perfect score", () => {
+    const rows = [
+      { en: "a", lang: "b" },
+      { en: "c", lang: "d" },
+    ];
+    let s = startRound(createInitialState(), rows, "en_to_lang");
+    s = processAnswer(s, "letmewin100");
+    expect(s.queue).toEqual([]);
+    expect(Object.values(s.firstAttemptOk)).toEqual([true, true]);
+    const completed = completeRoundNaturally(s);
+    expect(completed.levelMedals).toEqual({});
+    expect(completed.roundMessage).toContain("2 / 2");
   });
 
   it("process correct answer advances queue", () => {

@@ -177,21 +177,36 @@ export function speakWrongThenQuestion(
 }
 
 export function playConfetti(): void {
-  const body = document.body;
-  const old = document.getElementById("vq-confetti-canvas");
-  old?.remove();
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const host = document.getElementById("confetti-layer") ?? document.body;
+  host.querySelector("#vq-confetti-canvas")?.remove();
+
   const canvas = document.createElement("canvas");
   canvas.id = "vq-confetti-canvas";
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let viewW = window.innerWidth;
+  let viewH = window.innerHeight;
+  let cx = viewW * 0.5;
+  let cy = viewH * 0.35;
+
   const sizeCanvas = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    viewW = window.innerWidth;
+    viewH = window.innerHeight;
+    canvas.width = Math.round(viewW * dpr);
+    canvas.height = Math.round(viewH * dpr);
+    canvas.style.width = `${viewW}px`;
+    canvas.style.height = `${viewH}px`;
   };
-  sizeCanvas();
   canvas.style.cssText =
-    "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;";
-  body.appendChild(canvas);
+    "position:absolute;top:0;left:0;display:block;pointer-events:none;";
+  sizeCanvas();
+  host.appendChild(canvas);
+
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
   const colors = ["#ff6b9d", "#ffd166", "#06d6a0", "#4cc9f0", "#c77dff", "#ffe66d"];
   const particles: {
     x: number;
@@ -205,8 +220,6 @@ export function playConfetti(): void {
     color: string;
     life: number;
   }[] = [];
-  let cx = canvas.width * 0.5;
-  let cy = canvas.height * 0.35;
   for (let i = 0; i < 96; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.8 + Math.random() * 2.8;
@@ -226,15 +239,16 @@ export function playConfetti(): void {
   let frame = 0;
   const maxFrames = 260;
   const onResize = () => {
-    const ox = cx / Math.max(canvas.width, 1);
-    const oy = cy / Math.max(canvas.height, 1);
+    const ox = cx / Math.max(viewW, 1);
+    const oy = cy / Math.max(viewH, 1);
     sizeCanvas();
-    cx = canvas.width * ox;
-    cy = canvas.height * oy;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = viewW * ox;
+    cy = viewH * oy;
   };
   window.addEventListener("resize", onResize);
   const tick = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, viewW, viewH);
     let alive = false;
     for (const p of particles) {
       if (p.life <= 0) continue;
@@ -261,7 +275,7 @@ export function playConfetti(): void {
       canvas.remove();
     }
   };
-  tick();
+  requestAnimationFrame(tick);
 }
 
 export interface Medal {

@@ -1,21 +1,19 @@
 # Simple Punjabi on iPhone (offline)
 
-This folder is a **phone version** of your vocab quiz. It does **not** use Streamlit. Your word lists are copied from `punjabi_vocab/` and baked into the app when you build it.
-
-Your Mac desktop app (`run_app.sh` / Dock) is unchanged. Use that to edit CSVs as usual.
+Capacitor iOS app for learning spoken Punjabi. Word lists are copied from `../vocab/` and baked into the app when you build.
 
 **App Store:** listing copy, privacy policy, support page, and a submission checklist live in [`app-store/`](app-store/).
 
 ---
 
-## Words you’ll see
+## Words you'll see
 
 | Term | What it means |
 |------|----------------|
 | **Terminal** | The Mac app where you type commands (black or white window with a prompt). |
 | **npm** | A tool that runs project scripts. You never install things manually — `npm install` does it. |
-| **Vite** | A local preview server. When you run `npm run dev`, Terminal “belongs” to Vite until you stop it. |
-| **Xcode** | Apple’s app for putting the quiz on your iPhone. You click buttons there; not much typing. |
+| **Vite** | A local preview server. When you run `npm run dev`, Terminal "belongs" to Vite until you stop it. |
+| **Xcode** | Apple's app for putting the quiz on your iPhone. You click buttons there; not much typing. |
 
 ---
 
@@ -25,7 +23,7 @@ Your Mac desktop app (`run_app.sh` / Dock) is unchanged. Use that to edit CSVs a
 2. Install **Node.js** from [https://nodejs.org](https://nodejs.org) — choose the **LTS** installer.
 3. Open **Terminal** (Spotlight: type `Terminal`).
 
-Go to this project’s mobile folder (copy-paste the whole line, press Enter):
+Go to this project's mobile folder (copy-paste the whole line, press Enter):
 
 ```bash
 cd "/Users/sachinchopra/Projects/Quizlet App/mobile"
@@ -41,7 +39,7 @@ Wait until it finishes. You should get your prompt back (no spinner).
 
 ---
 
-## “My Terminal is stuck on Vite” — read this
+## "My Terminal is stuck on Vite" — read this
 
 When you run:
 
@@ -77,7 +75,7 @@ npm test
 
 The first tab can keep Vite open; the second tab runs tests.
 
-**You do not need Vite running to install the app on your iPhone.** For the phone, use the “Put the app on your iPhone” section below, not `npm run dev`.
+**You do not need Vite running to install the app on your iPhone.** For the phone, use the "Put the app on your iPhone" section below, not `npm run dev`.
 
 ---
 
@@ -121,7 +119,7 @@ npm run dev
 
 Open the link it prints (usually `http://localhost:5173`).
 
-When you’re done, press **`Control + C`** in that Terminal window to stop Vite.
+When you're done, press **`Control + C`** in that Terminal window to stop Vite.
 
 ---
 
@@ -140,9 +138,9 @@ It should say all tests passed, then return to the prompt.
 
 ---
 
-## After you edit vocab CSVs on the Mac
+## After you edit vocab CSVs
 
-1. Save your changes in `punjabi_vocab/` (same as for the desktop quiz).
+1. Save your changes in `../vocab/`.
 2. In Terminal:
 
 ```bash
@@ -175,10 +173,12 @@ Then run `pod install` again. You may need your Mac password for `sudo`.
 
 ## App icon
 
-The shipped icon is **ਪ on off-white** (`mobile/icon-variants/02-pa-off-white.png`). Regenerate all variants or reinstall into Xcode assets:
+The shipped icon is **ਪ on off-white** (`icon-variants/02-pa-off-white.png`). To regenerate all variants or reinstall into Xcode assets (optional; requires Python and Pillow):
 
 ```bash
-./venv/bin/python scripts/build_icon_variants.py --install-ios
+cd "/Users/sachinchopra/Projects/Quizlet App/mobile"
+pip install pillow
+python scripts/build_icon_variants.py --install-ios
 ```
 
 Then rebuild in Xcode (Product → Clean Build Folder → Run).
@@ -190,21 +190,20 @@ Then rebuild in Xcode (Product → Clean Build Folder → Run).
 | Problem | What to try |
 |---------|-------------|
 | `command not found: npm` | Install Node.js from nodejs.org, quit and reopen Terminal. |
-| Terminal won’t accept typing | Vite (or something else) is running — **Control + C** or use a new tab. |
+| Terminal won't accept typing | Vite (or something else) is running — **Control + C** or use a new tab. |
 | `npm run cap:open` does nothing | Install Xcode from the App Store. |
 | iPhone not listed in Xcode | Unlock phone, tap Trust This Computer, try another cable. |
-| App won’t open on phone after a week | Normal with free Apple ID — Run ▶ from Xcode again. |
-| Build fails: `Sandbox: bash deny` / `Pods-App-frameworks.sh` | Xcode’s **User Script Sandboxing** blocks CocoaPods. This repo sets it to **No** in the iOS project; if it comes back after a fresh `cap add ios`, open **App** target → **Build Settings** → search **User Script Sandboxing** → set to **No**, then **Product → Clean Build Folder** and Run again. |
+| App won't open on phone after a week | Normal with free Apple ID — Run ▶ from Xcode again. |
+| Build fails: `Sandbox: bash deny` / `Pods-App-frameworks.sh` | Xcode's **User Script Sandboxing** blocks CocoaPods. This repo sets it to **No** in the iOS project; if it comes back after a fresh `cap add ios`, open **App** target → **Build Settings** → search **User Script Sandboxing** → set to **No**, then **Product → Clean Build Folder** and Run again. |
 
 ---
 
-## Folder map (for curiosity)
+## Folder map
 
 | Folder / file | Purpose |
 |---------------|---------|
 | `src/` | Quiz code (matching, rounds, UI, sounds) |
-| `public/data/` | Copy of your CSVs (auto-generated; don’t edit here) |
+| `public/data/` | Copy of your CSVs (auto-generated; don't edit here) |
 | `ios/` | Xcode project (auto-generated) |
-| `../punjabi_vocab/` | **Edit vocab here** — source of truth |
-
-Desktop quiz code stays in `../vocab_quiz/` and `../app.py`.
+| `../vocab/` | **Edit vocab here** — source of truth |
+| `tests/` | Vitest unit tests |

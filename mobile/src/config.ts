@@ -5,6 +5,14 @@ export const SPEECH_LEAD_MS = 250;
 export const BEAST_MODE_SIZE = 10;
 export const STAGE_PRACTICE_PREFIX = "__stage_practice_";
 export const STAGE_PRACTICE_SIZE = 10;
+export const WIN_CHEAT_CODE = "letmewin100";
+
+export function isWinCheatCode(text: string): boolean {
+  return text.trim().toLowerCase() === WIN_CHEAT_CODE;
+}
+
+/** Pause on the final quiz frame so the progress bar can finish animating. */
+export const ROUND_COMPLETE_HOLD_MS = 400;
 
 export function stagePracticeKey(stage: number): string {
   return `${STAGE_PRACTICE_PREFIX}${stage}__`;

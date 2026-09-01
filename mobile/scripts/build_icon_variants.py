@@ -11,11 +11,10 @@ from pathlib import Path
 # Gurmukhi letter PA — ਪ
 GLYPH = "\u0a2a"
 
-REPO = Path(__file__).resolve().parents[1]
-OUT_DIR = REPO / "mobile" / "icon-variants"
+MOBILE = Path(__file__).resolve().parents[1]
+OUT_DIR = MOBILE / "icon-variants"
 IOS_ICON = (
-    REPO
-    / "mobile"
+    MOBILE
     / "ios"
     / "App"
     / "App"
@@ -121,7 +120,7 @@ def main() -> None:
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError:
-        print("Install Pillow: ./venv/bin/pip install pillow", file=sys.stderr)
+        print("Install Pillow: pip install pillow", file=sys.stderr)
         raise SystemExit(1) from None
 
     font_path = pick_font()

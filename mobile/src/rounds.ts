@@ -1,5 +1,6 @@
 import {
   BEAST_MODE_SIZE,
+  isWinCheatCode,
   type Direction,
   STYLE_FROM_EN,
   styleFromDirection,
@@ -187,6 +188,18 @@ export function recordRoundMedal(state: QuizState, correct: number, total: numbe
 export function processAnswer(state: QuizState, userText: string): QuizState {
   const idx = currentRowIndex(state);
   if (idx === null) return state;
+
+  if (isWinCheatCode(userText)) {
+    const firstAttemptOk = Object.fromEntries(
+      state.vocabRows.map((_, i) => [i, true as const]),
+    );
+    return {
+      ...state,
+      queue: [],
+      firstAttemptOk,
+      lastFeedback: null,
+    };
+  }
 
   const row = state.vocabRows[idx];
   const promptSide =
