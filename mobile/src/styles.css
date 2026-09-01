@@ -1034,6 +1034,19 @@ button.primary {
     transition: none;
   }
 
+  .popup-settings-panel {
+    transition: none;
+  }
+
+  .popup-settings {
+    transition: none;
+    opacity: 1;
+  }
+
+  .popup-settings-wrap:not(.is-open) .popup-settings {
+    opacity: 0;
+  }
+
   .progress-fill {
     transition: none;
   }
@@ -1127,13 +1140,38 @@ button.primary {
   text-align: center;
 }
 
+.popup-settings-wrap {
+  margin: 0;
+}
+
+.popup-settings-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease-out;
+}
+
+.popup-settings-wrap.is-open .popup-settings-panel {
+  grid-template-rows: 1fr;
+}
+
+.popup-settings-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
 .popup-settings {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.22s ease-out;
+}
+
+.popup-settings-wrap.is-open .popup-settings {
   margin-bottom: 0.75rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid #2a303a;
+  opacity: 1;
 }
 
 .popup-settings .segmented {

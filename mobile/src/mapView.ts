@@ -209,14 +209,20 @@ function levelsHtml(csvNames: string[], levelMedals: Record<string, Medal>): str
 }
 
 function settingsHtml(vm: MapViewModel): string {
-  if (!vm.gearOpen) return "";
+  const openClass = vm.gearOpen ? " is-open" : "";
   return `
-    <div class="popup-settings">
-      <div class="segmented">
-        <button type="button" data-style="${escapeAttr(STYLE_FROM_EN)}" class="${vm.questionStyle === STYLE_FROM_EN ? "active" : ""}">From English</button>
-        <button type="button" data-style="${escapeAttr(STYLE_TO_EN)}" class="${vm.questionStyle === STYLE_TO_EN ? "active" : ""}">To English</button>
+    <div class="popup-settings-wrap${openClass}">
+      <div class="popup-settings-panel">
+        <div class="popup-settings-inner">
+          <div class="popup-settings">
+            <div class="segmented">
+              <button type="button" data-style="${escapeAttr(STYLE_FROM_EN)}" class="${vm.questionStyle === STYLE_FROM_EN ? "active" : ""}">From English</button>
+              <button type="button" data-style="${escapeAttr(STYLE_TO_EN)}" class="${vm.questionStyle === STYLE_TO_EN ? "active" : ""}">To English</button>
+            </div>
+            <label class="mute-row"><input type="checkbox" id="popup-mute" ${vm.audioMuted ? "checked" : ""} /> Mute</label>
+          </div>
+        </div>
       </div>
-      <label class="mute-row"><input type="checkbox" id="popup-mute" ${vm.audioMuted ? "checked" : ""} /> Mute</label>
     </div>
   `;
 }

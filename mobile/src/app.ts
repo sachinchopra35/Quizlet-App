@@ -302,6 +302,11 @@ export class VocabApp {
       onToggleGear: () => {
         this.closeLevelHint();
         this.gearOpen = !this.gearOpen;
+        const wrap = this.root.querySelector<HTMLElement>(".popup-settings-wrap");
+        if (wrap) {
+          wrap.classList.toggle("is-open", this.gearOpen);
+          return;
+        }
         this.render();
       },
       onOpenLevelHint: () => {
@@ -488,16 +493,22 @@ export class VocabApp {
 
   private playPromptAudio(prompt: QuizPrompt): void {
     if (this.state.audioMuted) return;
+    const speakPrompt = this.state.direction !== "lang_to_en";
     const fb = this.state.lastFeedback;
     const gen = this.state.feedbackSoundGen;
     if (fb && gen !== this.state.lastChimedFeedbackGen) {
       playChime(fb[0]);
       this.state = { ...this.state, lastChimedFeedbackGen: gen };
       if (fb[0] === "wrong") {
-        speakWrongThenQuestion(fb[2], prompt.text, prompt.ttsLang);
+        if (speakPrompt) {
+          speakWrongThenQuestion(fb[2], prompt.text, prompt.ttsLang);
+        } else {
+          speakText("Incorrect.", { lang: "en-GB", rate: 0.88 });
+        }
         return;
       }
     }
+    if (!speakPrompt) return;
     if (fb && fb[0] === "correct") {
       speakText(prompt.text, { lang: prompt.ttsLang, rate: 0.92, delayMs: 550 });
     } else if (!fb) {
