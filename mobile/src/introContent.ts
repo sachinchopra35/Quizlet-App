@@ -24,8 +24,7 @@ export function introPanelBodyHtml(): string {
       <li>Everything is in English lettering. There is nothing written in Gurmukhi (ਗੁਰਮੁਖੀ) or Shahmukhi (شاہ مکھی). That's because this app is all about speaking the language. No need to overcomplicate things!</li>
       <li>There are often many ways to spell words (for example, "hot" is "garam" or "garm"). I've made sure this app is quite forgiving, and often accepts several spellings for words like this.</li>
     </ul>
-    <p>If you have any thoughts, ideas, or comments, let me know by email —
-    <a href="mailto:sachchopra@gmail.com">sachchopra@gmail.com</a>. I hope to keep improving this app in years to come.</p>
+    <p>I'd love to hear from you — <a href="mailto:professor-sachin.bobcat447@simplelogin.com">send me an email</a> with any comments or suggestions. I read every message and hope to keep improving this app in the years to come.</p>
     <p>Good luck on your Punjabi learning journey!</p>
   `;
 }

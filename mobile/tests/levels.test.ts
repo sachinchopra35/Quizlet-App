@@ -10,12 +10,14 @@ import {
   levelEmoji,
   levelLandmark,
   levelOffset,
+  levelTrophySlot,
   medalTier,
   PERFECT_MEDAL,
   roundProgress,
   roundProgressTier,
   stageClass,
   stageDividerLabel,
+  STAGE_SIZE,
   stageLevelNames,
   stageMastered,
   stageNumber,
@@ -124,6 +126,31 @@ describe("levelLandmark", () => {
   it("is deterministic for the same index", () => {
     expect(levelLandmark(3)).toEqual(levelLandmark(3));
     expect(levelLandmark(9)).toEqual(levelLandmark(9));
+  });
+});
+
+describe("levelTrophySlot", () => {
+  const levelCount = 87;
+
+  it("places one trophy per stage at the lowest landmark in that stage", () => {
+    expect(levelTrophySlot(3, levelCount)).toBeNull();
+    expect(levelTrophySlot(9, levelCount)).toEqual({ side: "right" });
+    expect(levelTrophySlot(15, levelCount)).toEqual({ side: "left" });
+    expect(levelTrophySlot(21, levelCount)).toBeNull();
+    expect(levelTrophySlot(27, levelCount)).toEqual({ side: "left" });
+  });
+
+  it("returns exactly one trophy slot per stage", () => {
+    const stageCount = Math.ceil(levelCount / STAGE_SIZE);
+    for (let stage = 1; stage <= stageCount; stage++) {
+      const start = (stage - 1) * STAGE_SIZE;
+      const end = Math.min(start + STAGE_SIZE, levelCount);
+      let trophies = 0;
+      for (let i = start; i < end; i++) {
+        if (levelTrophySlot(i, levelCount)) trophies++;
+      }
+      expect(trophies).toBe(1);
+    }
   });
 });
 

@@ -64,7 +64,7 @@ The Punjabi in this app is closest to the Malwai dialect from Eastern Punjab (Lu
 BUILT WITH CARE
 I'm Sachin — born and raised in London — and I built this because I couldn't find an app that taught Punjabi the way I wanted to learn it. A friend from Punjab helped get the language right.
 
-Questions or feedback: sachchopra@gmail.com
+Questions or feedback: professor-sachin.bobcat447@simplelogin.com
 
 Good luck on your Punjabi learning journey!
 ```

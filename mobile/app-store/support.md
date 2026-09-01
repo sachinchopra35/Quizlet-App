@@ -17,8 +17,8 @@ On your device only. Deleting the app clears your progress.
 The course is closest to Malwai Punjabi from Eastern Punjab.
 
 **How do I report a bug or suggest an improvement?**  
-Email sachchopra@gmail.com. I read every message and hope to keep improving the app over time.
+Email professor-sachin.bobcat447@simplelogin.com. I read every message and hope to keep improving the app over time.
 
 ## Contact
 
-**Email:** sachchopra@gmail.com
+**Email:** professor-sachin.bobcat447@simplelogin.com

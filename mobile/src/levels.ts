@@ -130,6 +130,25 @@ export function levelLandmark(index: number): { emoji: string; side: LandmarkSid
     side: phase === 3 ? "left" : "right",
   };
 }
+
+/** Single stage-trophy slot per stage — the landmark furthest down the map. */
+export function levelTrophySlot(
+  index: number,
+  levelCount: number,
+): { side: LandmarkSide } | null {
+  const stage = stageNumber(index);
+  const start = (stage - 1) * STAGE_SIZE;
+  const end = Math.min(start + STAGE_SIZE, levelCount);
+  let trophyIndex: number | null = null;
+  for (let i = start; i < end; i++) {
+    if (i % STAGE_SIZE === 0) continue;
+    const phase = i % MAP_WAVE_LENGTH;
+    if (phase === 3 || phase === 9) trophyIndex = i;
+  }
+  if (trophyIndex !== index) return null;
+  const phase = index % MAP_WAVE_LENGTH;
+  return { side: phase === 3 ? "left" : "right" };
+}
 const STAGE_PALETTE_COUNT = 6;
 
 /** 1-based stage number for labels (Stage 1, Stage 2, …). */

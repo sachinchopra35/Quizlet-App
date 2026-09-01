@@ -14,6 +14,7 @@ import {
   levelEmoji,
   levelLandmark,
   levelOffset,
+  levelTrophySlot,
   medalTier,
   stageClass,
   stageDividerLabel,
@@ -53,6 +54,9 @@ export interface MapViewModel {
   trophyMessageStage: number | null;
   trophyMessageOrigin: { x: number; y: number } | null;
   trophyMessageAnimate: boolean;
+  steppingStoneIndex: number | null;
+  steppingStoneOrigin: { x: number; y: number } | null;
+  steppingStoneAnimate: boolean;
   levelHintOpen: boolean;
   levelHintAnimate: boolean;
 }
@@ -62,6 +66,8 @@ export interface MapHandlers {
   onClosePopup(): void;
   onLockedTrophy(stage: number, origin: { x: number; y: number }): void;
   onCloseTrophyMessage(): void;
+  onSteppingStone(index: number, origin: { x: number; y: number }): void;
+  onCloseSteppingStoneMessage(): void;
   onOpenInfo(): void;
   onCloseInfo(): void;
   onOpenSettings(): void;
@@ -103,9 +109,18 @@ function landmarkHtml(
 ): string {
   if (beast) return "";
   const landmark = levelLandmark(index);
-  if (!landmark) return "";
-  const emoji = `<span class="level-landmark landmark-${landmark.side}" aria-hidden="true">${landmark.emoji}</span>`;
-  return emoji + trophyHtml(index, landmark.side, csvNames, levelMedals);
+  const trophy = levelTrophySlot(index, csvNames.length);
+  const parts: string[] = [];
+  if (landmark) {
+    const aloneClass = trophy ? "" : " landmark-alone";
+    parts.push(
+      `<span class="level-landmark landmark-${landmark.side}${aloneClass}" aria-hidden="true">${landmark.emoji}</span>`,
+    );
+  }
+  if (trophy) {
+    parts.push(trophyHtml(index, trophy.side, csvNames, levelMedals));
+  }
+  return parts.join("");
 }
 
 function trophyHtml(
@@ -183,17 +198,25 @@ function steppingArrowHtml(size: "sm" | "md" | "lg"): string {
   return `<svg class="stepping-arrow" style="--arrow-rotate: ${deg}deg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h11M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
+const STEPPING_STONE_HEROES = ["🐐", "🐅", "🦅"] as const;
+const STEPPING_STONE_MESSAGE = "Scroll down to Stage 1 to start the course";
+
 function steppingStonesHtml(): string {
-  const stones: { index: number; size: "sm" | "md" | "lg" }[] = [
-    { index: -3, size: "sm" },
-    { index: -2, size: "md" },
-    { index: -1, size: "lg" },
+  const stones: { index: number; size: "sm" | "md" | "lg"; heroIndex: number }[] = [
+    { index: -3, size: "sm", heroIndex: 0 },
+    { index: -2, size: "md", heroIndex: 1 },
+    { index: -1, size: "lg", heroIndex: 2 },
   ];
   return stones
     .map(
-      ({ index, size }) => `
+      ({ index, size, heroIndex }) => `
     <div class="level-slot stepping-slot" style="transform: translateX(${levelOffset(index)}px)">
-      <span class="level-node stepping-stone stepping-stone-${size}" aria-hidden="true">${steppingArrowHtml(size)}</span>
+      <button
+        type="button"
+        class="level-node stepping-stone stepping-stone-${size}"
+        data-stepping="${heroIndex}"
+        aria-label="Stepping stone ${heroIndex + 1} of 3"
+      >${steppingArrowHtml(size)}</button>
     </div>`,
     )
     .join("");
@@ -306,6 +329,32 @@ function popupHtml(vm: MapViewModel): string {
         ${settingsHtml(vm)}
         ${wordListHtml(vm)}
         <button type="button" class="primary popup-start" id="popup-start">Start Quiz</button>
+      </div>
+    </div>
+  `;
+}
+
+function steppingStoneMessageHtml(vm: MapViewModel): string {
+  const index = vm.steppingStoneIndex;
+  if (index === null) return "";
+  const hero = STEPPING_STONE_HEROES[index] ?? STEPPING_STONE_HEROES[0];
+  const backdropClass = vm.steppingStoneAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const classes = ["popup", "popup-trophy"];
+  if (vm.steppingStoneAnimate) classes.push("popup-open");
+  let style = "";
+  if (vm.steppingStoneOrigin) {
+    const dx = Math.round(vm.steppingStoneOrigin.x - window.innerWidth / 2);
+    const dy = Math.round(vm.steppingStoneOrigin.y - window.innerHeight / 2);
+    style = ` style="--pop-dx: ${dx}px; --pop-dy: ${dy}px"`;
+  }
+  return `
+    <div class="${backdropClass}" id="stepping-stone-message-backdrop">
+      <div class="${classes.join(" ")}"${style} role="dialog" aria-modal="true">
+        <span class="trophy-hero stepping-stone-hero" aria-hidden="true">${hero}</span>
+        <p class="trophy-message">${escapeHtml(STEPPING_STONE_MESSAGE)}</p>
+        <button type="button" class="primary" id="stepping-stone-message-close">Got it</button>
       </div>
     </div>
   `;
@@ -522,6 +571,7 @@ export function mapHtml(vm: MapViewModel): string {
     ${popupHtml(vm)}
     ${levelHintPanelHtml(vm)}
     ${trophyMessageHtml(vm)}
+    ${steppingStoneMessageHtml(vm)}
     ${completionHtml(vm)}
     ${infoPanelHtml(vm)}
     ${settingsPanelHtml(vm)}
@@ -581,16 +631,30 @@ function bindExpanderAnimations(root: HTMLElement): void {
 export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLButtonElement>("button.level-node").forEach((node) => {
     const locked = node.classList.contains("is-locked");
+    const stepping = node.classList.contains("stepping-stone");
     if (!locked) bindPressFeedback(node, handlers.onButtonPress);
     node.addEventListener("click", () => {
       const r = node.getBoundingClientRect();
       const origin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      if (stepping) {
+        handlers.onSteppingStone(Number(node.dataset.stepping), origin);
+        return;
+      }
       if (locked) {
         handlers.onLockedTrophy(Number(node.dataset.stage), origin);
         return;
       }
       handlers.onOpenLevel(node.dataset.csv!, origin);
     });
+  });
+
+  const steppingBackdrop = root.querySelector<HTMLElement>("#stepping-stone-message-backdrop");
+  steppingBackdrop?.addEventListener("click", (e) => {
+    if (e.target === steppingBackdrop) handlers.onCloseSteppingStoneMessage();
+  });
+
+  root.querySelector("#stepping-stone-message-close")?.addEventListener("click", () => {
+    handlers.onCloseSteppingStoneMessage();
   });
 
   const backdrop = root.querySelector<HTMLElement>("#popup-backdrop");

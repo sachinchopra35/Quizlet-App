@@ -23,7 +23,7 @@ How to test: open app → tap any level on the map → complete a short quiz rou
 Fill in App Store Connect separately:
 
 - **First name / Last name:** Sachin Chopra
-- **Phone:** your number (Apple may call for edge cases)
+- **Phone:** +447921060035
 - **Email:** [sachchopra@gmail.com](mailto:sachchopra@gmail.com)
 - **Sign-in required:** No
 

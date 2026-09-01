@@ -41,4 +41,4 @@ This policy may be updated occasionally. Changes will be posted on this page wit
 ## Contact
 
 Sachin Chopra  
-Email: sachchopra@gmail.com
+Email: professor-sachin.bobcat447@simplelogin.com

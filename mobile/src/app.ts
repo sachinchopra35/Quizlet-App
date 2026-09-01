@@ -70,6 +70,9 @@ export class VocabApp {
   private trophyMessageStage: number | null = null;
   private trophyMessageOrigin: { x: number; y: number } | null = null;
   private trophyMessageAnimate = false;
+  private steppingStoneIndex: number | null = null;
+  private steppingStoneOrigin: { x: number; y: number } | null = null;
+  private steppingStoneAnimate = false;
   private levelHintOpen = false;
   private levelHintAnimate = false;
   private completion: CompletionSummary | null = null;
@@ -114,6 +117,11 @@ export class VocabApp {
   private closeTrophyMessage(): void {
     this.trophyMessageStage = null;
     this.trophyMessageOrigin = null;
+  }
+
+  private closeSteppingStoneMessage(): void {
+    this.steppingStoneIndex = null;
+    this.steppingStoneOrigin = null;
   }
 
   private closeLevelHint(): void {
@@ -192,6 +200,9 @@ export class VocabApp {
       trophyMessageStage: this.trophyMessageStage,
       trophyMessageOrigin: this.trophyMessageOrigin,
       trophyMessageAnimate: this.trophyMessageAnimate,
+      steppingStoneIndex: this.steppingStoneIndex,
+      steppingStoneOrigin: this.steppingStoneOrigin,
+      steppingStoneAnimate: this.steppingStoneAnimate,
       levelHintOpen: this.levelHintOpen,
       levelHintAnimate: this.levelHintAnimate,
     };
@@ -209,6 +220,7 @@ export class VocabApp {
         this.closeLevelHint();
         this.closeResetFlow();
         this.closeTrophyMessage();
+        this.closeSteppingStoneMessage();
         this.popupOrigin = origin;
         this.popupAnimate = true;
         this.state = { ...this.state, selectedCsv: csv };
@@ -222,6 +234,7 @@ export class VocabApp {
         this.render();
       },
       onLockedTrophy: (stage, origin) => {
+        this.closeSteppingStoneMessage();
         this.trophyMessageStage = stage;
         this.trophyMessageOrigin = origin;
         this.trophyMessageAnimate = true;
@@ -232,6 +245,18 @@ export class VocabApp {
         this.closeTrophyMessage();
         this.render();
       },
+      onSteppingStone: (index, origin) => {
+        this.closeTrophyMessage();
+        this.steppingStoneIndex = index;
+        this.steppingStoneOrigin = origin;
+        this.steppingStoneAnimate = true;
+        this.render();
+        this.steppingStoneAnimate = false;
+      },
+      onCloseSteppingStoneMessage: () => {
+        this.closeSteppingStoneMessage();
+        this.render();
+      },
       onOpenInfo: () => {
         this.popupCsv = null;
         this.popupOrigin = null;
@@ -239,6 +264,7 @@ export class VocabApp {
         this.settingsOpen = false;
         this.closeResetFlow();
         this.closeTrophyMessage();
+        this.closeSteppingStoneMessage();
         this.infoOpen = true;
         this.infoAnimate = true;
         this.render();
@@ -257,6 +283,7 @@ export class VocabApp {
         this.settingsAnimate = true;
         this.closeResetFlow();
         this.closeTrophyMessage();
+        this.closeSteppingStoneMessage();
         this.render();
         this.settingsAnimate = false;
       },
