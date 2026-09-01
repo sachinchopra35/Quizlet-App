@@ -76,6 +76,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/** Up to n random rows, without replacement. */
+export function sampleRows(rows: VocabRow[], n: number): VocabRow[] {
+  return shuffle(rows).slice(0, Math.min(n, rows.length));
+}
+
 export function startRound(
   state: QuizState,
   rows: VocabRow[],
@@ -106,9 +111,7 @@ export function startBeastRound(
   combined: VocabRow[],
   direction: Direction,
 ): QuizState {
-  const n = beastSampleSize(combined.length);
-  const shuffled = shuffle(combined);
-  const sample = shuffled.slice(0, n);
+  const sample = sampleRows(combined, beastSampleSize(combined.length));
   const next = startRound(state, sample, direction);
   return { ...next, beastMode: true };
 }
@@ -133,13 +136,51 @@ export function medalForRound(correct: number, total: number): string {
   return "🥉";
 }
 
+function medalRank(emoji: string): number {
+  switch (emoji) {
+    case "🏅":
+      return 4;
+    case "🥇":
+      return 3;
+    case "🥈":
+      return 2;
+    case "🥉":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function parseMedalLabel(label: string): [number, number] | null {
+  const match = /^(\d+)\/(\d+)$/.exec(label);
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2])];
+}
+
+/** Keep whichever medal is the better result. */
+export function bestMedal(existing: Medal | undefined, incoming: Medal): Medal {
+  if (!existing) return incoming;
+  const existingRank = medalRank(existing.emoji);
+  const incomingRank = medalRank(incoming.emoji);
+  if (incomingRank > existingRank) return incoming;
+  if (incomingRank < existingRank) return existing;
+  const existingParts = parseMedalLabel(existing.label);
+  const incomingParts = parseMedalLabel(incoming.label);
+  if (!existingParts || !incomingParts) return incoming;
+  const existingPct = existingParts[0] / existingParts[1];
+  const incomingPct = incomingParts[0] / incomingParts[1];
+  return incomingPct > existingPct ? incoming : existing;
+}
+
 export function recordRoundMedal(state: QuizState, correct: number, total: number): QuizState {
   const medal: Medal = {
     emoji: medalForRound(correct, total),
     label: `${correct}/${total}`,
   };
   const levelMedals = { ...state.levelMedals };
-  if (state.selectedCsv) levelMedals[state.selectedCsv] = medal;
+  if (state.selectedCsv) {
+    levelMedals[state.selectedCsv] = bestMedal(levelMedals[state.selectedCsv], medal);
+  }
   return { ...state, roundMedals: [...state.roundMedals, medal], levelMedals };
 }
 

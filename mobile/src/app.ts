@@ -1,4 +1,10 @@
-import { BEAST_MODE_SELECTION, directionFromStyle } from "./config";
+import {
+  BEAST_MODE_SELECTION,
+  directionFromStyle,
+  parseStagePracticeKey,
+  STAGE_PRACTICE_SIZE,
+} from "./config";
+import { stageLevelNames } from "./levels";
 import {
   ensureAudioUnlock,
   playButtonClick,
@@ -27,6 +33,7 @@ import {
   consumeIdleMessages,
   createInitialState,
   processAnswer,
+  sampleRows,
   startBeastRound,
   startRound,
   stopRoundEarly,
@@ -58,6 +65,9 @@ export class VocabApp {
   private quitConfirmOpen = false;
   private quitConfirmAnimate = false;
   private quitConfirmOrigin: { x: number; y: number } | null = null;
+  private trophyMessageStage: number | null = null;
+  private trophyMessageOrigin: { x: number; y: number } | null = null;
+  private trophyMessageAnimate = false;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
 
@@ -83,8 +93,21 @@ export class VocabApp {
   }
 
   private rowsFor(name: string | null): VocabRow[] {
-    if (!name || name === BEAST_MODE_SELECTION) return [];
+    if (!name || name === BEAST_MODE_SELECTION || parseStagePracticeKey(name) !== null) return [];
     return this.csvCache.get(name) ?? [];
+  }
+
+  private rowsForStage(stage: number): VocabRow[] {
+    const rows: VocabRow[] = [];
+    for (const name of stageLevelNames(this.state.csvNames, stage)) {
+      rows.push(...(this.csvCache.get(name) ?? []));
+    }
+    return rows;
+  }
+
+  private closeTrophyMessage(): void {
+    this.trophyMessageStage = null;
+    this.trophyMessageOrigin = null;
   }
 
   private closeResetFlow(): void {
@@ -139,6 +162,9 @@ export class VocabApp {
       resetConfirmAnimate: this.resetConfirmAnimate,
       resetTypeOpen: this.resetTypeOpen,
       resetTypeAnimate: this.resetTypeAnimate,
+      trophyMessageStage: this.trophyMessageStage,
+      trophyMessageOrigin: this.trophyMessageOrigin,
+      trophyMessageAnimate: this.trophyMessageAnimate,
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -149,6 +175,7 @@ export class VocabApp {
         this.infoOpen = false;
         this.settingsOpen = false;
         this.closeResetFlow();
+        this.closeTrophyMessage();
         this.popupOrigin = origin;
         this.popupAnimate = true;
         this.state = { ...this.state, selectedCsv: csv };
@@ -160,12 +187,24 @@ export class VocabApp {
         this.popupOrigin = null;
         this.render();
       },
+      onLockedTrophy: (stage, origin) => {
+        this.trophyMessageStage = stage;
+        this.trophyMessageOrigin = origin;
+        this.trophyMessageAnimate = true;
+        this.render();
+        this.trophyMessageAnimate = false;
+      },
+      onCloseTrophyMessage: () => {
+        this.closeTrophyMessage();
+        this.render();
+      },
       onOpenInfo: () => {
         this.popupCsv = null;
         this.popupOrigin = null;
         this.gearOpen = false;
         this.settingsOpen = false;
         this.closeResetFlow();
+        this.closeTrophyMessage();
         this.infoOpen = true;
         this.infoAnimate = true;
         this.render();
@@ -183,6 +222,7 @@ export class VocabApp {
         this.settingsOpen = true;
         this.settingsAnimate = true;
         this.closeResetFlow();
+        this.closeTrophyMessage();
         this.render();
         this.settingsAnimate = false;
       },
@@ -270,9 +310,14 @@ export class VocabApp {
     this.completion = null;
     this.scrollToLevelCsv = name;
     const direction = this.state.direction;
+    const practiceStage = parseStagePracticeKey(name);
     if (name === BEAST_MODE_SELECTION) {
       const combined = loadCombinedFromMap(this.csvCache);
       this.setState(startBeastRound(this.state, combined, direction));
+    } else if (practiceStage !== null) {
+      const pool = this.rowsForStage(practiceStage);
+      const sample = sampleRows(pool, STAGE_PRACTICE_SIZE);
+      this.setState(startRound(this.state, sample, direction));
     } else {
       this.setState(startRound(this.state, this.rowsFor(name), direction));
     }

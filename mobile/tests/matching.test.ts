@@ -6,9 +6,11 @@ import {
 } from "../src/matching";
 import {
   beastSampleSize,
+  bestMedal,
   createInitialState,
   medalForRound,
   processAnswer,
+  recordRoundMedal,
   startRound,
 } from "../src/rounds";
 import { parseCsv } from "../src/vocab";
@@ -433,6 +435,31 @@ describe("rounds", () => {
     expect(medalForRound(9, 10)).toBe("🥇");
     expect(medalForRound(8, 10)).toBe("🥈");
     expect(medalForRound(7, 10)).toBe("🥉");
+  });
+
+  it("bestMedal keeps the higher tier", () => {
+    expect(
+      bestMedal({ emoji: "🏅", label: "10/10" }, { emoji: "🥇", label: "9/10" }),
+    ).toEqual({ emoji: "🏅", label: "10/10" });
+    expect(
+      bestMedal({ emoji: "🥉", label: "7/10" }, { emoji: "🥇", label: "9/10" }),
+    ).toEqual({ emoji: "🥇", label: "9/10" });
+  });
+
+  it("bestMedal prefers higher accuracy within the same tier", () => {
+    expect(
+      bestMedal({ emoji: "🥉", label: "7/10" }, { emoji: "🥉", label: "8/10" }),
+    ).toEqual({ emoji: "🥉", label: "8/10" });
+  });
+
+  it("recordRoundMedal does not downgrade an existing medal", () => {
+    const state = {
+      ...createInitialState(),
+      selectedCsv: "01 Numbers.csv",
+      levelMedals: { "01 Numbers.csv": { emoji: "🏅", label: "10/10" } },
+    };
+    const next = recordRoundMedal(state, 9, 10);
+    expect(next.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🏅", label: "10/10" });
   });
 
   it("process correct answer advances queue", () => {

@@ -95,7 +95,7 @@ export function levelOffset(index: number): number {
   return offset === 0 ? 0 : offset;
 }
 
-const STAGE_SIZE = 10;
+export const STAGE_SIZE = 10;
 
 const LANDMARKS = ["🌳", "🏔️", "🌲", "🦚", "🌴", "🗻", "🌵", "🏕️"];
 
@@ -137,6 +137,24 @@ export function stageDividerLabel(stageNum: number): string {
 
 /** Medal emoji for a flawless round (0 wrong answers). */
 export const PERFECT_MEDAL = "🏅";
+
+/** Level names in a 1-based stage. The final stage may be short. */
+export function stageLevelNames(csvNames: string[], stage: number): string[] {
+  const start = (stage - 1) * STAGE_SIZE;
+  if (start < 0) return [];
+  return csvNames.slice(start, start + STAGE_SIZE);
+}
+
+/** True when every level in the stage has a perfect medal. */
+export function stageMastered(
+  csvNames: string[],
+  levelMedals: Record<string, Medal>,
+  stage: number,
+): boolean {
+  const names = stageLevelNames(csvNames, stage);
+  if (!names.length) return false;
+  return names.every((name) => levelMedals[name]?.emoji === PERFECT_MEDAL);
+}
 
 /** Share of vocab levels cleared with a perfect (gold star) score, 0..1. */
 export function courseGoldProgress(

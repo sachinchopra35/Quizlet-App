@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseStagePracticeKey,
+  stagePracticeKey,
+} from "../src/config";
+import {
   courseGoldProgress,
   courseProgressTier,
   DEFAULT_LEVEL_EMOJI,
@@ -12,6 +16,8 @@ import {
   roundProgressTier,
   stageClass,
   stageDividerLabel,
+  stageLevelNames,
+  stageMastered,
   stageNumber,
   stagePaletteIndex,
 } from "../src/levels";
@@ -164,6 +170,49 @@ describe("stage helpers", () => {
     expect(stageDividerLabel(1)).toBe("Stage 1: Getting Started");
     expect(stageDividerLabel(2)).toBe("Stage 2");
     expect(stageDividerLabel(8)).toBe("Stage 8");
+  });
+});
+
+describe("stageLevelNames", () => {
+  const names = Array.from({ length: 27 }, (_, i) => `${String(i + 1).padStart(2, "0")}.csv`);
+
+  it("returns ten levels for a full stage", () => {
+    expect(stageLevelNames(names, 1)).toEqual(names.slice(0, 10));
+    expect(stageLevelNames(names, 2)).toEqual(names.slice(10, 20));
+  });
+
+  it("handles a short final stage", () => {
+    expect(stageLevelNames(names, 3)).toEqual(names.slice(20));
+    expect(stageLevelNames(names, 3)).toHaveLength(7);
+  });
+});
+
+describe("stageMastered", () => {
+  const names = Array.from({ length: 12 }, (_, i) => `level-${i + 1}.csv`);
+
+  it("is false when any level lacks a perfect medal", () => {
+    const medals = Object.fromEntries(
+      names.slice(0, 10).map((name, i) => [
+        name,
+        { emoji: i < 9 ? PERFECT_MEDAL : "🥇", label: "9/10" },
+      ]),
+    );
+    expect(stageMastered(names, medals, 1)).toBe(false);
+  });
+
+  it("is true when every level in the stage is perfect", () => {
+    const medals = Object.fromEntries(
+      names.slice(0, 10).map((name) => [name, { emoji: PERFECT_MEDAL, label: "10/10" }]),
+    );
+    expect(stageMastered(names, medals, 1)).toBe(true);
+  });
+});
+
+describe("stagePracticeKey", () => {
+  it("round-trips through parseStagePracticeKey", () => {
+    expect(stagePracticeKey(3)).toBe("__stage_practice_3__");
+    expect(parseStagePracticeKey("__stage_practice_3__")).toBe(3);
+    expect(parseStagePracticeKey("01 Numbers.csv")).toBeNull();
   });
 });
 

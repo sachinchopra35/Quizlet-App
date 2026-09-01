@@ -3,6 +3,19 @@ export const STYLE_TO_EN = "Translate to English";
 export const BEAST_MODE_SELECTION = "__beast_mode__";
 export const SPEECH_LEAD_MS = 250;
 export const BEAST_MODE_SIZE = 10;
+export const STAGE_PRACTICE_PREFIX = "__stage_practice_";
+export const STAGE_PRACTICE_SIZE = 10;
+
+export function stagePracticeKey(stage: number): string {
+  return `${STAGE_PRACTICE_PREFIX}${stage}__`;
+}
+
+/** Stage number for a practice key, or null if the name is a real level. */
+export function parseStagePracticeKey(name: string): number | null {
+  const match = /^__stage_practice_(\d+)__$/.exec(name);
+  if (!match) return null;
+  return Number(match[1]);
+}
 
 export type Direction = "en_to_lang" | "lang_to_en";
 

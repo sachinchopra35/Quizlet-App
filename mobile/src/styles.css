@@ -2,8 +2,13 @@
   --accent: #5b9fd4;
   --accent-border: #6eb0e0;
   --node-depth: 9px;
+  --node-size: 5.25rem;
   --landmark-size: 6.5rem;
   --landmark-gap: 9rem;
+  --trophy-offset: calc(
+    (var(--landmark-gap) + var(--landmark-size) / 2 - var(--node-size) / 2) / 2 -
+      var(--node-size) / 2
+  );
   --course-footer-bar-height: 0.5rem;
   --course-footer-height: 2.15rem;
 }
@@ -607,8 +612,8 @@ button.primary {
 .level-node {
   --node-face: #4aa3f0;
   --node-shade: #2b73b3;
-  width: 5.25rem;
-  height: 5.25rem;
+  width: var(--node-size);
+  height: var(--node-size);
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -644,7 +649,7 @@ button.primary {
 
 .level-landmark {
   position: absolute;
-  top: 2.625rem;
+  top: calc(var(--node-size) / 2);
   transform: translateY(-50%);
   font-size: var(--landmark-size);
   opacity: 0.62;
@@ -659,6 +664,127 @@ button.primary {
 
 .landmark-right {
   left: calc(100% + var(--landmark-gap));
+}
+
+.trophy-slot {
+  position: absolute;
+  top: calc(var(--node-size) / 2);
+  transform: translateY(-50%);
+}
+
+.trophy-slot.trophy-left {
+  right: calc(100% + var(--trophy-offset));
+}
+
+.trophy-slot.trophy-right {
+  left: calc(100% + var(--trophy-offset));
+}
+
+.level-trophy.is-locked {
+  --node-face: #333840;
+  --node-shade: #1e2126;
+  cursor: default;
+}
+
+.level-trophy.is-locked .level-emoji {
+  opacity: 0.3;
+}
+
+.level-trophy.is-locked.is-pressed {
+  transform: none;
+  box-shadow: 0 var(--node-depth) 0 var(--node-shade);
+}
+
+.level-trophy.is-won {
+  box-shadow:
+    0 var(--node-depth) 0 var(--node-shade),
+    0 0 14px 3px rgba(255, 205, 60, 0.55);
+}
+
+.level-node.level-trophy.is-won.is-pressed {
+  transform: translateY(calc(var(--node-depth) - 1px));
+  box-shadow: 0 1px 0 var(--node-shade);
+}
+
+.level-trophy.is-won.stage-0 {
+  --node-face: #6fbf5e;
+  --node-shade: #4a9e38;
+}
+
+.level-trophy.is-won.stage-1 {
+  --node-face: #7dbcf5;
+  --node-shade: #4aa3f0;
+}
+
+.level-trophy.is-won.stage-2 {
+  --node-face: #b88ff8;
+  --node-shade: #9b59f5;
+}
+
+.level-trophy.is-won.stage-3 {
+  --node-face: #5ed9cd;
+  --node-shade: #2ec4b6;
+}
+
+.level-trophy.is-won.stage-4 {
+  --node-face: #f89fd0;
+  --node-shade: #f472b6;
+}
+
+.level-trophy.is-won.stage-5 {
+  --node-face: #8b8ef5;
+  --node-shade: #6366f1;
+}
+
+.popup-trophy {
+  text-align: center;
+}
+
+.popup-trophy-earned {
+  text-align: center;
+}
+
+.popup-trophy-top {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 1.5rem;
+  margin-bottom: 0.15rem;
+}
+
+.trophy-hero-earned {
+  display: block;
+  font-size: 3rem;
+  line-height: 1;
+  margin: 0.15rem 0 0.85rem;
+  filter: drop-shadow(0 0 14px rgba(255, 205, 60, 0.5));
+}
+
+.popup-trophy-title {
+  margin: 0 0 0.85rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.popup-trophy-body {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.popup-trophy-earned .popup-settings {
+  text-align: left;
+}
+
+.trophy-hero {
+  display: block;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+  opacity: 0.3;
+}
+
+.trophy-message {
+  margin: 0 0 1rem;
+  line-height: 1.5;
 }
 
 .level-node.stage-0 {

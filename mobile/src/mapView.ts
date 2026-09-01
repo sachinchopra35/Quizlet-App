@@ -1,4 +1,11 @@
-import { BEAST_MODE_SELECTION, STYLE_FROM_EN, STYLE_TO_EN } from "./config";
+import {
+  BEAST_MODE_SELECTION,
+  parseStagePracticeKey,
+  STAGE_PRACTICE_SIZE,
+  stagePracticeKey,
+  STYLE_FROM_EN,
+  STYLE_TO_EN,
+} from "./config";
 import { courseFooterHtml, escapeAttr, escapeHtml } from "./html";
 import { introPanelBodyHtml } from "./introContent";
 import {
@@ -10,7 +17,9 @@ import {
   medalTier,
   stageClass,
   stageDividerLabel,
+  stageMastered,
   stageNumber,
+  stagePaletteIndex,
 } from "./levels";
 import type { Medal } from "./rounds";
 import type { VocabRow } from "./vocab";
@@ -40,11 +49,16 @@ export interface MapViewModel {
   resetConfirmAnimate: boolean;
   resetTypeOpen: boolean;
   resetTypeAnimate: boolean;
+  trophyMessageStage: number | null;
+  trophyMessageOrigin: { x: number; y: number } | null;
+  trophyMessageAnimate: boolean;
 }
 
 export interface MapHandlers {
   onOpenLevel(csv: string, origin: { x: number; y: number }): void;
   onClosePopup(): void;
+  onLockedTrophy(stage: number, origin: { x: number; y: number }): void;
+  onCloseTrophyMessage(): void;
   onOpenInfo(): void;
   onCloseInfo(): void;
   onOpenSettings(): void;
@@ -64,6 +78,8 @@ export interface MapHandlers {
 
 export function levelLabel(name: string): string {
   if (name === BEAST_MODE_SELECTION) return "Beast Mode - 10 Random Questions";
+  const stage = parseStagePracticeKey(name);
+  if (stage !== null) return `Stage ${stage} Practice`;
   return name.replace(/\.csv$/i, "");
 }
 
@@ -72,14 +88,54 @@ function nodeColorClass(index: number, medal: Medal | undefined): string {
   return stageClass(index);
 }
 
-function landmarkHtml(index: number, beast: boolean): string {
+const TROPHY_EMOJI = "🏆";
+
+function landmarkHtml(
+  index: number,
+  beast: boolean,
+  csvNames: string[],
+  levelMedals: Record<string, Medal>,
+): string {
   if (beast) return "";
   const landmark = levelLandmark(index);
   if (!landmark) return "";
-  return `<span class="level-landmark landmark-${landmark.side}" aria-hidden="true">${landmark.emoji}</span>`;
+  const emoji = `<span class="level-landmark landmark-${landmark.side}" aria-hidden="true">${landmark.emoji}</span>`;
+  return emoji + trophyHtml(index, landmark.side, csvNames, levelMedals);
 }
 
-function nodeHtml(csv: string, index: number, medal: Medal | undefined, beast: boolean): string {
+function trophyHtml(
+  index: number,
+  side: string,
+  csvNames: string[],
+  levelMedals: Record<string, Medal>,
+): string {
+  const stage = stageNumber(index);
+  const won = stageMastered(csvNames, levelMedals, stage);
+  const key = stagePracticeKey(stage);
+  const stateClass = won ? "is-won" : "is-locked";
+  const label = won ? `Stage ${stage} Trophy` : `Stage ${stage} Trophy, locked`;
+  const csvAttr = won ? ` data-csv="${escapeAttr(key)}"` : "";
+  const stageClass = won ? `stage-${stagePaletteIndex(index)}` : "";
+  return `
+    <span class="trophy-slot trophy-${side}">
+      <button
+        type="button"
+        class="level-node level-trophy ${stageClass} ${stateClass}"${csvAttr}
+        data-stage="${stage}"
+        aria-label="${escapeAttr(label)}"
+      ><span class="level-emoji">${TROPHY_EMOJI}</span></button>
+    </span>
+  `;
+}
+
+function nodeHtml(
+  csv: string,
+  index: number,
+  medal: Medal | undefined,
+  beast: boolean,
+  csvNames: string[] = [],
+  levelMedals: Record<string, Medal> = {},
+): string {
   const colorClass = beast ? "" : nodeColorClass(index, medal);
   const emoji = beast ? BEAST_LEVEL_EMOJI : levelEmoji(csv);
   const offset = beast ? 0 : levelOffset(index);
@@ -88,7 +144,7 @@ function nodeHtml(csv: string, index: number, medal: Medal | undefined, beast: b
   const beastClass = beast ? " level-beast" : "";
   return `
     <div class="level-slot" style="transform: translateX(${offset}px)">
-      ${landmarkHtml(index, beast)}
+      ${landmarkHtml(index, beast, csvNames, levelMedals)}
       <button
         type="button"
         class="level-node ${colorClass}${beastClass}"
@@ -115,7 +171,7 @@ function levelsHtml(csvNames: string[], levelMedals: Record<string, Medal>): str
   const parts: string[] = [];
   for (let i = 0; i < csvNames.length; i++) {
     if (i % 10 === 0) parts.push(stageDividerHtml(stageNumber(i)));
-    parts.push(nodeHtml(csvNames[i]!, i, levelMedals[csvNames[i]!], false));
+    parts.push(nodeHtml(csvNames[i]!, i, levelMedals[csvNames[i]!], false, csvNames, levelMedals));
   }
   return parts.join("");
 }
@@ -137,14 +193,19 @@ function wordListHtml(vm: MapViewModel): string {
   if (vm.popupCsv === BEAST_MODE_SELECTION) {
     return `<details class="expander"><summary>Show words list</summary><p class="caption">Beast Mode draws 10 random cards from all lists.</p></details>`;
   }
+  const practiceStage = vm.popupCsv ? parseStagePracticeKey(vm.popupCsv) : null;
+  if (practiceStage !== null) {
+    return `<p class="caption">Draws ${STAGE_PRACTICE_SIZE} random cards from every level in Stage ${practiceStage}.</p>`;
+  }
   const rows = vm.popupRows
     .map((r) => `<tr><td>${escapeHtml(r.en)}</td><td>${escapeHtml(r.lang)}</td></tr>`)
     .join("");
   return `<details class="expander"><summary>Show words list</summary><div class="word-scroll"><table class="word-table">${rows}</table></div></details>`;
 }
 
-function popupPanelAttrs(vm: MapViewModel): string {
+function popupPanelAttrs(vm: MapViewModel, extraClass?: string): string {
   const classes = ["popup"];
+  if (extraClass) classes.push(extraClass);
   if (vm.popupAnimate) classes.push("popup-open");
   if (!vm.popupOrigin) return `class="${classes.join(" ")}"`;
   const dx = Math.round(vm.popupOrigin.x - window.innerWidth / 2);
@@ -152,9 +213,30 @@ function popupPanelAttrs(vm: MapViewModel): string {
   return `class="${classes.join(" ")}" style="--pop-dx: ${dx}px; --pop-dy: ${dy}px"`;
 }
 
+function trophyPracticePopupHtml(vm: MapViewModel, stage: number, backdropClass: string): string {
+  return `
+    <div class="${backdropClass}" id="popup-backdrop">
+      <div ${popupPanelAttrs(vm, "popup-trophy-earned")} role="dialog" aria-modal="true" aria-label="Stage ${stage} Trophy">
+        <div class="popup-trophy-top">
+          <button type="button" class="icon-button" id="popup-gear" aria-label="Settings">⚙️</button>
+        </div>
+        <div class="trophy-hero-earned" aria-hidden="true">${TROPHY_EMOJI}</div>
+        <h2 class="popup-trophy-title">Stage ${stage} Trophy</h2>
+        ${settingsHtml(vm)}
+        <p class="caption popup-trophy-body">You mastered every level in Stage ${stage}. Replay your vocab here — ${STAGE_PRACTICE_SIZE} random questions from across the stage.</p>
+        <button type="button" class="primary popup-start" id="popup-start">Start Quiz</button>
+      </div>
+    </div>
+  `;
+}
+
 function popupHtml(vm: MapViewModel): string {
   if (!vm.popupCsv) return "";
   const backdropClass = vm.popupAnimate ? "popup-backdrop backdrop-open" : "popup-backdrop";
+  const practiceStage = parseStagePracticeKey(vm.popupCsv);
+  if (practiceStage !== null) {
+    return trophyPracticePopupHtml(vm, practiceStage, backdropClass);
+  }
   return `
     <div class="${backdropClass}" id="popup-backdrop">
       <div ${popupPanelAttrs(vm)} role="dialog" aria-modal="true">
@@ -165,6 +247,31 @@ function popupHtml(vm: MapViewModel): string {
         ${settingsHtml(vm)}
         ${wordListHtml(vm)}
         <button type="button" class="primary popup-start" id="popup-start">Start Quiz</button>
+      </div>
+    </div>
+  `;
+}
+
+function trophyMessageHtml(vm: MapViewModel): string {
+  const stage = vm.trophyMessageStage;
+  if (stage === null) return "";
+  const backdropClass = vm.trophyMessageAnimate
+    ? "popup-backdrop backdrop-open"
+    : "popup-backdrop";
+  const classes = ["popup", "popup-trophy"];
+  if (vm.trophyMessageAnimate) classes.push("popup-open");
+  let style = "";
+  if (vm.trophyMessageOrigin) {
+    const dx = Math.round(vm.trophyMessageOrigin.x - window.innerWidth / 2);
+    const dy = Math.round(vm.trophyMessageOrigin.y - window.innerHeight / 2);
+    style = ` style="--pop-dx: ${dx}px; --pop-dy: ${dy}px"`;
+  }
+  return `
+    <div class="${backdropClass}" id="trophy-message-backdrop">
+      <div class="${classes.join(" ")}"${style} role="dialog" aria-modal="true">
+        <span class="trophy-hero" aria-hidden="true">${TROPHY_EMOJI}</span>
+        <p class="trophy-message">Master all levels in Stage ${stage} to win the Stage ${stage} Trophy</p>
+        <button type="button" class="primary" id="trophy-message-close">Got it</button>
       </div>
     </div>
   `;
@@ -318,6 +425,7 @@ export function mapHtml(vm: MapViewModel): string {
       ${beast}
     </div>
     ${popupHtml(vm)}
+    ${trophyMessageHtml(vm)}
     ${completionHtml(vm)}
     ${infoPanelHtml(vm)}
     ${settingsPanelHtml(vm)}
@@ -342,19 +450,31 @@ function bindPressFeedback(node: HTMLElement, onPress?: () => void): void {
 
 export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLElement>(".level-node").forEach((node) => {
-    bindPressFeedback(node, handlers.onButtonPress);
+    const locked = node.classList.contains("is-locked");
+    if (!locked) bindPressFeedback(node, handlers.onButtonPress);
     node.addEventListener("click", () => {
       const r = node.getBoundingClientRect();
-      handlers.onOpenLevel(node.dataset.csv!, {
-        x: r.left + r.width / 2,
-        y: r.top + r.height / 2,
-      });
+      const origin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      if (locked) {
+        handlers.onLockedTrophy(Number(node.dataset.stage), origin);
+        return;
+      }
+      handlers.onOpenLevel(node.dataset.csv!, origin);
     });
   });
 
   const backdrop = root.querySelector<HTMLElement>("#popup-backdrop");
   backdrop?.addEventListener("click", (e) => {
     if (e.target === backdrop) handlers.onClosePopup();
+  });
+
+  const trophyBackdrop = root.querySelector<HTMLElement>("#trophy-message-backdrop");
+  trophyBackdrop?.addEventListener("click", (e) => {
+    if (e.target === trophyBackdrop) handlers.onCloseTrophyMessage();
+  });
+
+  root.querySelector("#trophy-message-close")?.addEventListener("click", () => {
+    handlers.onCloseTrophyMessage();
   });
 
   root.querySelector("#popup-gear")?.addEventListener("click", () => {

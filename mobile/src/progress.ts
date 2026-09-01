@@ -1,4 +1,4 @@
-import { BEAST_MODE_SELECTION, directionFromStyle } from "./config";
+import { BEAST_MODE_SELECTION, directionFromStyle, parseStagePracticeKey } from "./config";
 import type { Medal, QuizState } from "./rounds";
 
 const STORAGE_KEY = "learn-punjabi-progress";
@@ -27,7 +27,7 @@ export function pruneMedals(
   const allowed = new Set([...csvNames, BEAST_MODE_SELECTION]);
   const pruned: Record<string, Medal> = {};
   for (const [name, medal] of Object.entries(medals)) {
-    if (allowed.has(name)) pruned[name] = medal;
+    if (allowed.has(name) || parseStagePracticeKey(name) !== null) pruned[name] = medal;
   }
   return pruned;
 }

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BEAST_MODE_SELECTION, STYLE_TO_EN } from "../src/config";
+import { BEAST_MODE_SELECTION, stagePracticeKey, STYLE_TO_EN } from "../src/config";
 import {
   applySaved,
   clearProgress,
@@ -79,6 +79,15 @@ describe("progress persistence", () => {
       "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
       [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
     });
+  });
+
+  it("pruneMedals keeps stage practice keys", () => {
+    const medals = {
+      ...sample.levelMedals,
+      [stagePracticeKey(2)]: { emoji: "🥇", label: "9/10" },
+    };
+    const pruned = pruneMedals(medals, ["01 Numbers.csv"]);
+    expect(pruned[stagePracticeKey(2)]).toEqual({ emoji: "🥇", label: "9/10" });
   });
 
   it("applySaved restores direction from question style", () => {
