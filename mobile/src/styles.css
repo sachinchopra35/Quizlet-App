@@ -958,6 +958,48 @@ button.primary {
 .popup-head h2 {
   margin: 0;
   font-size: 1.05rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.popup-head-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.popup-info-button {
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1.5px solid #6b7280;
+  border-radius: 50%;
+  background: transparent;
+  color: #d1d5db;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.popup-info-button:active {
+  opacity: 0.85;
+}
+
+.level-hint-backdrop {
+  z-index: 60;
+}
+
+.info-body h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
 }
 
 .icon-button {

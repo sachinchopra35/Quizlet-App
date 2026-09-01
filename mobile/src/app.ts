@@ -70,6 +70,8 @@ export class VocabApp {
   private trophyMessageStage: number | null = null;
   private trophyMessageOrigin: { x: number; y: number } | null = null;
   private trophyMessageAnimate = false;
+  private levelHintOpen = false;
+  private levelHintAnimate = false;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
   private quizProgressPct = 0;
@@ -112,6 +114,10 @@ export class VocabApp {
   private closeTrophyMessage(): void {
     this.trophyMessageStage = null;
     this.trophyMessageOrigin = null;
+  }
+
+  private closeLevelHint(): void {
+    this.levelHintOpen = false;
   }
 
   private closeResetFlow(): void {
@@ -186,6 +192,8 @@ export class VocabApp {
       trophyMessageStage: this.trophyMessageStage,
       trophyMessageOrigin: this.trophyMessageOrigin,
       trophyMessageAnimate: this.trophyMessageAnimate,
+      levelHintOpen: this.levelHintOpen,
+      levelHintAnimate: this.levelHintAnimate,
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -198,6 +206,7 @@ export class VocabApp {
         this.gearOpen = false;
         this.infoOpen = false;
         this.settingsOpen = false;
+        this.closeLevelHint();
         this.closeResetFlow();
         this.closeTrophyMessage();
         this.popupOrigin = origin;
@@ -209,6 +218,7 @@ export class VocabApp {
       onClosePopup: () => {
         this.popupCsv = null;
         this.popupOrigin = null;
+        this.closeLevelHint();
         this.render();
       },
       onLockedTrophy: (stage, origin) => {
@@ -290,7 +300,18 @@ export class VocabApp {
         this.setState({ ...this.state, levelMedals: {} });
       },
       onToggleGear: () => {
+        this.closeLevelHint();
         this.gearOpen = !this.gearOpen;
+        this.render();
+      },
+      onOpenLevelHint: () => {
+        this.levelHintOpen = true;
+        this.levelHintAnimate = true;
+        this.render();
+        this.levelHintAnimate = false;
+      },
+      onCloseLevelHint: () => {
+        this.closeLevelHint();
         this.render();
       },
       onSetStyle: (style) => {
@@ -332,6 +353,7 @@ export class VocabApp {
     if (!name) return;
     this.popupCsv = null;
     this.completion = null;
+    this.closeLevelHint();
     this.scrollToLevelCsv = name;
     this.quizProgressPct = 0;
     this.clearRoundCompleteTimer();

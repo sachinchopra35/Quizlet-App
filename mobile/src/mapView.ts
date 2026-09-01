@@ -22,6 +22,7 @@ import {
   stagePaletteIndex,
 } from "./levels";
 import type { Medal } from "./rounds";
+import { roundHintBodyHtml, roundHintFor } from "./roundHints";
 import type { VocabRow } from "./vocab";
 
 export interface CompletionSummary {
@@ -52,6 +53,8 @@ export interface MapViewModel {
   trophyMessageStage: number | null;
   trophyMessageOrigin: { x: number; y: number } | null;
   trophyMessageAnimate: boolean;
+  levelHintOpen: boolean;
+  levelHintAnimate: boolean;
 }
 
 export interface MapHandlers {
@@ -69,6 +72,8 @@ export interface MapHandlers {
   onCancelResetType(): void;
   onSubmitResetType(value: string): void;
   onToggleGear(): void;
+  onOpenLevelHint(): void;
+  onCloseLevelHint(): void;
   onSetStyle(style: string): void;
   onToggleMute(muted: boolean): void;
   onStart(): void;
@@ -238,6 +243,19 @@ function trophyPracticePopupHtml(vm: MapViewModel, stage: number, backdropClass:
   `;
 }
 
+function popupHeadActionsHtml(vm: MapViewModel): string {
+  const hint = vm.popupCsv ? roundHintFor(vm.popupCsv) : null;
+  const hintBtn = hint
+    ? `<button type="button" class="popup-info-button" id="popup-hint" aria-label="Round hints">i</button>`
+    : "";
+  return `
+    <div class="popup-head-actions">
+      ${hintBtn}
+      <button type="button" class="icon-button" id="popup-gear" aria-label="Settings">⚙️</button>
+    </div>
+  `;
+}
+
 function popupHtml(vm: MapViewModel): string {
   if (!vm.popupCsv) return "";
   const backdropClass = vm.popupAnimate ? "popup-backdrop backdrop-open" : "popup-backdrop";
@@ -250,7 +268,7 @@ function popupHtml(vm: MapViewModel): string {
       <div ${popupPanelAttrs(vm)} role="dialog" aria-modal="true">
         <div class="popup-head">
           <h2>${escapeHtml(levelLabel(vm.popupCsv))}</h2>
-          <button type="button" class="icon-button" id="popup-gear" aria-label="Settings">⚙️</button>
+          ${popupHeadActionsHtml(vm)}
         </div>
         ${settingsHtml(vm)}
         ${wordListHtml(vm)}
@@ -295,6 +313,33 @@ function completionHtml(vm: MapViewModel): string {
         <p class="complete-score">${escapeHtml(c.label)}</p>
         <p class="caption">${escapeHtml(c.message)}</p>
         <button type="button" class="primary" id="completion-close">Continue</button>
+      </div>
+    </div>
+  `;
+}
+
+function levelHintPanelHtml(vm: MapViewModel): string {
+  if (!vm.levelHintOpen || !vm.popupCsv) return "";
+  const body = roundHintBodyHtml(vm.popupCsv);
+  if (!body) return "";
+  const backdropClass = vm.levelHintAnimate
+    ? "popup-backdrop backdrop-open level-hint-backdrop"
+    : "popup-backdrop level-hint-backdrop";
+  const panelClass = vm.levelHintAnimate ? "info-panel popup-open" : "info-panel";
+  const title = levelLabel(vm.popupCsv);
+  return `
+    <div class="${backdropClass}" id="level-hint-backdrop">
+      <div class="${panelClass}" role="dialog" aria-modal="true" aria-label="Hints for ${escapeAttr(title)}">
+        <div class="info-panel-top">
+          <button type="button" class="panel-close" id="level-hint-close" aria-label="Close">×</button>
+        </div>
+        <div class="info-scroll">
+          <div class="info-hero" aria-hidden="true">💡</div>
+          <div class="info-body">
+            <h3>${escapeHtml(title)}</h3>
+            ${body}
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -433,6 +478,7 @@ export function mapHtml(vm: MapViewModel): string {
       ${beast}
     </div>
     ${popupHtml(vm)}
+    ${levelHintPanelHtml(vm)}
     ${trophyMessageHtml(vm)}
     ${completionHtml(vm)}
     ${infoPanelHtml(vm)}
@@ -521,6 +567,19 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
 
   root.querySelector("#popup-gear")?.addEventListener("click", () => {
     handlers.onToggleGear();
+  });
+
+  root.querySelector("#popup-hint")?.addEventListener("click", () => {
+    handlers.onOpenLevelHint();
+  });
+
+  const levelHintBackdrop = root.querySelector<HTMLElement>("#level-hint-backdrop");
+  levelHintBackdrop?.addEventListener("click", (e) => {
+    if (e.target === levelHintBackdrop) handlers.onCloseLevelHint();
+  });
+
+  root.querySelector("#level-hint-close")?.addEventListener("click", () => {
+    handlers.onCloseLevelHint();
   });
 
   root.querySelectorAll<HTMLElement>("[data-style]").forEach((el) => {
