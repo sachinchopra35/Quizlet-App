@@ -472,6 +472,23 @@ export function mapHtml(vm: MapViewModel): string {
         <button type="button" class="info-button" id="map-info" aria-label="About this app">i</button>
       </div>
     </header>
+    <section class="globe-hero" aria-label="Explore the globe">
+      <div class="globe-stage">
+        <img
+          class="globe-image"
+          src="./globe.png"
+          alt="Earth globe showing Asia and Australia"
+          width="2000"
+          height="2000"
+          decoding="async"
+        />
+        <span class="globe-peacock" role="img" aria-label="Peacock on Punjab, India">🦚</span>
+      </div>
+      <div class="globe-scroll-cue">
+        <span>Punjabi course starts below</span>
+        <span class="globe-arrow" aria-hidden="true">&#8595;</span>
+      </div>
+    </section>
     <div class="level-map">
       ${levels}
       <div class="map-divider"></div>
