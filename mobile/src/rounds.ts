@@ -242,7 +242,7 @@ export function completeRoundNaturally(state: QuizState): QuizState {
     screen: "map",
     beastMode: false,
     lastFeedback: null,
-    roundMessage: `Round complete. First-try accuracy: ${c} / ${t} (${pct.toFixed(1)}%).`,
+    roundMessage: `Quiz complete. You scored ${c} / ${t} (${pct.toFixed(0)}%).`,
     roundAnnounce: `Quiz complete. You scored ${c} out of ${t}.`,
     roundMessageLevel: "success",
   };
