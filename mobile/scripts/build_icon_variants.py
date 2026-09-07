@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate App Store icon variants (ਪ) as 1024×1024 PNGs. Requires Pillow."""
 from __future__ import annotations
 
@@ -7,6 +6,8 @@ import os
 import shutil
 import sys
 from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
 
 # Gurmukhi letter PA — ਪ
 GLYPH = "\u0a2a"
@@ -44,7 +45,12 @@ def pick_font() -> str:
     raise SystemExit("No Gurmukhi font found under /System/Library/Fonts/Supplemental")
 
 
-def draw_glyph_centered(draw, font, size: int, fill: tuple[int, int, int]) -> None:
+def draw_glyph_centered(
+    draw: ImageDraw.ImageDraw,
+    font: ImageFont.FreeTypeFont,
+    size: int,
+    fill: tuple[int, int, int],
+) -> None:
     bbox = draw.textbbox((0, 0), GLYPH, font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
     x = (size - tw) // 2 - bbox[0]
@@ -52,27 +58,21 @@ def draw_glyph_centered(draw, font, size: int, fill: tuple[int, int, int]) -> No
     draw.text((x, y), GLYPH, font=font, fill=fill)
 
 
-def render_white(size: int, font) -> "Image.Image":
-    from PIL import Image, ImageDraw
-
+def render_white(size: int, font: ImageFont.FreeTypeFont) -> Image.Image:
     img = Image.new("RGB", (size, size), WHITE)
     draw = ImageDraw.Draw(img)
     draw_glyph_centered(draw, font, size, GLYPH_FILL)
     return img
 
 
-def render_off_white(size: int, font) -> "Image.Image":
-    from PIL import Image, ImageDraw
-
+def render_off_white(size: int, font: ImageFont.FreeTypeFont) -> Image.Image:
     img = Image.new("RGB", (size, size), OFF_WHITE)
     draw = ImageDraw.Draw(img)
     draw_glyph_centered(draw, font, size, GLYPH_FILL)
     return img
 
 
-def render_gold_circle(size: int, font) -> "Image.Image":
-    from PIL import Image, ImageDraw
-
+def render_gold_circle(size: int, font: ImageFont.FreeTypeFont) -> Image.Image:
     img = Image.new("RGB", (size, size), WHITE)
     draw = ImageDraw.Draw(img)
     margin = int(size * 0.12)
@@ -84,9 +84,7 @@ def render_gold_circle(size: int, font) -> "Image.Image":
     return img
 
 
-def render_blue_ring(size: int, font) -> "Image.Image":
-    from PIL import Image, ImageDraw
-
+def render_blue_ring(size: int, font: ImageFont.FreeTypeFont) -> Image.Image:
     img = Image.new("RGB", (size, size), OFF_WHITE)
     draw = ImageDraw.Draw(img)
     ring_width = max(8, int(size * 0.028))
@@ -116,12 +114,6 @@ def main() -> None:
         help="Copy the off-white variant into the iOS AppIcon asset",
     )
     args = parser.parse_args()
-
-    try:
-        from PIL import Image, ImageDraw, ImageFont
-    except ImportError:
-        print("Install Pillow: pip install pillow", file=sys.stderr)
-        raise SystemExit(1) from None
 
     font_path = pick_font()
     size = 1024
