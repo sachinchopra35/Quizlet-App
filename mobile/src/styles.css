@@ -1,11 +1,13 @@
 :root {
-  --accent: #923048;
-  --accent-border: #ad4660;
-  --accent-shade: #5e2230;
-  --accent-muted: #dfa8b5;
-  --accent-soft: rgba(146, 48, 72, 0.15);
-  --accent-soft-mid: rgba(146, 48, 72, 0.14);
-  --accent-soft-light: rgba(146, 48, 72, 0.12);
+  --accent: #5b9fd4;
+  --accent-border: #6eb0e0;
+  --accent-shade: #2b73b3;
+  --accent-muted: #9ecbff;
+  --accent-soft: rgba(91, 159, 212, 0.15);
+  --accent-soft-mid: rgba(91, 159, 212, 0.14);
+  --accent-soft-light: rgba(91, 159, 212, 0.12);
+  --beast-face: #923048;
+  --beast-shade: #5e2230;
   --node-depth: 9px;
   --node-size: 5.25rem;
   --landmark-size: 6.5rem;
@@ -459,11 +461,10 @@ button.primary {
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  border: 1.5px solid #6b7280;
-  border-radius: 50%;
+  border: none;
+  border-radius: 0;
   background: transparent;
-  color: #d1d5db;
-  font-size: 1rem;
+  font-size: 2rem;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -1147,8 +1148,8 @@ button.primary {
 }
 
 .level-node.level-beast {
-  --node-face: #886848;
-  --node-shade: #665038;
+  --node-face: var(--beast-face);
+  --node-shade: var(--beast-shade);
 }
 
 /* ---------- Popups ---------- */
@@ -1479,7 +1480,7 @@ button.primary {
   border-radius: 0.7rem;
   background: var(--accent-soft-light);
   border: 1.5px solid var(--accent-border);
-  color: #f5e8eb;
+  color: #eef6fc;
   line-height: 1;
 }
 

@@ -650,7 +650,7 @@ export function mapHtml(vm: MapViewModel): string {
         <button type="button" class="hero-peacock" id="hero-peacock" aria-label="Welcome peacock">🦚</button>
       </div>
       <div class="globe-scroll-cue">
-        <span>Welcome! Your Punjabi course starts below</span>
+        <span>Welcome!<br>Your Punjabi course starts below</span>
         <span class="globe-arrow" aria-hidden="true">&#8595;</span>
       </div>
     </section>
