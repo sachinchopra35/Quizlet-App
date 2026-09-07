@@ -592,6 +592,50 @@ describe("rounds", () => {
     expect(completed.roundMessage).toContain("2 / 2");
   });
 
+  it("letmewin90/80/70 cheats set first-try scores for medal tiers", () => {
+    const rows = Array.from({ length: 10 }, (_, i) => ({
+      en: `e${i}`,
+      lang: `p${i}`,
+    }));
+    let s = startRound({ ...createInitialState(), selectedCsv: "01 Numbers.csv" }, rows, "en_to_lang");
+
+    s = processAnswer(s, "letmewin90");
+    expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(9);
+    let done = completeRoundNaturally(s);
+    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥇", label: "9/10" });
+
+    s = startRound({ ...createInitialState(), selectedCsv: "01 Numbers.csv" }, rows, "en_to_lang");
+    s = processAnswer(s, "letmewin80");
+    expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(8);
+    done = completeRoundNaturally(s);
+    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥈", label: "8/10" });
+
+    s = startRound({ ...createInitialState(), selectedCsv: "01 Numbers.csv" }, rows, "en_to_lang");
+    s = processAnswer(s, "letmewin70");
+    expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(7);
+    done = completeRoundNaturally(s);
+    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥉", label: "7/10" });
+  });
+
+  it("letmewin90 on thirteen questions scores 12/13", () => {
+    const rows = Array.from({ length: 13 }, (_, i) => ({ en: `e${i}`, lang: `p${i}` }));
+    let s = startRound(createInitialState(), rows, "en_to_lang");
+    s = processAnswer(s, "letmewin90");
+    expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(12);
+  });
+
+  it("letmewin70 on tiny rounds yields zero first-try correct", () => {
+    const rows = [
+      { en: "a", lang: "b" },
+      { en: "c", lang: "d" },
+    ];
+    let s = startRound(createInitialState(), rows, "en_to_lang");
+    s = processAnswer(s, "letmewin70");
+    expect(Object.values(s.firstAttemptOk)).toEqual([false, false]);
+    const done = completeRoundNaturally(s);
+    expect(done.roundMessage).toContain("0 / 2");
+  });
+
   it("process correct answer advances queue", () => {
     const rows = [
       { en: "a", lang: "b" },

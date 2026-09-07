@@ -211,11 +211,14 @@ describe("stage helpers", () => {
     expect(stageNumber(59)).toBe(6);
   });
 
-  it("cycles palette every six stages", () => {
+  it("uses classic palette for early stages then muted colours", () => {
     expect(stagePaletteIndex(0)).toBe(0);
     expect(stagePaletteIndex(59)).toBe(5);
-    expect(stagePaletteIndex(60)).toBe(0);
-    expect(stageClass(60)).toBe("stage-0");
+    expect(stagePaletteIndex(60)).toBe(6);
+    expect(stageClass(60)).toBe("stage-6");
+    expect(stagePaletteIndex(70)).toBe(7);
+    expect(stageClass(80)).toBe("stage-8");
+    expect(stagePaletteIndex(100)).toBe(6);
   });
 
   it("labels stage dividers", () => {

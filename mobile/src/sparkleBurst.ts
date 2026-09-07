@@ -1,5 +1,14 @@
-const LANDMARK_COLORS = ["#5b9fd4", "#6eb0e0", "#ffd166", "#4a9e38", "#ff6b6b", "#c084fc", "#f472b6"];
-export const PEACOCK_BURST_COLORS = ["#0ea5e9", "#22c55e", "#eab308", "#14b8a6", "#a855f7", "#38bdf8"];
+const LANDMARK_COLORS = [
+  "#923048",
+  "#459832",
+  "#4496d8",
+  "#8f52e8",
+  "#756080",
+  "#4a6f6a",
+  "#806860",
+  "#886848",
+];
+export const PEACOCK_BURST_COLORS = ["#52a840", "#52a0e8", "#857090", "#588784", "#907868", "#987850"];
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;

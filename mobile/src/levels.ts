@@ -149,7 +149,25 @@ export function levelTrophySlot(
   const phase = index % MAP_WAVE_LENGTH;
   return { side: phase === 3 ? "left" : "right" };
 }
-const STAGE_PALETTE_COUNT = 6;
+const STAGE_CLASSIC_PALETTE_COUNT = 6;
+/** Muted slots after classics — no grey tones (plum, teal, mauve, ochre). */
+const STAGE_MUTED_PALETTE_OFFSET = 6;
+const STAGE_MUTED_PALETTE_COUNT = 4;
+
+/** 0-based palette slot: stages 1–6 classic colours, then muted colours without repeating classics. */
+export function stagePaletteIndex(index: number): number {
+  const stage = Math.floor(index / STAGE_SIZE);
+  if (stage < STAGE_CLASSIC_PALETTE_COUNT) return stage;
+  return (
+    STAGE_MUTED_PALETTE_OFFSET +
+    ((stage - STAGE_CLASSIC_PALETTE_COUNT) % STAGE_MUTED_PALETTE_COUNT)
+  );
+}
+
+/** CSS class for an unplayed level's stage colour. */
+export function stageClass(index: number): string {
+  return `stage-${stagePaletteIndex(index)}`;
+}
 
 /** 1-based stage number for labels (Stage 1, Stage 2, …). */
 export function stageNumber(index: number): number {
@@ -160,16 +178,6 @@ export function stageNumber(index: number): number {
 export function stageCount(levelCount: number): number {
   if (levelCount <= 0) return 1;
   return Math.ceil(levelCount / STAGE_SIZE);
-}
-
-/** 0-based palette slot, cycling every 6 stages. */
-export function stagePaletteIndex(index: number): number {
-  return Math.floor(index / STAGE_SIZE) % STAGE_PALETTE_COUNT;
-}
-
-/** CSS class for an unplayed level's stage colour. */
-export function stageClass(index: number): string {
-  return `stage-${stagePaletteIndex(index)}`;
 }
 
 const STAGE_DIVIDER_DESCRIPTIONS: Record<number, string> = {

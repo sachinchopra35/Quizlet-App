@@ -1,6 +1,6 @@
 import {
   BEAST_MODE_SIZE,
-  isWinCheatCode,
+  parseWinCheatCode,
   type Direction,
   STYLE_FROM_EN,
   styleFromDirection,
@@ -133,6 +133,21 @@ export function endRoundStats(state: QuizState): [number, number, number] {
   return [correct, total, pct];
 }
 
+/** Build first-try flags for a win cheat (N wrong answers, or all wrong if impossible). */
+export function firstAttemptOkForCheatWrongCount(
+  total: number,
+  wrongCount: number,
+): Record<number, boolean> {
+  if (total <= 0) return {};
+  if (wrongCount >= total) {
+    return Object.fromEntries([...Array(total).keys()].map((i) => [i, false]));
+  }
+  const correctCount = total - wrongCount;
+  return Object.fromEntries(
+    [...Array(total).keys()].map((i) => [i, i < correctCount]),
+  );
+}
+
 export function medalForRound(correct: number, total: number): string {
   const wrong = total - correct;
   if (wrong === 0) return "🏅";
@@ -193,14 +208,12 @@ export function processAnswer(state: QuizState, userText: string): QuizState {
   const idx = currentRowIndex(state);
   if (idx === null) return state;
 
-  if (isWinCheatCode(userText)) {
-    const firstAttemptOk = Object.fromEntries(
-      state.vocabRows.map((_, i) => [i, true as const]),
-    );
+  const cheatWrong = parseWinCheatCode(userText);
+  if (cheatWrong !== null) {
     return {
       ...state,
       queue: [],
-      firstAttemptOk,
+      firstAttemptOk: firstAttemptOkForCheatWrongCount(state.vocabRows.length, cheatWrong),
       lastFeedback: null,
     };
   }

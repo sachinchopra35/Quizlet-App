@@ -6,10 +6,33 @@ export const BEAST_MODE_SIZE = 10;
 export const DEFAULT_BEAST_STAGE_MIN = 1;
 export const STAGE_PRACTICE_PREFIX = "__stage_practice_";
 export const STAGE_PRACTICE_SIZE = 10;
-export const WIN_CHEAT_CODE = "letmewin100";
+export const WIN_CHEAT_CODES = [
+  "letmewin100",
+  "letmewin90",
+  "letmewin80",
+  "letmewin70",
+] as const;
+
+export const WIN_CHEAT_CODE = WIN_CHEAT_CODES[0];
+
+/** First-try wrong-answer count for a win cheat, or null if not a cheat. */
+export function parseWinCheatCode(text: string): number | null {
+  switch (text.trim().toLowerCase()) {
+    case "letmewin100":
+      return 0;
+    case "letmewin90":
+      return 1;
+    case "letmewin80":
+      return 2;
+    case "letmewin70":
+      return 3;
+    default:
+      return null;
+  }
+}
 
 export function isWinCheatCode(text: string): boolean {
-  return text.trim().toLowerCase() === WIN_CHEAT_CODE;
+  return parseWinCheatCode(text) !== null;
 }
 
 /** Pause on the final quiz frame so the progress bar can finish animating. */

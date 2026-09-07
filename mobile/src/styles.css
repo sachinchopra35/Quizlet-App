@@ -1,6 +1,11 @@
 :root {
-  --accent: #5b9fd4;
-  --accent-border: #6eb0e0;
+  --accent: #923048;
+  --accent-border: #ad4660;
+  --accent-shade: #5e2230;
+  --accent-muted: #dfa8b5;
+  --accent-soft: rgba(146, 48, 72, 0.15);
+  --accent-soft-mid: rgba(146, 48, 72, 0.14);
+  --accent-soft-light: rgba(146, 48, 72, 0.12);
   --node-depth: 9px;
   --node-size: 5.25rem;
   --landmark-size: 6.5rem;
@@ -147,7 +152,7 @@ button.primary {
 .style-row .segmented button.active {
   border-color: var(--accent-border);
   outline: 1px solid var(--accent-border);
-  background: rgba(91, 159, 212, 0.15);
+  background: var(--accent-soft);
 }
 
 .mute-row {
@@ -761,8 +766,8 @@ button.primary {
 }
 
 .level-node {
-  --node-face: #4aa3f0;
-  --node-shade: #2b73b3;
+  --node-face: #4496d8;
+  --node-shade: #2a6fa8;
   width: var(--node-size);
   height: var(--node-size);
   padding: 0;
@@ -965,33 +970,53 @@ button.primary {
 }
 
 .level-trophy.is-won.stage-0 {
-  --node-face: #6fbf5e;
-  --node-shade: #4a9e38;
+  --node-face: #52a840;
+  --node-shade: #408832;
 }
 
 .level-trophy.is-won.stage-1 {
-  --node-face: #7dbcf5;
-  --node-shade: #4aa3f0;
+  --node-face: #52a0e8;
+  --node-shade: #3580b8;
 }
 
 .level-trophy.is-won.stage-2 {
-  --node-face: #b88ff8;
-  --node-shade: #9b59f5;
+  --node-face: #9a62f0;
+  --node-shade: #7048c8;
 }
 
 .level-trophy.is-won.stage-3 {
-  --node-face: #5ed9cd;
-  --node-shade: #2ec4b6;
+  --node-face: #34bdb0;
+  --node-shade: #209890;
 }
 
 .level-trophy.is-won.stage-4 {
-  --node-face: #f89fd0;
-  --node-shade: #f472b6;
+  --node-face: #e878b0;
+  --node-shade: #c04888;
 }
 
 .level-trophy.is-won.stage-5 {
-  --node-face: #8b8ef5;
-  --node-shade: #6366f1;
+  --node-face: #6868e8;
+  --node-shade: #4848c8;
+}
+
+.level-trophy.is-won.stage-6 {
+  --node-face: #857090;
+  --node-shade: #645672;
+}
+
+.level-trophy.is-won.stage-7 {
+  --node-face: #588784;
+  --node-shade: #426662;
+}
+
+.level-trophy.is-won.stage-8 {
+  --node-face: #907868;
+  --node-shade: #6e5c50;
+}
+
+.level-trophy.is-won.stage-9 {
+  --node-face: #987850;
+  --node-shade: #765840;
 }
 
 .popup-trophy {
@@ -1049,59 +1074,81 @@ button.primary {
   line-height: 1.5;
 }
 
+/* Stages 1–6: classic colours, slightly mellowed. Stages 7+: muted (no grey). */
+
 .level-node.stage-0 {
-  --node-face: #4a9e38;
-  --node-shade: #3a7a2c;
+  --node-face: #459832;
+  --node-shade: #387828;
 }
 
 .level-node.stage-1 {
-  --node-face: #4aa3f0;
-  --node-shade: #2b73b3;
+  --node-face: #4496d8;
+  --node-shade: #2a6fa8;
 }
 
 .level-node.stage-2 {
-  --node-face: #9b59f5;
-  --node-shade: #6b3fc9;
+  --node-face: #8f52e8;
+  --node-shade: #6540b8;
 }
 
 .level-node.stage-3 {
-  --node-face: #2ec4b6;
-  --node-shade: #1a8f85;
+  --node-face: #2aada0;
+  --node-shade: #198880;
 }
 
 .level-node.stage-4 {
-  --node-face: #f472b6;
-  --node-shade: #be3d82;
+  --node-face: #e068a8;
+  --node-shade: #b03878;
 }
 
 .level-node.stage-5 {
-  --node-face: #6366f1;
-  --node-shade: #4338ca;
+  --node-face: #5a5ed8;
+  --node-shade: #4038b8;
+}
+
+.level-node.stage-6 {
+  --node-face: #756080;
+  --node-shade: #584862;
+}
+
+.level-node.stage-7 {
+  --node-face: #4a6f6a;
+  --node-shade: #355854;
+}
+
+.level-node.stage-8 {
+  --node-face: #806860;
+  --node-shade: #625048;
+}
+
+.level-node.stage-9 {
+  --node-face: #886848;
+  --node-shade: #665038;
 }
 
 .level-node.tier-bronze {
-  --node-face: #cd7f32;
-  --node-shade: #8c5420;
+  --node-face: #945820;
+  --node-shade: #5c3810;
 }
 
 .level-node.tier-silver {
-  --node-face: #c3ccd8;
-  --node-shade: #8b94a3;
+  --node-face: #b4bdc9;
+  --node-shade: #7a8494;
 }
 
 .level-node.tier-gold {
-  --node-face: #f0c02e;
-  --node-shade: #b3871a;
+  --node-face: #a67c1a;
+  --node-shade: #6f5210;
 }
 
 .level-node.tier-goldstar {
-  --node-face: #ffe066;
-  --node-shade: #d9a520;
+  --node-face: #c9a227;
+  --node-shade: #856810;
 }
 
 .level-node.level-beast {
-  --node-face: #f2683c;
-  --node-shade: #b0431f;
+  --node-face: #886848;
+  --node-shade: #665038;
 }
 
 /* ---------- Popups ---------- */
@@ -1341,7 +1388,7 @@ button.primary {
 .popup-settings-wrap .popup-settings .segmented button.active {
   border-color: var(--accent-border);
   outline: 1px solid var(--accent-border);
-  background: rgba(91, 159, 212, 0.15);
+  background: var(--accent-soft);
 }
 
 .word-scroll {
@@ -1414,7 +1461,7 @@ button.primary {
 .stage-step-btn:active:not(:disabled) {
   transform: translateY(1px);
   border-color: var(--accent-border);
-  background: rgba(91, 159, 212, 0.14);
+  background: var(--accent-soft-mid);
 }
 
 .stage-step-btn:disabled {
@@ -1430,16 +1477,16 @@ button.primary {
   font-variant-numeric: tabular-nums;
   padding: 0.5rem 0.95rem;
   border-radius: 0.7rem;
-  background: rgba(91, 159, 212, 0.12);
+  background: var(--accent-soft-light);
   border: 1.5px solid var(--accent-border);
-  color: #eef6fc;
+  color: #f5e8eb;
   line-height: 1;
 }
 
 .popup-start {
   width: 100%;
   margin-top: 0.85rem;
-  box-shadow: 0 4px 0 #2b73b3;
+  box-shadow: 0 4px 0 var(--accent-shade);
   transition:
     transform 0.06s ease-out,
     box-shadow 0.06s ease-out;
@@ -1447,7 +1494,7 @@ button.primary {
 
 .popup-start.is-pressed {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #2b73b3;
+  box-shadow: 0 1px 0 var(--accent-shade);
 }
 
 .popup-complete {
@@ -1476,7 +1523,7 @@ button.primary {
 }
 
 .complete-line-num {
-  color: #9ecbff;
+  color: var(--accent-muted);
 }
 
 .popup-complete .primary {
@@ -1546,19 +1593,19 @@ button.primary {
 }
 
 .progress-fill-bronze {
-  background: linear-gradient(90deg, #8c5420, #cd7f32);
+  background: linear-gradient(90deg, #5c3810, #945820);
 }
 
 .progress-fill-silver {
-  background: linear-gradient(90deg, #8b94a3, #c3ccd8);
+  background: linear-gradient(90deg, #7a8494, #b4bdc9);
 }
 
 .progress-fill-gold {
-  background: linear-gradient(90deg, #b3871a, #f0c02e);
+  background: linear-gradient(90deg, #6f5210, #a67c1a);
 }
 
 .progress-fill-goldstar {
-  background: linear-gradient(90deg, #d9a520, #ffe066);
+  background: linear-gradient(90deg, #856810, #c9a227);
 }
 
 .quiz-body .prompt {
@@ -1615,17 +1662,17 @@ button.primary {
 }
 
 .course-footer-fill-bronze {
-  background: linear-gradient(90deg, #8c5420, #cd7f32);
+  background: linear-gradient(90deg, #5c3810, #945820);
 }
 
 .course-footer-fill-silver {
-  background: linear-gradient(90deg, #8b94a3, #c3ccd8);
+  background: linear-gradient(90deg, #7a8494, #b4bdc9);
 }
 
 .course-footer-fill-gold {
-  background: linear-gradient(90deg, #b3871a, #f0c02e);
+  background: linear-gradient(90deg, #6f5210, #a67c1a);
 }
 
 .course-footer-fill-goldstar {
-  background: linear-gradient(90deg, #d9a520, #ffe066);
+  background: linear-gradient(90deg, #856810, #c9a227);
 }
