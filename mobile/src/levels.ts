@@ -166,8 +166,21 @@ export function stageClass(index: number): string {
   return `stage-${stagePaletteIndex(index)}`;
 }
 
+const STAGE_DIVIDER_DESCRIPTIONS: Record<number, string> = {
+  1: "Getting Started",
+  2: "Household Punjabi",
+  3: "Describing things",
+  4: "More Household Phrases",
+  5: "Past and Future",
+  6: "Plans and Timings",
+  7: "Life and Hobbies",
+  8: "Complex Phrases",
+  9: "Advanced Grammar",
+};
+
 export function stageDividerLabel(stageNum: number): string {
-  if (stageNum === 1) return "Stage 1: Getting Started";
+  const desc = STAGE_DIVIDER_DESCRIPTIONS[stageNum];
+  if (desc) return `Stage ${stageNum}: ${desc}`;
   return `Stage ${stageNum}`;
 }
 

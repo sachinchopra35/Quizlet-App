@@ -215,8 +215,11 @@ describe("stage helpers", () => {
 
   it("labels stage dividers", () => {
     expect(stageDividerLabel(1)).toBe("Stage 1: Getting Started");
-    expect(stageDividerLabel(2)).toBe("Stage 2");
-    expect(stageDividerLabel(8)).toBe("Stage 8");
+    expect(stageDividerLabel(2)).toBe("Stage 2: Household Punjabi");
+    expect(stageDividerLabel(3)).toBe("Stage 3: Describing things");
+    expect(stageDividerLabel(8)).toBe("Stage 8: Complex Phrases");
+    expect(stageDividerLabel(9)).toBe("Stage 9: Advanced Grammar");
+    expect(stageDividerLabel(10)).toBe("Stage 10");
   });
 });
 

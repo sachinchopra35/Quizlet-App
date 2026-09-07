@@ -59,6 +59,15 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("seekh and sikh learn", () => {
+    expect(canonicalizePunjabi("main seekh raha hun")).toBe(
+      canonicalizePunjabi("main sikh raha hun"),
+    );
+    expect(answersMatch("main seekhna chahnda hun", "main sikhna chahnda hun", true)).toBe(
+      true,
+    );
+  });
+
   it("future unga/anga interchange", () => {
     expect(canonicalizePunjabi("main khaanga")).toBe(
       canonicalizePunjabi("main khaunga"),

@@ -4,6 +4,7 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["usnu", "ohnu"],
   ["mez", "table"],
   ["garam", "garm"],
+  ["sekh", "sikh"],
   ["nakaro", "nakar"],
   ["kharidlya", "kharidya"],
   ["chawal", "chawl"],

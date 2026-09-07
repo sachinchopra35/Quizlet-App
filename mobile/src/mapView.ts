@@ -24,6 +24,7 @@ import {
 } from "./levels";
 import type { Medal } from "./rounds";
 import { roundHintBodyHtml, roundHintFor } from "./roundHints";
+import { burstSparkles, PEACOCK_BURST_COLORS } from "./sparkleBurst";
 import type { VocabRow } from "./vocab";
 
 export interface CompletionSummary {
@@ -114,7 +115,7 @@ function landmarkHtml(
   if (landmark) {
     const aloneClass = trophy ? "" : " landmark-alone";
     parts.push(
-      `<span class="level-landmark landmark-${landmark.side}${aloneClass}" aria-hidden="true">${landmark.emoji}</span>`,
+      `<button type="button" class="level-landmark landmark-${landmark.side}${aloneClass}" aria-label="Decorative landmark">${landmark.emoji}</button>`,
     );
   }
   if (trophy) {
@@ -199,7 +200,20 @@ function steppingArrowHtml(size: "sm" | "md" | "lg"): string {
 }
 
 const STEPPING_STONE_HEROES = ["🐐", "🐅", "🦅"] as const;
-const STEPPING_STONE_MESSAGE = "Scroll down to Stage 1 to start the course";
+const STEPPING_STONE_TIPS = [
+  {
+    title: "Top Tip #1",
+    body: "Look at the words list to learn the words before starting each level",
+  },
+  {
+    title: "Top Tip #2",
+    body: "This course starts from the very basics; you need no prior knowledge. However, I recommend you ask an AI for pronunciation help!",
+  },
+  {
+    title: "Top Tip #3",
+    body: "There are no multiple choice questions! You have to type in the answers. Therefore, try learning the words before you start each level",
+  },
+] as const;
 
 function steppingStonesHtml(): string {
   const stones: { index: number; size: "sm" | "md" | "lg"; heroIndex: number }[] = [
@@ -338,6 +352,7 @@ function steppingStoneMessageHtml(vm: MapViewModel): string {
   const index = vm.steppingStoneIndex;
   if (index === null) return "";
   const hero = STEPPING_STONE_HEROES[index] ?? STEPPING_STONE_HEROES[0];
+  const tip = STEPPING_STONE_TIPS[index] ?? STEPPING_STONE_TIPS[0];
   const backdropClass = vm.steppingStoneAnimate
     ? "popup-backdrop backdrop-open"
     : "popup-backdrop";
@@ -353,7 +368,8 @@ function steppingStoneMessageHtml(vm: MapViewModel): string {
     <div class="${backdropClass}" id="stepping-stone-message-backdrop">
       <div class="${classes.join(" ")}"${style} role="dialog" aria-modal="true">
         <span class="trophy-hero stepping-stone-hero" aria-hidden="true">${hero}</span>
-        <p class="trophy-message">${escapeHtml(STEPPING_STONE_MESSAGE)}</p>
+        <h2 class="popup-trophy-title">${escapeHtml(tip.title)}</h2>
+        <p class="popup-trophy-body">${escapeHtml(tip.body)}</p>
         <button type="button" class="primary" id="stepping-stone-message-close">Got it</button>
       </div>
     </div>
@@ -556,7 +572,7 @@ export function mapHtml(vm: MapViewModel): string {
     </header>
     <section class="globe-hero" aria-label="Welcome">
       <div class="globe-stage">
-        <span class="hero-peacock" role="img" aria-label="Peacock">🦚</span>
+        <button type="button" class="hero-peacock" id="hero-peacock" aria-label="Welcome peacock">🦚</button>
       </div>
       <div class="globe-scroll-cue">
         <span>Welcome! Your Punjabi course starts below</span>
@@ -791,5 +807,33 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
     handlers.onToggleMute((e.target as HTMLInputElement).checked);
   });
 
+  bindDecorativeBursts(root);
   bindExpanderAnimations(root);
+}
+
+function playDecorativePop(el: HTMLElement, x: number, y: number, colors?: readonly string[]): void {
+  burstSparkles(x, y, colors);
+  el.classList.remove("is-bouncing");
+  void el.offsetWidth;
+  el.classList.add("is-bouncing");
+  el.addEventListener("animationend", () => el.classList.remove("is-bouncing"), { once: true });
+}
+
+function bindDecorativeBursts(root: HTMLElement): void {
+  root.querySelectorAll<HTMLButtonElement>("button.level-landmark").forEach((btn) => {
+    bindPressFeedback(btn, undefined);
+    btn.addEventListener("click", () => {
+      const r = btn.getBoundingClientRect();
+      playDecorativePop(btn, r.left + r.width / 2, r.top + r.height / 2);
+    });
+  });
+
+  const peacock = root.querySelector<HTMLButtonElement>("#hero-peacock");
+  if (peacock) {
+    bindPressFeedback(peacock, undefined);
+    peacock.addEventListener("click", () => {
+      const r = peacock.getBoundingClientRect();
+      playDecorativePop(peacock, r.left + r.width / 2, r.top + r.height / 2, PEACOCK_BURST_COLORS);
+    });
+  }
 }
