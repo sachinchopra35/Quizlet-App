@@ -1402,7 +1402,7 @@ button.primary {
 
 .beast-intro {
   margin: 0 0 0.75rem;
-  text-align: center;
+  text-align: left;
 }
 
 .beast-customize {
@@ -1411,12 +1411,6 @@ button.primary {
 
 .beast-range-caption {
   margin: 0 0 0.75rem;
-}
-
-.beast-range-summary {
-  margin: 0.15rem 0 0;
-  text-align: center;
-  color: #b6bcc6;
 }
 
 .stage-range-row {

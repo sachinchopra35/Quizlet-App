@@ -150,7 +150,6 @@ function beastCustomizeHtml(vm: MapViewModel): string {
               <button type="button" class="stage-step-btn" id="beast-stage-max-inc" aria-label="Raise latest stage"${dec(maxIncDisabled)}>+</button>
             </div>
           </div>
-          <p class="caption beast-range-summary">${escapeHtml(beastRangeSummary(beastStageMin, beastStageMax))}</p>
         </div>
       </div>
     </details>
@@ -223,7 +222,7 @@ function nodeHtml(
   const emoji = beast ? BEAST_LEVEL_EMOJI : levelEmoji(csv);
   const offset = beast ? 0 : levelOffset(index);
   const label = levelLabel(csv);
-  const badge = medal ? `<span class="level-score">${escapeHtml(medal.label)}</span>` : "";
+  const badge = !beast && medal ? `<span class="level-score">${escapeHtml(medal.label)}</span>` : "";
   const beastClass = beast ? " level-beast" : "";
   return `
     <div class="level-slot" style="transform: translateX(${offset}px)">
