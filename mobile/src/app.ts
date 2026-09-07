@@ -1,11 +1,13 @@
 import {
   BEAST_MODE_SELECTION,
+  clampBeastStageRange,
+  defaultBeastStageRange,
   directionFromStyle,
   parseStagePracticeKey,
   ROUND_COMPLETE_HOLD_MS,
   STAGE_PRACTICE_SIZE,
 } from "./config";
-import { stageLevelNames } from "./levels";
+import { stageCount, stageLevelNames } from "./levels";
 import {
   ensureAudioUnlock,
   playButtonClick,
@@ -19,6 +21,7 @@ import {
   bindMapEvents,
   mapHtml,
   type CompletionSummary,
+  levelQuizParts,
   type MapViewModel,
 } from "./mapView";
 import { bindQuizEvents, finishingPrompt, promptFor, quizHtml, syncQuizProgressBar, type QuizPrompt } from "./quizView";
@@ -43,8 +46,8 @@ import {
 } from "./rounds";
 import {
   loadAllCsvs,
-  loadCombinedFromMap,
   listCsvNames,
+  rowsForStageRange,
   type VocabRow,
 } from "./vocab";
 
@@ -75,6 +78,7 @@ export class VocabApp {
   private steppingStoneAnimate = false;
   private levelHintOpen = false;
   private levelHintAnimate = false;
+  private beastCustomizeOpen = false;
   private completion: CompletionSummary | null = null;
   private scrollToLevelCsv: string | null = null;
   private quizProgressPct = 0;
@@ -89,10 +93,37 @@ export class VocabApp {
     const names = await listCsvNames();
     this.csvCache = await loadAllCsvs(names);
     const saved = loadProgress();
-    this.state = saved
+    const stages = stageCount(names.length);
+    const base = saved
       ? applySaved({ ...this.state, csvNames: names }, saved, names)
       : { ...this.state, csvNames: names };
+    const range = saved
+      ? clampBeastStageRange(base.beastStageMin, base.beastStageMax, stages)
+      : defaultBeastStageRange(stages);
+    this.state = { ...base, beastStageMin: range.min, beastStageMax: range.max };
     this.render();
+  }
+
+  private adjustBeastStageMin(delta: number): void {
+    this.beastCustomizeOpen = true;
+    const stages = stageCount(this.state.csvNames.length);
+    const range = clampBeastStageRange(
+      this.state.beastStageMin + delta,
+      this.state.beastStageMax,
+      stages,
+    );
+    this.setState({ ...this.state, beastStageMin: range.min, beastStageMax: range.max });
+  }
+
+  private adjustBeastStageMax(delta: number): void {
+    this.beastCustomizeOpen = true;
+    const stages = stageCount(this.state.csvNames.length);
+    const range = clampBeastStageRange(
+      this.state.beastStageMin,
+      this.state.beastStageMax + delta,
+      stages,
+    );
+    this.setState({ ...this.state, beastStageMin: range.min, beastStageMax: range.max });
   }
 
   private setState(next: QuizState): void {
@@ -171,10 +202,12 @@ export class VocabApp {
     if (shouldCelebrate) {
       const medals = this.state.roundMedals;
       const last = medals[medals.length - 1];
+      const quiz = levelQuizParts(this.state.selectedCsv ?? "");
       this.completion = {
         emoji: last?.emoji ?? "🏅",
         label: last?.label ?? "",
-        message: consumed.message!,
+        quizNumber: quiz.number,
+        quizName: quiz.name,
       };
     }
 
@@ -205,6 +238,10 @@ export class VocabApp {
       steppingStoneAnimate: this.steppingStoneAnimate,
       levelHintOpen: this.levelHintOpen,
       levelHintAnimate: this.levelHintAnimate,
+      beastStageMin: this.state.beastStageMin,
+      beastStageMax: this.state.beastStageMax,
+      beastStageCount: stageCount(this.state.csvNames.length),
+      beastCustomizeOpen: this.beastCustomizeOpen,
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -324,7 +361,13 @@ export class VocabApp {
         clearProgress();
         this.closeResetFlow();
         this.settingsOpen = false;
-        this.setState({ ...this.state, levelMedals: {} });
+        const range = defaultBeastStageRange(stageCount(this.state.csvNames.length));
+        this.setState({
+          ...this.state,
+          levelMedals: {},
+          beastStageMin: range.min,
+          beastStageMax: range.max,
+        });
       },
       onToggleGear: () => {
         this.closeLevelHint();
@@ -355,6 +398,11 @@ export class VocabApp {
       },
       onToggleMute: (muted) => {
         this.setState({ ...this.state, audioMuted: muted });
+      },
+      onAdjustBeastStageMin: (delta) => this.adjustBeastStageMin(delta),
+      onAdjustBeastStageMax: (delta) => this.adjustBeastStageMax(delta),
+      onBeastCustomizeToggle: (open) => {
+        this.beastCustomizeOpen = open;
       },
       onStart: () => this.startSelectedRound(),
       onDismissCompletion: () => {
@@ -392,7 +440,12 @@ export class VocabApp {
     const direction = this.state.direction;
     const practiceStage = parseStagePracticeKey(name);
     if (name === BEAST_MODE_SELECTION) {
-      const combined = loadCombinedFromMap(this.csvCache);
+      const combined = rowsForStageRange(
+        this.csvCache,
+        this.state.csvNames,
+        this.state.beastStageMin,
+        this.state.beastStageMax,
+      );
       this.setState(startBeastRound(this.state, combined, direction));
     } else if (practiceStage !== null) {
       const pool = this.rowsForStage(practiceStage);

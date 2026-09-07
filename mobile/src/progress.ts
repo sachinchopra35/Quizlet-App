@@ -1,10 +1,26 @@
-import { BEAST_MODE_SELECTION, directionFromStyle, parseStagePracticeKey } from "./config";
+import {
+  BEAST_MODE_SELECTION,
+  clampBeastStageRange,
+  defaultBeastStageRange,
+  directionFromStyle,
+  parseStagePracticeKey,
+} from "./config";
+import { stageCount } from "./levels";
 import type { Medal, QuizState } from "./rounds";
 
 const STORAGE_KEY = "learn-punjabi-progress";
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
 
 export interface SavedProgress {
+  version: 2;
+  levelMedals: Record<string, Medal>;
+  audioMuted: boolean;
+  questionStyle: string;
+  beastStageMin?: number;
+  beastStageMax?: number;
+}
+
+interface SavedProgressV1 {
   version: 1;
   levelMedals: Record<string, Medal>;
   audioMuted: boolean;
@@ -17,6 +33,8 @@ export function pickPersistable(state: QuizState): SavedProgress {
     levelMedals: state.levelMedals,
     audioMuted: state.audioMuted,
     questionStyle: state.questionStyle,
+    beastStageMin: state.beastStageMin,
+    beastStageMax: state.beastStageMax,
   };
 }
 
@@ -37,25 +55,50 @@ export function applySaved(
   saved: SavedProgress,
   csvNames: string[],
 ): QuizState {
+  const stages = stageCount(csvNames.length);
+  const range = clampBeastStageRange(
+    saved.beastStageMin ?? defaultBeastStageRange(stages).min,
+    saved.beastStageMax ?? defaultBeastStageRange(stages).max,
+    stages,
+  );
   return {
     ...state,
     levelMedals: pruneMedals(saved.levelMedals, csvNames),
     audioMuted: saved.audioMuted,
     questionStyle: saved.questionStyle,
     direction: directionFromStyle(saved.questionStyle),
+    beastStageMin: range.min,
+    beastStageMax: range.max,
   };
+}
+
+function migrateV1(raw: SavedProgressV1): SavedProgress {
+  return {
+    version: 2,
+    levelMedals: raw.levelMedals,
+    audioMuted: raw.audioMuted,
+    questionStyle: raw.questionStyle,
+  };
+}
+
+function parseSaved(raw: unknown): SavedProgress | null {
+  if (!raw || typeof raw !== "object") return null;
+  const parsed = raw as Record<string, unknown>;
+  if (parsed.version === 1) {
+    return migrateV1(parsed as unknown as SavedProgressV1);
+  }
+  if (parsed.version !== SAVE_VERSION) return null;
+  if (typeof parsed.audioMuted !== "boolean") return null;
+  if (typeof parsed.questionStyle !== "string") return null;
+  if (!parsed.levelMedals || typeof parsed.levelMedals !== "object") return null;
+  return parsed as unknown as SavedProgress;
 }
 
 export function loadProgress(): SavedProgress | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as SavedProgress;
-    if (parsed?.version !== SAVE_VERSION) return null;
-    if (typeof parsed.audioMuted !== "boolean") return null;
-    if (typeof parsed.questionStyle !== "string") return null;
-    if (!parsed.levelMedals || typeof parsed.levelMedals !== "object") return null;
-    return parsed;
+    return parseSaved(JSON.parse(raw));
   } catch {
     return null;
   }

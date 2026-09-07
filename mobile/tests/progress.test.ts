@@ -45,7 +45,7 @@ describe("progress persistence", () => {
   });
 
   const sample: SavedProgress = {
-    version: 1,
+    version: 2,
     levelMedals: {
       "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
       [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
@@ -53,6 +53,8 @@ describe("progress persistence", () => {
     },
     audioMuted: true,
     questionStyle: STYLE_TO_EN,
+    beastStageMin: 2,
+    beastStageMax: 5,
   };
 
   it("round-trips save and load", () => {
@@ -73,6 +75,24 @@ describe("progress persistence", () => {
     expect(loadProgress()).toBeNull();
   });
 
+  it("migrates version 1 saves", () => {
+    localStorage.setItem(
+      "learn-punjabi-progress",
+      JSON.stringify({
+        version: 1,
+        levelMedals: sample.levelMedals,
+        audioMuted: true,
+        questionStyle: STYLE_TO_EN,
+      }),
+    );
+    expect(loadProgress()).toEqual({
+      version: 2,
+      levelMedals: sample.levelMedals,
+      audioMuted: true,
+      questionStyle: STYLE_TO_EN,
+    });
+  });
+
   it("pruneMedals drops unknown CSV keys but keeps beast mode", () => {
     const pruned = pruneMedals(sample.levelMedals, ["01 Numbers.csv"]);
     expect(pruned).toEqual({
@@ -91,16 +111,31 @@ describe("progress persistence", () => {
   });
 
   it("applySaved restores direction from question style", () => {
+    const csvNames = Array.from({ length: 87 }, (_, i) => `${i}.csv`);
     const base = createInitialState();
-    const next = applySaved(
-      { ...base, csvNames: ["01 Numbers.csv"] },
-      sample,
-      ["01 Numbers.csv"],
-    );
+    const next = applySaved({ ...base, csvNames }, sample, csvNames);
     expect(next.audioMuted).toBe(true);
     expect(next.questionStyle).toBe(STYLE_TO_EN);
     expect(next.direction).toBe("lang_to_en");
     expect(next.levelMedals["stale.csv"]).toBeUndefined();
+    expect(next.beastStageMin).toBe(2);
+    expect(next.beastStageMax).toBe(5);
+  });
+
+  it("applySaved defaults beast range for migrated v1 saves", () => {
+    const base = createInitialState();
+    const next = applySaved(
+      { ...base, csvNames: Array.from({ length: 87 }, (_, i) => `${i}.csv`) },
+      {
+        version: 2,
+        levelMedals: {},
+        audioMuted: false,
+        questionStyle: STYLE_TO_EN,
+      },
+      Array.from({ length: 87 }, (_, i) => `${i}.csv`),
+    );
+    expect(next.beastStageMin).toBe(1);
+    expect(next.beastStageMax).toBe(9);
   });
 
   it("pickPersistable extracts persisted fields only", () => {
@@ -112,10 +147,12 @@ describe("progress persistence", () => {
       screen: "quiz" as const,
     };
     expect(pickPersistable(state)).toEqual({
-      version: 1,
+      version: 2,
       levelMedals: state.levelMedals,
       audioMuted: true,
       questionStyle: STYLE_TO_EN,
+      beastStageMin: 1,
+      beastStageMax: 1,
     });
   });
 

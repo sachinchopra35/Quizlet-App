@@ -156,6 +156,12 @@ export function stageNumber(index: number): number {
   return Math.floor(index / STAGE_SIZE) + 1;
 }
 
+/** Total number of stages for a course length (final stage may be short). */
+export function stageCount(levelCount: number): number {
+  if (levelCount <= 0) return 1;
+  return Math.ceil(levelCount / STAGE_SIZE);
+}
+
 /** 0-based palette slot, cycling every 6 stages. */
 export function stagePaletteIndex(index: number): number {
   return Math.floor(index / STAGE_SIZE) % STAGE_PALETTE_COUNT;

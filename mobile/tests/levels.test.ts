@@ -4,6 +4,10 @@ import {
   stagePracticeKey,
 } from "../src/config";
 import {
+  clampBeastStageRange,
+  defaultBeastStageRange,
+} from "../src/config";
+import {
   courseGoldProgress,
   courseProgressTier,
   DEFAULT_LEVEL_EMOJI,
@@ -16,6 +20,7 @@ import {
   roundProgress,
   roundProgressTier,
   stageClass,
+  stageCount,
   stageDividerLabel,
   STAGE_SIZE,
   stageLevelNames,
@@ -220,6 +225,19 @@ describe("stage helpers", () => {
     expect(stageDividerLabel(8)).toBe("Stage 8: Complex Phrases");
     expect(stageDividerLabel(9)).toBe("Stage 9: Advanced Grammar");
     expect(stageDividerLabel(10)).toBe("Stage 10");
+  });
+
+  it("counts stages for a course length", () => {
+    expect(stageCount(0)).toBe(1);
+    expect(stageCount(10)).toBe(1);
+    expect(stageCount(11)).toBe(2);
+    expect(stageCount(87)).toBe(9);
+  });
+
+  it("clamps beast stage ranges", () => {
+    expect(clampBeastStageRange(3, 6, 9)).toEqual({ min: 3, max: 6 });
+    expect(clampBeastStageRange(8, 3, 9)).toEqual({ min: 8, max: 8 });
+    expect(defaultBeastStageRange(9)).toEqual({ min: 1, max: 9 });
   });
 });
 

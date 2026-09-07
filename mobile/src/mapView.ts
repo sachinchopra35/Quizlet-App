@@ -1,5 +1,6 @@
 import {
   BEAST_MODE_SELECTION,
+  BEAST_MODE_SIZE,
   parseStagePracticeKey,
   STAGE_PRACTICE_SIZE,
   stagePracticeKey,
@@ -25,12 +26,14 @@ import {
 import type { Medal } from "./rounds";
 import { roundHintBodyHtml, roundHintFor } from "./roundHints";
 import { burstSparkles, PEACOCK_BURST_COLORS } from "./sparkleBurst";
+import { bindPopupPrimaryEnter } from "./popupEnterKey";
 import type { VocabRow } from "./vocab";
 
 export interface CompletionSummary {
   emoji: string;
   label: string;
-  message: string;
+  quizNumber: string | null;
+  quizName: string;
 }
 
 export interface MapViewModel {
@@ -60,6 +63,10 @@ export interface MapViewModel {
   steppingStoneAnimate: boolean;
   levelHintOpen: boolean;
   levelHintAnimate: boolean;
+  beastStageMin: number;
+  beastStageMax: number;
+  beastStageCount: number;
+  beastCustomizeOpen: boolean;
 }
 
 export interface MapHandlers {
@@ -85,14 +92,69 @@ export interface MapHandlers {
   onToggleMute(muted: boolean): void;
   onStart(): void;
   onDismissCompletion(): void;
+  onAdjustBeastStageMin(delta: number): void;
+  onAdjustBeastStageMax(delta: number): void;
+  onBeastCustomizeToggle(open: boolean): void;
   onButtonPress?(): void;
 }
 
 export function levelLabel(name: string): string {
-  if (name === BEAST_MODE_SELECTION) return "Beast Mode - 10 Random Questions";
+  if (name === BEAST_MODE_SELECTION) return "Beast Mode";
   const stage = parseStagePracticeKey(name);
   if (stage !== null) return `Stage ${stage} Practice`;
   return name.replace(/\.csv$/i, "");
+}
+
+/** Split a level filename into quiz number and topic name for display. */
+export function levelQuizParts(name: string): { number: string | null; name: string } {
+  if (name === BEAST_MODE_SELECTION) return { number: null, name: "Beast Mode" };
+  const stage = parseStagePracticeKey(name);
+  if (stage !== null) return { number: null, name: `Stage ${stage} Practice` };
+  const base = name.replace(/\.csv$/i, "");
+  const match = base.match(/^(\d+)\s+(.+)$/);
+  if (match) return { number: match[1]!, name: match[2]! };
+  return { number: null, name: base };
+}
+
+function beastRangeSummary(min: number, max: number): string {
+  const stageLabel = min === max ? `Stage ${min}` : `Stages ${min}–${max}`;
+  return `${stageLabel} · ${BEAST_MODE_SIZE} random questions`;
+}
+
+function beastCustomizeHtml(vm: MapViewModel): string {
+  const { beastStageMin, beastStageMax, beastStageCount } = vm;
+  const minDecDisabled = beastStageMin <= 1;
+  const minIncDisabled = beastStageMin >= beastStageMax;
+  const maxDecDisabled = beastStageMax <= beastStageMin;
+  const maxIncDisabled = beastStageMax >= beastStageCount;
+  const dec = (disabled: boolean) => (disabled ? " disabled" : "");
+  return `
+    <details class="expander beast-customize"${vm.beastCustomizeOpen ? " open" : ""}>
+      <summary>Customize</summary>
+      <div class="expander-panel">
+        <div class="expander-panel-inner">
+          <p class="caption beast-range-caption">Choose which stages to pull questions from.</p>
+          <div class="stage-range-row">
+            <span class="stage-range-label">From</span>
+            <div class="stage-stepper">
+              <button type="button" class="stage-step-btn" id="beast-stage-min-dec" aria-label="Lower earliest stage"${dec(minDecDisabled)}>−</button>
+              <span class="stage-step-value" id="beast-stage-min-value">${beastStageMin}</span>
+              <button type="button" class="stage-step-btn" id="beast-stage-min-inc" aria-label="Raise earliest stage"${dec(minIncDisabled)}>+</button>
+            </div>
+          </div>
+          <div class="stage-range-row">
+            <span class="stage-range-label">To</span>
+            <div class="stage-stepper">
+              <button type="button" class="stage-step-btn" id="beast-stage-max-dec" aria-label="Lower latest stage"${dec(maxDecDisabled)}>−</button>
+              <span class="stage-step-value" id="beast-stage-max-value">${beastStageMax}</span>
+              <button type="button" class="stage-step-btn" id="beast-stage-max-inc" aria-label="Raise latest stage"${dec(maxIncDisabled)}>+</button>
+            </div>
+          </div>
+          <p class="caption beast-range-summary">${escapeHtml(beastRangeSummary(beastStageMin, beastStageMax))}</p>
+        </div>
+      </div>
+    </details>
+  `;
 }
 
 function nodeColorClass(index: number, medal: Medal | undefined): string {
@@ -270,9 +332,10 @@ function wordListExpanderHtml(body: string): string {
 
 function wordListHtml(vm: MapViewModel): string {
   if (vm.popupCsv === BEAST_MODE_SELECTION) {
-    return wordListExpanderHtml(
-      `<p class="caption">Beast Mode draws 10 random cards from all lists.</p>`,
-    );
+    return `
+      <p class="caption beast-intro">${escapeHtml(beastRangeSummary(vm.beastStageMin, vm.beastStageMax))}</p>
+      ${beastCustomizeHtml(vm)}
+    `;
   }
   const practiceStage = vm.popupCsv ? parseStagePracticeKey(vm.popupCsv) : null;
   if (practiceStage !== null) {
@@ -404,12 +467,24 @@ function trophyMessageHtml(vm: MapViewModel): string {
 function completionHtml(vm: MapViewModel): string {
   if (!vm.completion) return "";
   const c = vm.completion;
+  const quizLines = c.quizNumber
+    ? `<p class="complete-lines">
+        <span class="complete-line complete-line-num">Quiz ${escapeHtml(c.quizNumber)}</span>
+        <span class="complete-line">${escapeHtml(c.quizName)}</span>
+        <span class="complete-line">${escapeHtml(c.label)}</span>
+      </p>`
+    : `<p class="complete-lines">
+        <span class="complete-line">${escapeHtml(c.quizName)}</span>
+        <span class="complete-line">${escapeHtml(c.label)}</span>
+      </p>`;
+  const ariaLabel = c.quizNumber
+    ? `Quiz ${c.quizNumber}, ${c.quizName}, ${c.label}`
+    : `${c.quizName}, ${c.label}`;
   return `
     <div class="popup-backdrop" id="completion-backdrop">
-      <div class="popup popup-complete" role="dialog" aria-modal="true">
+      <div class="popup popup-complete" role="dialog" aria-modal="true" aria-label="${escapeAttr(ariaLabel)}">
         <span class="complete-medal">${c.emoji}</span>
-        <p class="complete-score">${escapeHtml(c.label)}</p>
-        <p class="caption">${escapeHtml(c.message)}</p>
+        ${quizLines}
         <button type="button" class="primary" id="completion-close">Continue</button>
       </div>
     </div>
@@ -712,6 +787,22 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
     handlers.onToggleMute((e.target as HTMLInputElement).checked);
   });
 
+  const bindStageStep = (id: string, handler: () => void) => {
+    const btn = root.querySelector<HTMLButtonElement>(`#${id}`);
+    if (!btn || btn.disabled) return;
+    bindPressFeedback(btn, handlers.onButtonPress);
+    btn.addEventListener("click", handler);
+  };
+
+  bindStageStep("beast-stage-min-dec", () => handlers.onAdjustBeastStageMin(-1));
+  bindStageStep("beast-stage-min-inc", () => handlers.onAdjustBeastStageMin(1));
+  bindStageStep("beast-stage-max-dec", () => handlers.onAdjustBeastStageMax(-1));
+  bindStageStep("beast-stage-max-inc", () => handlers.onAdjustBeastStageMax(1));
+
+  root.querySelector("details.beast-customize")?.addEventListener("toggle", (e) => {
+    handlers.onBeastCustomizeToggle((e.currentTarget as HTMLDetailsElement).open);
+  });
+
   const start = root.querySelector<HTMLElement>("#popup-start");
   if (start) {
     bindPressFeedback(start, handlers.onButtonPress);
@@ -809,6 +900,7 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
 
   bindDecorativeBursts(root);
   bindExpanderAnimations(root);
+  bindPopupPrimaryEnter(root);
 }
 
 function playDecorativePop(el: HTMLElement, x: number, y: number, colors?: readonly string[]): void {

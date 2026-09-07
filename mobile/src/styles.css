@@ -212,6 +212,32 @@ button.primary {
   border: 1px solid rgba(255, 193, 7, 0.35);
 }
 
+.feedback-wrong {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  line-height: 1.4;
+}
+
+.feedback-wrong-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.feedback-wrong-row {
+  font-size: 0.88rem;
+  color: #d1d5db;
+}
+
+.feedback-wrong-answer {
+  color: #f3f4f6;
+}
+
+.feedback-wrong-row strong {
+  color: #fff;
+  font-weight: 600;
+}
+
 .feedback.info {
   background: rgba(100, 149, 237, 0.12);
   border: 1px solid rgba(100, 149, 237, 0.35);
@@ -1326,6 +1352,90 @@ button.primary {
   -webkit-overflow-scrolling: touch;
 }
 
+.beast-intro {
+  margin: 0 0 0.75rem;
+  text-align: center;
+}
+
+.beast-customize {
+  margin-bottom: 0.35rem;
+}
+
+.beast-range-caption {
+  margin: 0 0 0.75rem;
+}
+
+.beast-range-summary {
+  margin: 0.15rem 0 0;
+  text-align: center;
+  color: #b6bcc6;
+}
+
+.stage-range-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.stage-range-label {
+  font-size: 0.92rem;
+  color: #c5cad3;
+  min-width: 2.5rem;
+}
+
+.stage-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.stage-step-btn {
+  width: 2.85rem;
+  height: 2.85rem;
+  padding: 0;
+  border-radius: 0.7rem;
+  border: 1.5px solid #4b5563;
+  background: #252a33;
+  color: #f3f4f6;
+  font-size: 1.45rem;
+  line-height: 1;
+  flex: 0 0 auto;
+  touch-action: manipulation;
+  transition:
+    transform 0.06s ease-out,
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+.stage-step-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  border-color: var(--accent-border);
+  background: rgba(91, 159, 212, 0.14);
+}
+
+.stage-step-btn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.stage-step-value {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0.5rem 0.95rem;
+  border-radius: 0.7rem;
+  background: rgba(91, 159, 212, 0.12);
+  border: 1.5px solid var(--accent-border);
+  color: #eef6fc;
+  line-height: 1;
+}
+
 .popup-start {
   width: 100%;
   margin-top: 0.85rem;
@@ -1351,10 +1461,26 @@ button.primary {
   display: inline-block;
 }
 
-.complete-score {
-  font-size: 1.25rem;
+.complete-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.5rem 0 0;
+}
+
+.complete-line {
+  font-size: 0.95rem;
   font-weight: 600;
-  margin: 0.35rem 0 0.25rem;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.complete-line-num {
+  color: #9ecbff;
+}
+
+.popup-complete .primary {
+  margin-top: 1.25rem;
 }
 
 /* ---------- Quiz screen ---------- */
@@ -1378,7 +1504,7 @@ button.primary {
 }
 
 .feedback-slot {
-  min-height: 3.5rem;
+  min-height: 4.75rem;
   margin-bottom: 0.25rem;
 }
 

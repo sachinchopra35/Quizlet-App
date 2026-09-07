@@ -5,6 +5,12 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["mez", "table"],
   ["garam", "garm"],
   ["sekh", "sikh"],
+  ["sil", "sir"],
+  ["tikka", "tikha"],
+  ["tika", "tikha"],
+  ["mirchi", "tikha"],
+  ["bhokhe", "bhukhe"],
+  ["bhookhe", "bhukhe"],
   ["nakaro", "nakar"],
   ["kharidlya", "kharidya"],
   ["chawal", "chawl"],
@@ -70,6 +76,17 @@ const DRINK_PEE_PI: [string, string][] = [
   ["pio", "pee"],
 ];
 
+function normalizeAlsoBhiVi(s: string): string {
+  s = s.split("abhi").join("\x00abhi\x00");
+  s = s.split("bhi").join("vi");
+  return s.split("\x00abhi\x00").join("abhi");
+}
+
+function normalizeIamCopulaRaw(s: string): string {
+  s = s.replace(/\b(hoon|hoo|hu)\s+(?=ke\b)/gi, "hun ");
+  return s.replace(I_AM_SUFFIX_RAW_RE, "hun");
+}
+
 const I_AM_SUFFIX_RAW_RE = /(hoon|hoo|hun|hu)\s*$/i;
 const COPULA_STEM_HAI_RAW_RE =
   /(lag rahi|lag rehi|lag raha|lag reha|lag rahe|lag rehe|chaidi|chaida|theek)\s+(?:haan|aa|hai)\s*$/i;
@@ -91,6 +108,9 @@ function stripOptionalSubjectPrefix(s: string): string {
   for (const prefix of OPTIONAL_SUBJECT_PREFIXES) {
     if (s.startsWith(prefix)) {
       if (prefix === "main" && (s.startsWith("mainu") || s.startsWith("menu"))) {
+        continue;
+      }
+      if (prefix === "asi" && s.startsWith("asanu")) {
         continue;
       }
       return s.slice(prefix.length);
@@ -239,12 +259,65 @@ const HABITUAL_NDI_TO_DI: [string, string][] = [
   ["aundi", "audi"],
 ];
 
+function normalizeWePronouns(s: string): string {
+  /** Dative “to us” — canonical asanu (matches mainu / thuanu pattern). */
+  const dative: [string, string][] = [
+    ["saadenu", "asanu"],
+    ["asinu", "asanu"],
+    ["saanu", "asanu"],
+    ["aapanu", "asanu"],
+    ["apanu", "asanu"],
+  ];
+  for (const [variant, canonical] of dative) {
+    s = s.split(variant).join(canonical);
+  }
+  if (
+    s.startsWith("apne") ||
+    s.startsWith("apni") ||
+    s.startsWith("apna") ||
+    s.startsWith("aapas")
+  ) {
+    return s;
+  }
+  if (s.startsWith("appa")) return `asi${s.slice(4)}`;
+  if (s.startsWith("aapni") || s.startsWith("aapna")) return s;
+  if (s.startsWith("aap")) return `asi${s.slice(3)}`;
+  if (s.startsWith("apa")) return `asi${s.slice(3)}`;
+  return s;
+}
+
+function normalizeSpacedLyaPast(s: string): string {
+  /** After spaces are stripped, "kha lya" → khalya; map to compact past stems. */
+  const pairs: [string, string][] = [
+    ["khalya", "khaya"],
+    ["sikhlya", "sikhaya"],
+    ["aalya", "aaya"],
+    ["galya", "gaya"],
+    ["pilya", "piya"],
+    ["kilya", "kiya"],
+  ];
+  for (const [variant, canonical] of pairs) {
+    s = s.split(variant).join(canonical);
+  }
+  return s.split("khya").join("khaya");
+}
+
 function normalizeChahnaTusi(s: string): string {
   return s.split("chahdeho").join("chaho");
 }
 
 function normalizeCohortativeY(s: string): string {
   return s.split("iye").join("ie");
+}
+
+/** jaaie / chaliye cohortatives — English "let's go" is ambiguous between them. */
+const COHORTATIVE_GO = "letsgo";
+
+function normalizeJaaieChaliye(s: string): string {
+  for (const variant of ["jaaie", "chalie", "jaie", "chaliye"]) {
+    s = s.split(variant).join(COHORTATIVE_GO);
+  }
+  return s;
 }
 
 function normalizeDrinkPeePi(s: string): string {
@@ -362,14 +435,18 @@ export function normalize(s: string): string {
 
 export function canonicalizePunjabi(s: string): string {
   let t = (s || "").trim();
-  t = t.replace(I_AM_SUFFIX_RAW_RE, "hun");
+  t = normalizeIamCopulaRaw(t);
   t = normalizeCopulaRaw(t);
   t = stripOptionalQuestionKiRaw(t);
   t = normalizeCowWordsRaw(t);
   t = stripForCompare(t);
+  t = normalizeWePronouns(t);
+  t = normalizeAlsoBhiVi(t);
+  t = normalizeSpacedLyaPast(t);
   t = normalizeConditionals(t);
   t = normalizeChahnaTusi(t);
   t = normalizeCohortativeY(t);
+  t = normalizeJaaieChaliye(t);
   t = normalizeDrinkPeePi(t);
   t = normalizeChaiTea(t);
   t = normalizeHabitualDa(t);

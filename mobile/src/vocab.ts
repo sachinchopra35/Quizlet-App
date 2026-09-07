@@ -1,3 +1,5 @@
+import { stageLevelNames } from "./levels";
+
 export interface VocabRow {
   en: string;
   lang: string;
@@ -71,6 +73,24 @@ export function loadCombinedFromMap(
     combined.push(...rows);
   }
   if (!combined.length) throw new Error("No vocabulary in any CSV");
+  return combined;
+}
+
+/** Vocab rows from every level in an inclusive stage range. */
+export function rowsForStageRange(
+  files: Map<string, VocabRow[]>,
+  csvNames: string[],
+  minStage: number,
+  maxStage: number,
+): VocabRow[] {
+  const combined: VocabRow[] = [];
+  for (let stage = minStage; stage <= maxStage; stage++) {
+    for (const name of stageLevelNames(csvNames, stage)) {
+      const rows = files.get(name);
+      if (rows) combined.push(...rows);
+    }
+  }
+  if (!combined.length) throw new Error("No vocabulary in selected stage range");
   return combined;
 }
 

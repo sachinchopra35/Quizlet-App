@@ -19,6 +19,10 @@ const ROUND_HINTS: Record<string, string> = {
     <p>This is the &ldquo;right now&rdquo; tense. The pattern is: <strong>who</strong> + <strong>the verb</strong> + <strong>raha</strong> (or <strong>rahi</strong> for a woman) + <strong>hun</strong> (or another &ldquo;to be&rdquo; word).</p>
     <p>So <strong>main kha raha hun</strong> is literally &ldquo;I eat am&rdquo; &mdash; meaning &ldquo;I am eating.&rdquo; Same idea as Round 10, but <strong>raha</strong> in the middle tells you the action is happening now.</p>
   `,
+  "78 Know and Don't Know.csv": `
+    <p>Listen for the <strong>n</strong> in <strong>janda</strong> (&ldquo;I know&rdquo;). It isn&rsquo;t a plain English <strong>n</strong> like in &ldquo;never&rdquo; &mdash; curl your tongue tip back so it touches the roof of your mouth, a little further back than usual. That &ldquo;deep&rdquo; <strong>n</strong> is the same sound you hear in <strong>pani</strong> (water).</p>
+    <p>Roman spellings vary: you&rsquo;ll see a single <strong>n</strong> (<strong>janda</strong>, <strong>pani</strong>) or a double <strong>n</strong> (<strong>jannda</strong>) to mark that sound. Same word either way &mdash; this app accepts common spellings.</p>
+  `,
 };
 
 export function roundHintFor(csv: string | null): string | null {

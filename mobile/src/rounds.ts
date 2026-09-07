@@ -36,6 +36,8 @@ export interface QuizState {
   lastChimedFeedbackGen: number;
   audioMuted: boolean;
   beastMode: boolean;
+  beastStageMin: number;
+  beastStageMax: number;
   roundMedals: Medal[];
   csvNames: string[];
 }
@@ -59,6 +61,8 @@ export function createInitialState(): QuizState {
     lastChimedFeedbackGen: 0,
     audioMuted: false,
     beastMode: false,
+    beastStageMin: 1,
+    beastStageMax: 1,
     roundMedals: [],
     csvNames: [],
   };

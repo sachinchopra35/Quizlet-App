@@ -1,5 +1,6 @@
 import { escapeHtml } from "./html";
 import { roundProgress, roundProgressTier } from "./levels";
+import { bindPopupPrimaryEnter } from "./popupEnterKey";
 import { currentRowIndex, type QuizState } from "./rounds";
 
 export interface QuizHandlers {
@@ -88,7 +89,11 @@ export function quizHtml(
   const fb = state.lastFeedback;
   const feedbackHtml =
     fb && fb[0] === "wrong"
-      ? `<div class="feedback warning">Not quite — you wrote <strong>${escapeHtml(fb[1])}</strong>. Correct answer: <strong>${escapeHtml(fb[2])}</strong>.</div>`
+      ? `<div class="feedback warning feedback-wrong">
+          <div class="feedback-wrong-title">Not quite</div>
+          <div class="feedback-wrong-row">You wrote: <strong>${escapeHtml(fb[1])}</strong></div>
+          <div class="feedback-wrong-row feedback-wrong-answer">Correct answer: <strong>${escapeHtml(fb[2])}</strong></div>
+        </div>`
       : fb
         ? `<div class="feedback success">Correct — nice.</div>`
         : "";
@@ -191,4 +196,6 @@ export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void 
     if (!input) return;
     handlers.onSubmit(input.value);
   });
+
+  bindPopupPrimaryEnter(root);
 }

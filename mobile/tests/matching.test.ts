@@ -68,6 +68,65 @@ describe("canonicalizePunjabi", () => {
     );
   });
 
+  it("sir and sil head", () => {
+    expect(canonicalizePunjabi("mera sil dard kar raha hai")).toBe(
+      canonicalizePunjabi("mera sir dard kar raha hai"),
+    );
+    expect(answersMatch("eh mera sil hai", "eh mera sir hai", true)).toBe(true);
+  });
+
+  it("mirchi tikha and tikka spice", () => {
+    expect(canonicalizePunjabi("mainu mirchi pasand nahi")).toBe(
+      canonicalizePunjabi("mainu tikha pasand nahi"),
+    );
+    expect(answersMatch("mainu tikka pasand nahi", "mainu mirchi pasand nahi", true)).toBe(
+      true,
+    );
+    expect(answersMatch("mainu mirchi khana pasand nahi", "mainu tikha khana pasand nahi", true)).toBe(
+      true,
+    );
+  });
+
+  it("spaced lya past tense stems", () => {
+    expect(canonicalizePunjabi("main bahut kha lya")).toBe(
+      canonicalizePunjabi("main bahut khaya"),
+    );
+    expect(answersMatch("main bahut kha lya", "main bahut khaya", true)).toBe(true);
+    expect(canonicalizePunjabi("main eh ajj sikh lya")).toBe(
+      canonicalizePunjabi("main eh ajj sikhya"),
+    );
+    expect(canonicalizePunjabi("samajh nahi aa lya")).toBe(
+      canonicalizePunjabi("samajh nahi aaya"),
+    );
+    expect(canonicalizePunjabi("main kha leya")).not.toBe(
+      canonicalizePunjabi("main bahut khaya"),
+    );
+  });
+
+  it("we pronoun apa and dative asanu", () => {
+    expect(canonicalizePunjabi("apa sochde han ke oh aa jange")).toBe(
+      canonicalizePunjabi("asi sochde han ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("appa sochde han ke oh aa jange")).toBe(
+      canonicalizePunjabi("asi sochde han ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("asanu lagda hai ke oh aa jange")).toBe(
+      canonicalizePunjabi("saade nu lagda hai ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("aapanu lagda hai ke oh aa jange")).toBe(
+      canonicalizePunjabi("asanu lagda hai ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("saanu lagda hai ke oh aa jange")).toBe(
+      canonicalizePunjabi("asanu lagda hai ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("asi nu lagda hai ke oh aa jange")).toBe(
+      canonicalizePunjabi("asanu lagda hai ke oh aa jange"),
+    );
+    expect(canonicalizePunjabi("asi aapas vich gall karde han")).toBe(
+      canonicalizePunjabi("asi aapas vich gall karde han"),
+    );
+  });
+
   it("future unga/anga interchange", () => {
     expect(canonicalizePunjabi("main khaanga")).toBe(
       canonicalizePunjabi("main khaunga"),
@@ -111,6 +170,19 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("main nahin janda")).toBe(
       canonicalizePunjabi("main nahi janda"),
     );
+  });
+
+  it("bhi and vi also", () => {
+    expect(answersMatch("thuanu bhi ehhi lagda hai", "thuanu vi ehhi lagda hai?", true)).toBe(
+      true,
+    );
+    expect(canonicalizePunjabi("main abhi tak nahi khaya")).toBe(
+      canonicalizePunjabi("main abhi tak nahi khaya"),
+    );
+  });
+
+  it("bhukhe hungry spelling", () => {
+    expect(answersMatch("asi bhookhe si", "asi bhukhe si", true)).toBe(true);
   });
 
   it("itte/itthe/ithe and othe/otte here-there", () => {
@@ -185,6 +257,23 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("paidal chaliye")).toBe(
       canonicalizePunjabi("paidal chalie"),
     );
+    expect(canonicalizePunjabi("paidal chaliye")).toBe(
+      canonicalizePunjabi("paidal letsgo"),
+    );
+  });
+
+  it("jaaie and chaliye let's-go cohortatives", () => {
+    expect(canonicalizePunjabi("chalo ghar chaliye")).toBe(
+      canonicalizePunjabi("chalo ghar jaaie"),
+    );
+    expect(canonicalizePunjabi("chalo baith jaaie")).toBe(
+      canonicalizePunjabi("chalo baith chaliye"),
+    );
+    expect(answersMatch("bas te jaaie", "bas te chaliye", true)).toBe(true);
+    expect(answersMatch("othe kinvein jaaie", "othe kinvein chaliye", true)).toBe(true);
+    expect(canonicalizePunjabi("chalo ikathe khaaie")).toBe(
+      canonicalizePunjabi("chalo ikathe khaaiye"),
+    );
   });
 
   it("karda and karnda habitual", () => {
@@ -224,6 +313,9 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("main hoo")).toBe(canonicalizePunjabi("main hun"));
     expect(canonicalizePunjabi("main kha raha hoo")).toBe(
       canonicalizePunjabi("main kha raha hun"),
+    );
+    expect(answersMatch("main sochda hoo ke oh janda hai", "main sochda hun ke oh janda hai", true)).toBe(
+      true,
     );
     expect(canonicalizePunjabi("khaunga")).toBe(
       canonicalizePunjabi("main khaunga"),
