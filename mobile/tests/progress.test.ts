@@ -45,10 +45,10 @@ describe("progress persistence", () => {
   });
 
   const sample: SavedProgress = {
-    version: 2,
+    version: 4,
     levelMedals: {
-      "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
-      [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+      "01 Numbers.csv": { emoji: "🥇", label: "10/10" },
+      [BEAST_MODE_SELECTION]: { emoji: "🥈", label: "9/10" },
       "stale.csv": { emoji: "🥉", label: "7/10" },
     },
     audioMuted: true,
@@ -75,39 +75,97 @@ describe("progress persistence", () => {
     expect(loadProgress()).toBeNull();
   });
 
-  it("migrates version 1 saves", () => {
+  it("migrates version 1 saves and remaps medal emojis", () => {
     localStorage.setItem(
       "learn-punjabi-progress",
       JSON.stringify({
         version: 1,
-        levelMedals: sample.levelMedals,
+        levelMedals: {
+          "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
+          [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+        },
         audioMuted: true,
         questionStyle: STYLE_TO_EN,
       }),
     );
     expect(loadProgress()).toEqual({
-      version: 2,
-      levelMedals: sample.levelMedals,
+      version: 4,
+      levelMedals: {
+        "01 Numbers.csv": { emoji: "🥇", label: "10/10" },
+        [BEAST_MODE_SELECTION]: { emoji: "🥈", label: "9/10" },
+      },
       audioMuted: true,
       questionStyle: STYLE_TO_EN,
+    });
+  });
+
+  it("migrates version 3 saves and renames level keys", () => {
+    localStorage.setItem(
+      "learn-punjabi-progress",
+      JSON.stringify({
+        version: 3,
+        levelMedals: {
+          "03 To Be.csv": { emoji: "🥇", label: "10/10" },
+          "78 Know and Don't Know.csv": { emoji: "🥈", label: "9/10" },
+        },
+        audioMuted: false,
+        questionStyle: STYLE_TO_EN,
+      }),
+    );
+    expect(loadProgress()).toEqual({
+      version: 4,
+      levelMedals: {
+        "05 To Be.csv": { emoji: "🥇", label: "10/10" },
+        "80 Know and Don't Know.csv": { emoji: "🥈", label: "9/10" },
+      },
+      audioMuted: false,
+      questionStyle: STYLE_TO_EN,
+    });
+  });
+
+  it("migrates version 2 saves and remaps medal emojis", () => {
+    localStorage.setItem(
+      "learn-punjabi-progress",
+      JSON.stringify({
+        version: 2,
+        levelMedals: {
+          "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
+          [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+        },
+        audioMuted: true,
+        questionStyle: STYLE_TO_EN,
+        beastStageMin: 2,
+        beastStageMax: 5,
+      }),
+    );
+    expect(loadProgress()).toEqual({
+      version: 4,
+      levelMedals: {
+        "01 Numbers.csv": { emoji: "🥇", label: "10/10" },
+        [BEAST_MODE_SELECTION]: { emoji: "🥈", label: "9/10" },
+      },
+      audioMuted: true,
+      questionStyle: STYLE_TO_EN,
+      beastStageMin: 2,
+      beastStageMax: 5,
     });
   });
 
   it("pruneMedals drops unknown CSV keys but keeps beast mode", () => {
     const pruned = pruneMedals(sample.levelMedals, ["01 Numbers.csv"]);
     expect(pruned).toEqual({
-      "01 Numbers.csv": { emoji: "🏅", label: "10/10" },
-      [BEAST_MODE_SELECTION]: { emoji: "🥇", label: "9/10" },
+      "01 Numbers.csv": { emoji: "🥇", label: "10/10" },
+      [BEAST_MODE_SELECTION]: { emoji: "🥈", label: "9/10" },
     });
   });
 
   it("pruneMedals keeps stage practice keys", () => {
     const medals = {
       ...sample.levelMedals,
-      [stagePracticeKey(2)]: { emoji: "🥇", label: "9/10" },
+      [stagePracticeKey(2)]: { emoji: "🥈", label: "9/10" },
     };
     const pruned = pruneMedals(medals, ["01 Numbers.csv"]);
-    expect(pruned[stagePracticeKey(2)]).toEqual({ emoji: "🥇", label: "9/10" });
+    expect(pruned[stagePracticeKey(2)]).toEqual({ emoji: "🥈", label: "9/10" });
   });
 
   it("applySaved restores direction from question style", () => {
@@ -127,7 +185,7 @@ describe("progress persistence", () => {
     const next = applySaved(
       { ...base, csvNames: Array.from({ length: 87 }, (_, i) => `${i}.csv`) },
       {
-        version: 2,
+        version: 4,
         levelMedals: {},
         audioMuted: false,
         questionStyle: STYLE_TO_EN,
@@ -141,13 +199,13 @@ describe("progress persistence", () => {
   it("pickPersistable extracts persisted fields only", () => {
     const state = {
       ...createInitialState(),
-      levelMedals: { "01 Numbers.csv": { emoji: "🥇", label: "9/10" } },
+      levelMedals: { "01 Numbers.csv": { emoji: "🥈", label: "9/10" } },
       audioMuted: true,
       questionStyle: STYLE_TO_EN,
       screen: "quiz" as const,
     };
     expect(pickPersistable(state)).toEqual({
-      version: 2,
+      version: 4,
       levelMedals: state.levelMedals,
       audioMuted: true,
       questionStyle: STYLE_TO_EN,

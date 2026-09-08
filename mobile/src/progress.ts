@@ -5,14 +5,15 @@ import {
   directionFromStyle,
   parseStagePracticeKey,
 } from "./config";
+import { CSV_LEVEL_RENAMES } from "./csvRenames";
 import { stageCount } from "./levels";
-import type { Medal, QuizState } from "./rounds";
+import { bestMedal, migrateMedal, type Medal, type QuizState } from "./rounds";
 
 const STORAGE_KEY = "learn-punjabi-progress";
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 4;
 
 export interface SavedProgress {
-  version: 2;
+  version: 4;
   levelMedals: Record<string, Medal>;
   audioMuted: boolean;
   questionStyle: string;
@@ -27,6 +28,24 @@ interface SavedProgressV1 {
   questionStyle: string;
 }
 
+interface SavedProgressV2 {
+  version: 2;
+  levelMedals: Record<string, Medal>;
+  audioMuted: boolean;
+  questionStyle: string;
+  beastStageMin?: number;
+  beastStageMax?: number;
+}
+
+interface SavedProgressV3 {
+  version: 3;
+  levelMedals: Record<string, Medal>;
+  audioMuted: boolean;
+  questionStyle: string;
+  beastStageMin?: number;
+  beastStageMax?: number;
+}
+
 export function pickPersistable(state: QuizState): SavedProgress {
   return {
     version: SAVE_VERSION,
@@ -36,6 +55,24 @@ export function pickPersistable(state: QuizState): SavedProgress {
     beastStageMin: state.beastStageMin,
     beastStageMax: state.beastStageMax,
   };
+}
+
+function migrateMedals(medals: Record<string, Medal>): Record<string, Medal> {
+  const out: Record<string, Medal> = {};
+  for (const [name, medal] of Object.entries(medals)) {
+    out[name] = migrateMedal(medal);
+  }
+  return out;
+}
+
+function renameLevelMedals(medals: Record<string, Medal>): Record<string, Medal> {
+  const out: Record<string, Medal> = {};
+  for (const [name, medal] of Object.entries(medals)) {
+    const renamed = CSV_LEVEL_RENAMES[name] ?? name;
+    const migrated = migrateMedal(medal);
+    out[renamed] = bestMedal(out[renamed], migrated);
+  }
+  return out;
 }
 
 export function pruneMedals(
@@ -74,10 +111,32 @@ export function applySaved(
 
 function migrateV1(raw: SavedProgressV1): SavedProgress {
   return {
-    version: 2,
-    levelMedals: raw.levelMedals,
+    version: SAVE_VERSION,
+    levelMedals: renameLevelMedals(migrateMedals(raw.levelMedals)),
     audioMuted: raw.audioMuted,
     questionStyle: raw.questionStyle,
+  };
+}
+
+function migrateV2(raw: SavedProgressV2): SavedProgress {
+  return {
+    version: SAVE_VERSION,
+    levelMedals: renameLevelMedals(migrateMedals(raw.levelMedals)),
+    audioMuted: raw.audioMuted,
+    questionStyle: raw.questionStyle,
+    beastStageMin: raw.beastStageMin,
+    beastStageMax: raw.beastStageMax,
+  };
+}
+
+function migrateV3(raw: SavedProgressV3): SavedProgress {
+  return {
+    version: SAVE_VERSION,
+    levelMedals: renameLevelMedals(raw.levelMedals),
+    audioMuted: raw.audioMuted,
+    questionStyle: raw.questionStyle,
+    beastStageMin: raw.beastStageMin,
+    beastStageMax: raw.beastStageMax,
   };
 }
 
@@ -86,6 +145,12 @@ function parseSaved(raw: unknown): SavedProgress | null {
   const parsed = raw as Record<string, unknown>;
   if (parsed.version === 1) {
     return migrateV1(parsed as unknown as SavedProgressV1);
+  }
+  if (parsed.version === 2) {
+    return migrateV2(parsed as unknown as SavedProgressV2);
+  }
+  if (parsed.version === 3) {
+    return migrateV3(parsed as unknown as SavedProgressV3);
   }
   if (parsed.version !== SAVE_VERSION) return null;
   if (typeof parsed.audioMuted !== "boolean") return null;

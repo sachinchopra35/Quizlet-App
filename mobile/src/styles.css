@@ -1138,13 +1138,8 @@ button.primary {
 }
 
 .level-node.tier-gold {
-  --node-face: #a67c1a;
-  --node-shade: #6f5210;
-}
-
-.level-node.tier-goldstar {
-  --node-face: #c9a227;
-  --node-shade: #856810;
+  --node-face: #dfbf32;
+  --node-shade: #9a7818;
 }
 
 .level-node.level-beast {
@@ -1596,11 +1591,7 @@ button.primary {
 }
 
 .progress-fill-gold {
-  background: linear-gradient(90deg, #6f5210, #a67c1a);
-}
-
-.progress-fill-goldstar {
-  background: linear-gradient(90deg, #856810, #c9a227);
+  background: linear-gradient(90deg, #9a7818, #dfbf32);
 }
 
 .quiz-body .prompt {
@@ -1665,9 +1656,5 @@ button.primary {
 }
 
 .course-footer-fill-gold {
-  background: linear-gradient(90deg, #6f5210, #a67c1a);
-}
-
-.course-footer-fill-goldstar {
-  background: linear-gradient(90deg, #856810, #c9a227);
+  background: linear-gradient(90deg, #9a7818, #dfbf32);
 }

@@ -10,7 +10,6 @@ export const WIN_CHEAT_CODES = [
   "letmewin100",
   "letmewin90",
   "letmewin80",
-  "letmewin70",
 ] as const;
 
 export const WIN_CHEAT_CODE = WIN_CHEAT_CODES[0];
@@ -24,8 +23,6 @@ export function parseWinCheatCode(text: string): number | null {
       return 1;
     case "letmewin80":
       return 2;
-    case "letmewin70":
-      return 3;
     default:
       return null;
   }

@@ -15,7 +15,7 @@ export function introPanelBodyHtml(): string {
       <li>You can choose English to Punjabi, or Punjabi to English. I would recommend using English to Punjabi, as this will force you to actually think about the words.</li>
       <li>The levels start from the very basics (numbers, colours) and move on to more complex sentences. There isn't much explanation at each level, but I've deliberately arranged the levels in a natural order. Hopefully they are self-explanatory.</li>
       <li>If you get a question wrong, it stays in the round until you answer it correctly.</li>
-      <li>At the end of each level you earn a medal: a gold star for a perfect round, then gold, silver, or bronze depending on how many you missed.</li>
+      <li>At the end of each level you earn a medal: gold for a perfect round, silver for one miss, bronze otherwise.</li>
       <li><strong>Beast Mode</strong> at the bottom of the map gives you 10 random questions drawn from every list.</li>
       <li>Questions can be read aloud automatically. You can mute audio in the level settings or during a round.</li>
       <li>Your progress and your settings are saved on your device. Deleting the app clears them.</li>

@@ -9,6 +9,8 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["tikka", "tikha"],
   ["tika", "tikha"],
   ["mirchi", "tikha"],
+  ["sokha", "saukha"],
+  ["okha", "aukha"],
   ["bhokhe", "bhukhe"],
   ["bhookhe", "bhukhe"],
   ["nakaro", "nakar"],
@@ -17,6 +19,8 @@ const PUNJABI_SUBSTRING_CANONICALS: [string, string][] = [
   ["chaul", "chawl"],
   ["kutta", "doggy"],
   ["hoga", "houga"],
+  ["houge", "hoge"],
+  ["hougi", "hogi"],
   ["liya", "leya"],
   ["liyi", "leya"],
   ["leyi", "leya"],
@@ -61,6 +65,28 @@ const FUTURE_ONGE_TO_OGE: [string, string][] = [
 const FUTURE_COMPOUND_AA: [string, string][] = [
   ["aajayegi", "ayegi"],
   ["aajauga", "auga"],
+];
+
+/** ho jaa- “will become” ↔ hou- future copula “will be” (same person endings). */
+const FUTURE_BE_HO_JAA_TO_HOU: [string, string][] = [
+  ["hojaaunge", "houange"],
+  ["hojaaunga", "hounga"],
+  ["hojaaungi", "houngi"],
+  ["hojaaange", "houange"],
+  ["hojaaoge", "hoge"],
+  ["hojaaogi", "hogi"],
+  ["hojayega", "houga"],
+  ["hojayegi", "hogi"],
+  ["hojayenge", "honge"],
+  ["hojayengi", "hongi"],
+  ["hojaunga", "hounga"],
+  ["hojaungi", "houngi"],
+  ["hojaange", "houange"],
+  ["hojaoge", "hoge"],
+  ["hojaogi", "hogi"],
+  ["hojaega", "houga"],
+  ["hojaegi", "hogi"],
+  ["hojange", "honge"],
 ];
 
 const DRINK_PEE_PI: [string, string][] = [
@@ -177,6 +203,13 @@ function normalizeRozHarDin(s: string): string {
 
 function normalizeNoseNakk(s: string): string {
   return s.replace(/nakh/g, "nakk").replace(/nak(?!k)/g, "nakk");
+}
+
+/** Hunger noun bookh — not bukhar (fever). */
+function normalizeHungerBookh(s: string): string {
+  s = s.split("bhookh").join("bookh");
+  s = s.split("bhukh").join("bookh");
+  return s.replace(/bukh(?!ar)/g, "bookh");
 }
 
 function normalizePluralAuxiliary(s: string): string {
@@ -425,6 +458,13 @@ function normalizeFutureRomanization(s: string): string {
   return s;
 }
 
+function normalizeFutureBeHoJaa(s: string): string {
+  for (const [variant, canonical] of FUTURE_BE_HO_JAA_TO_HOU) {
+    s = s.split(variant).join(canonical);
+  }
+  return s;
+}
+
 function translatePunjabiChars(s: string): string {
   return s.replace(/r/g, "d").replace(/R/g, "d");
 }
@@ -461,7 +501,9 @@ export function canonicalizePunjabi(s: string): string {
   t = normalizeProgressiveParticiple(t);
   t = t.split("tenu").join("thuanu");
   t = t.split("tainu").join("thuanu");
+  t = t.split("tuhanu").join("thuanu");
   t = normalizeFutureRomanization(t);
+  t = normalizeFutureBeHoJaa(t);
   t = t.replace(/^mai/, "main");
   t = t.replace(WAIT_WORD_RE, "udeek");
   t = t.split("taiyaar").join("tyaar");
@@ -469,6 +511,7 @@ export function canonicalizePunjabi(s: string): string {
   t = normalizeDoggyKutta(t);
   t = normalizeCarGaddi(t);
   t = normalizeRozHarDin(t);
+  t = normalizeHungerBookh(t);
   t = collapseDoubledLetters(t);
   t = t.replace(TUADA_BEFORE_KOL_RE, "tuade");
   t = t.replace(TUADE_OBLIQUE_RE, "tuade");

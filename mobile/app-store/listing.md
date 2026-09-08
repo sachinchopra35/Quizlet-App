@@ -47,7 +47,7 @@ HOW IT WORKS
 • Work through levels on a map — from basics (numbers, colours) to full sentences
 • Type your answers; wrong questions stay in the round until you get them right
 • Choose English → Punjabi or Punjabi → English (English → Punjabi is great for building recall)
-• Earn medals at the end of each level — gold star for a perfect round
+• Earn medals at the end of each level — gold for a perfect round, silver for one miss, bronze otherwise
 • Beast Mode mixes 10 random questions from the whole course
 • Optional audio reads questions aloud; mute anytime
 • Flexible spelling — "garam" and "garm" both work

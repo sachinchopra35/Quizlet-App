@@ -149,6 +149,9 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("main tenu call karunga")).toBe(
       canonicalizePunjabi("main thuanu call karunga"),
     );
+    expect(canonicalizePunjabi("tuhanu nahi karna paina")).toBe(
+      canonicalizePunjabi("thuanu nahi karna paina"),
+    );
   });
 
   it("tuade oblique and kol spellings", () => {
@@ -183,6 +186,21 @@ describe("canonicalizePunjabi", () => {
 
   it("bhukhe hungry spelling", () => {
     expect(answersMatch("asi bhookhe si", "asi bhukhe si", true)).toBe(true);
+  });
+
+  it("bookh bukh hunger noun, not bukhar fever", () => {
+    expect(
+      answersMatch(
+        "kyunki mainu bukh lag rehi hai",
+        "kyunki mainu bookh lag rahi hai",
+        true,
+      ),
+    ).toBe(true);
+    expect(answersMatch("mainu bhookh lag rahi hai", "mainu bookh lag rahi hai", true)).toBe(
+      true,
+    );
+    expect(answersMatch("mainu bukhar hai", "mainu bukhar hai", true)).toBe(true);
+    expect(answersMatch("mainu bukh hai", "mainu bukhar hai", true)).toBe(false);
   });
 
   it("itte/itthe/ithe and othe/otte here-there", () => {
@@ -474,9 +492,63 @@ describe("language tweak canonicals", () => {
     expect(canonicalizePunjabi("eh aukha hoga")).toBe(
       canonicalizePunjabi("eh aukha houga"),
     );
+    expect(canonicalizePunjabi("eh okha houga")).toBe(
+      canonicalizePunjabi("eh aukha houga"),
+    );
+    expect(canonicalizePunjabi("eh sokha houga")).toBe(
+      canonicalizePunjabi("eh saukha houga"),
+    );
     expect(canonicalizePunjabi("ohne apne aap kharidlya")).toBe(
       canonicalizePunjabi("ohne apne aap kharidya"),
     );
+  });
+
+  it("future be: ho jaa- and hou- copula are equivalent", () => {
+    expect(canonicalizePunjabi("eh theek ho jayega")).toBe(
+      canonicalizePunjabi("eh theek houga"),
+    );
+    expect(canonicalizePunjabi("eh theek hoga")).toBe(
+      canonicalizePunjabi("eh theek ho jayega"),
+    );
+    expect(canonicalizePunjabi("main tyaar ho jaaunga")).toBe(
+      canonicalizePunjabi("main tyaar hounga"),
+    );
+    expect(canonicalizePunjabi("main late ho jaaunga")).toBe(
+      canonicalizePunjabi("main late hounga"),
+    );
+    expect(canonicalizePunjabi("asi theek ho jaaange")).toBe(
+      canonicalizePunjabi("asi theek houange"),
+    );
+    expect(canonicalizePunjabi("tusi othe ho jaaoge")).toBe(
+      canonicalizePunjabi("tusi othe hoge"),
+    );
+    expect(canonicalizePunjabi("tusi othe houge")).toBe(
+      canonicalizePunjabi("tusi othe hoge"),
+    );
+    expect(canonicalizePunjabi("oh tyaar ho jayegi")).toBe(
+      canonicalizePunjabi("oh tyaar hogi"),
+    );
+    expect(canonicalizePunjabi("oh tyaar ho jange")).toBe(
+      canonicalizePunjabi("oh tyaar honge"),
+    );
+    expect(canonicalizePunjabi("eh aukha ho jayega")).toBe(
+      canonicalizePunjabi("eh aukha houga"),
+    );
+  });
+
+  it("future be: does not rewrite motion futures", () => {
+    expect(canonicalizePunjabi("oh pahunch jayega")).toBe(
+      canonicalizePunjabi("oh pahunch jayega"),
+    );
+    expect(canonicalizePunjabi("main aa jaaunga")).toBe(
+      canonicalizePunjabi("main aa jaaunga"),
+    );
+    expect(canonicalizePunjabi("oh ajj raat othe pahunch jange")).toBe(
+      canonicalizePunjabi("oh ajj raat othe pahunch jange"),
+    );
+    expect(
+      answersMatch("main aa jaaunga", "main tyaar hounga", true),
+    ).toBe(false);
   });
 
   it("optional leading ki on questions", () => {
@@ -547,19 +619,19 @@ describe("rounds", () => {
   });
 
   it("medal tiers", () => {
-    expect(medalForRound(10, 10)).toBe("🏅");
-    expect(medalForRound(9, 10)).toBe("🥇");
-    expect(medalForRound(8, 10)).toBe("🥈");
+    expect(medalForRound(10, 10)).toBe("🥇");
+    expect(medalForRound(9, 10)).toBe("🥈");
+    expect(medalForRound(8, 10)).toBe("🥉");
     expect(medalForRound(7, 10)).toBe("🥉");
   });
 
   it("bestMedal keeps the higher tier", () => {
     expect(
-      bestMedal({ emoji: "🏅", label: "10/10" }, { emoji: "🥇", label: "9/10" }),
-    ).toEqual({ emoji: "🏅", label: "10/10" });
+      bestMedal({ emoji: "🥇", label: "10/10" }, { emoji: "🥈", label: "9/10" }),
+    ).toEqual({ emoji: "🥇", label: "10/10" });
     expect(
-      bestMedal({ emoji: "🥉", label: "7/10" }, { emoji: "🥇", label: "9/10" }),
-    ).toEqual({ emoji: "🥇", label: "9/10" });
+      bestMedal({ emoji: "🥉", label: "7/10" }, { emoji: "🥈", label: "9/10" }),
+    ).toEqual({ emoji: "🥈", label: "9/10" });
   });
 
   it("bestMedal prefers higher accuracy within the same tier", () => {
@@ -572,10 +644,10 @@ describe("rounds", () => {
     const state = {
       ...createInitialState(),
       selectedCsv: "01 Numbers.csv",
-      levelMedals: { "01 Numbers.csv": { emoji: "🏅", label: "10/10" } },
+      levelMedals: { "01 Numbers.csv": { emoji: "🥇", label: "10/10" } },
     };
     const next = recordRoundMedal(state, 9, 10);
-    expect(next.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🏅", label: "10/10" });
+    expect(next.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥇", label: "10/10" });
   });
 
   it("letmewin100 cheat clears the queue with a perfect score", () => {
@@ -592,7 +664,7 @@ describe("rounds", () => {
     expect(completed.roundMessage).toContain("2 / 2");
   });
 
-  it("letmewin90/80/70 cheats set first-try scores for medal tiers", () => {
+  it("letmewin90/80 cheats set first-try scores for medal tiers", () => {
     const rows = Array.from({ length: 10 }, (_, i) => ({
       en: `e${i}`,
       lang: `p${i}`,
@@ -602,19 +674,13 @@ describe("rounds", () => {
     s = processAnswer(s, "letmewin90");
     expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(9);
     let done = completeRoundNaturally(s);
-    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥇", label: "9/10" });
+    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥈", label: "9/10" });
 
     s = startRound({ ...createInitialState(), selectedCsv: "01 Numbers.csv" }, rows, "en_to_lang");
     s = processAnswer(s, "letmewin80");
     expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(8);
     done = completeRoundNaturally(s);
-    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥈", label: "8/10" });
-
-    s = startRound({ ...createInitialState(), selectedCsv: "01 Numbers.csv" }, rows, "en_to_lang");
-    s = processAnswer(s, "letmewin70");
-    expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(7);
-    done = completeRoundNaturally(s);
-    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥉", label: "7/10" });
+    expect(done.levelMedals["01 Numbers.csv"]).toEqual({ emoji: "🥉", label: "8/10" });
   });
 
   it("letmewin90 on thirteen questions scores 12/13", () => {
@@ -622,18 +688,6 @@ describe("rounds", () => {
     let s = startRound(createInitialState(), rows, "en_to_lang");
     s = processAnswer(s, "letmewin90");
     expect(Object.values(s.firstAttemptOk).filter(Boolean)).toHaveLength(12);
-  });
-
-  it("letmewin70 on tiny rounds yields zero first-try correct", () => {
-    const rows = [
-      { en: "a", lang: "b" },
-      { en: "c", lang: "d" },
-    ];
-    let s = startRound(createInitialState(), rows, "en_to_lang");
-    s = processAnswer(s, "letmewin70");
-    expect(Object.values(s.firstAttemptOk)).toEqual([false, false]);
-    const done = completeRoundNaturally(s);
-    expect(done.roundMessage).toContain("0 / 2");
   });
 
   it("process correct answer advances queue", () => {

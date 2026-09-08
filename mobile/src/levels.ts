@@ -1,6 +1,7 @@
 import type { Medal, QuizState } from "./rounds";
+import { parseMedalLabel } from "./rounds";
 
-export type LevelTier = "blue" | "bronze" | "silver" | "gold" | "goldstar";
+export type LevelTier = "blue" | "bronze" | "silver" | "gold";
 
 /** Keyword to emoji. Longest / most specific keys first — first match wins. */
 const EMOJI_RULES: [string, string][] = [
@@ -20,7 +21,6 @@ const EMOJI_RULES: [string, string][] = [
   ["ke - and then", "👉"],
   ["with and to", "🧑‍🤝‍🧑"],
   ["quick replies", "💥"],
-  ["03 to be", "🐝"],
   ["living room", "🛋️"],
   ["fruits and vegetables", "🥕"],
   ["adjective and noun", "🧩"],
@@ -77,7 +77,8 @@ export const BEAST_LEVEL_EMOJI = "🔥";
 
 /** Pick a topic emoji for a vocab list filename, falling back to a star. */
 export function levelEmoji(name: string): string {
-  const key = name.replace(/\.csv$/i, "").toLowerCase();
+  const key = name.replace(/\.csv$/i, "").replace(/^\d+[a-z]?\s+/, "").toLowerCase();
+  if (key === "to be") return "🐝";
   for (const [needle, emoji] of EMOJI_RULES) {
     if (key.includes(needle)) return emoji;
   }
@@ -88,7 +89,6 @@ export function levelEmoji(name: string): string {
 export function medalTier(medal: string | null | undefined): LevelTier {
   switch (medal) {
     case "🏅":
-      return "goldstar";
     case "🥇":
       return "gold";
     case "🥈":
@@ -199,7 +199,14 @@ export function stageDividerLabel(stageNum: number): string {
 }
 
 /** Medal emoji for a flawless round (0 wrong answers). */
-export const PERFECT_MEDAL = "🏅";
+export const PERFECT_MEDAL = "🥇";
+
+function isPerfectMedal(medal: Medal | undefined): boolean {
+  if (!medal) return false;
+  const parts = parseMedalLabel(medal.label);
+  if (parts) return parts[0] === parts[1];
+  return medal.emoji === PERFECT_MEDAL || medal.emoji === "🏅";
+}
 
 /** Level names in a 1-based stage. The final stage may be short. */
 export function stageLevelNames(csvNames: string[], stage: number): string[] {
@@ -216,38 +223,46 @@ export function stageMastered(
 ): boolean {
   const names = stageLevelNames(csvNames, stage);
   if (!names.length) return false;
-  return names.every((name) => levelMedals[name]?.emoji === PERFECT_MEDAL);
+  return names.every((name) => isPerfectMedal(levelMedals[name]));
 }
 
-/** Share of vocab levels cleared with a perfect (gold star) score, 0..1. */
+/** Share of vocab levels cleared with a perfect score, 0..1. */
 export function courseGoldProgress(
   csvNames: string[],
   levelMedals: Record<string, Medal>,
 ): number {
   if (!csvNames.length) return 0;
-  const perfect = csvNames.filter((name) => levelMedals[name]?.emoji === PERFECT_MEDAL).length;
+  const perfect = csvNames.filter((name) => isPerfectMedal(levelMedals[name])).length;
   return perfect / csvNames.length;
 }
 
-export type CourseProgressTier = "green" | "bronze" | "silver" | "gold" | "goldstar";
+export type CourseProgressTier = "green" | "bronze" | "silver" | "gold";
 
 export type RoundProgressTier = CourseProgressTier;
 
 /** Footer bar colour tier from overall perfect-level progress. */
 export function courseProgressTier(progress: number): CourseProgressTier {
-  if (progress >= 0.95) return "goldstar";
   if (progress >= 0.9) return "gold";
   if (progress >= 0.8) return "silver";
   if (progress >= 0.7) return "bronze";
   return "green";
 }
 
-/** In-round bar colour from questions still in the queue. */
-export function roundProgressTier(remaining: number): RoundProgressTier {
-  if (remaining <= 0) return "goldstar";
-  if (remaining === 1) return "gold";
-  if (remaining === 2) return "silver";
-  if (remaining === 3) return "bronze";
+export function firstTryWrongCount(state: QuizState): number {
+  return Object.values(state.firstAttemptOk).filter((v) => v === false).length;
+}
+
+/** In-round bar colour from first-try wrong count (matches medal tiers). */
+export function roundProgressTier(state: QuizState): RoundProgressTier {
+  const wrong = firstTryWrongCount(state);
+  const complete = state.queue.length === 0;
+  if (complete) {
+    if (wrong === 0) return "gold";
+    if (wrong === 1) return "silver";
+    return "bronze";
+  }
+  if (wrong >= 2) return "bronze";
+  if (wrong === 1) return "silver";
   return "green";
 }
 

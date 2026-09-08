@@ -62,7 +62,7 @@ describe("levelEmoji", () => {
   });
 
   it("uses hand-picked emojis for selected levels", () => {
-    expect(levelEmoji("03 To Be.csv")).toBe("🐝");
+    expect(levelEmoji("05 To Be.csv")).toBe("🐝");
     expect(levelEmoji("18 Quick Replies.csv")).toBe("💥");
     expect(levelEmoji("24 With and To.csv")).toBe("🧑‍🤝‍🧑");
     expect(levelEmoji("27 Wants and Needs.csv")).toBe("🙏");
@@ -84,7 +84,7 @@ describe("levelEmoji", () => {
 
 describe("medalTier", () => {
   it("maps each medal to a colour tier", () => {
-    expect(medalTier("🏅")).toBe("goldstar");
+    expect(medalTier("🏅")).toBe("gold");
     expect(medalTier("🥇")).toBe("gold");
     expect(medalTier("🥈")).toBe("silver");
     expect(medalTier("🥉")).toBe("bronze");
@@ -160,7 +160,7 @@ describe("levelTrophySlot", () => {
 });
 
 describe("courseGoldProgress", () => {
-  const levels = ["01 Numbers.csv", "02 Colours.csv", "03 To Be.csv"];
+  const levels = ["01 Numbers.csv", "03 Colours.csv", "05 To Be.csv"];
 
   it("is zero when no levels have a perfect medal", () => {
     expect(courseGoldProgress(levels, {})).toBe(0);
@@ -171,25 +171,25 @@ describe("courseGoldProgress", () => {
     ).toBe(0);
   });
 
-  it("counts only perfect gold-star medals", () => {
+  it("counts only perfect medals", () => {
     expect(
       courseGoldProgress(levels, {
         "01 Numbers.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
-        "02 Colours.csv": { emoji: "🥇", label: "9/10" },
+        "03 Colours.csv": { emoji: "🥈", label: "9/10" },
       }),
     ).toBeCloseTo(1 / 3);
     expect(
       courseGoldProgress(levels, {
         "01 Numbers.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
-        "02 Colours.csv": { emoji: PERFECT_MEDAL, label: "8/8" },
-        "03 To Be.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
+        "03 Colours.csv": { emoji: PERFECT_MEDAL, label: "8/8" },
+        "05 To Be.csv": { emoji: PERFECT_MEDAL, label: "10/10" },
       }),
     ).toBe(1);
   });
 });
 
 describe("courseProgressTier", () => {
-  it("steps through medal colours at 70/80/90/95 percent", () => {
+  it("steps through medal colours at 70/80/90 percent", () => {
     expect(courseProgressTier(0)).toBe("green");
     expect(courseProgressTier(0.69)).toBe("green");
     expect(courseProgressTier(0.7)).toBe("bronze");
@@ -198,8 +198,8 @@ describe("courseProgressTier", () => {
     expect(courseProgressTier(0.89)).toBe("silver");
     expect(courseProgressTier(0.9)).toBe("gold");
     expect(courseProgressTier(0.94)).toBe("gold");
-    expect(courseProgressTier(0.95)).toBe("goldstar");
-    expect(courseProgressTier(1)).toBe("goldstar");
+    expect(courseProgressTier(0.95)).toBe("gold");
+    expect(courseProgressTier(1)).toBe("gold");
   });
 });
 
@@ -234,7 +234,7 @@ describe("stage helpers", () => {
     expect(stageCount(0)).toBe(1);
     expect(stageCount(10)).toBe(1);
     expect(stageCount(11)).toBe(2);
-    expect(stageCount(87)).toBe(9);
+    expect(stageCount(89)).toBe(9);
   });
 
   it("clamps beast stage ranges", () => {
@@ -265,7 +265,7 @@ describe("stageMastered", () => {
     const medals = Object.fromEntries(
       names.slice(0, 10).map((name, i) => [
         name,
-        { emoji: i < 9 ? PERFECT_MEDAL : "🥇", label: "9/10" },
+        { emoji: i < 9 ? PERFECT_MEDAL : "🥈", label: i < 9 ? "10/10" : "9/10" },
       ]),
     );
     expect(stageMastered(names, medals, 1)).toBe(false);
@@ -324,12 +324,22 @@ describe("roundProgress", () => {
 });
 
 describe("roundProgressTier", () => {
-  it("maps remaining queue length to medal colours", () => {
-    expect(roundProgressTier(10)).toBe("green");
-    expect(roundProgressTier(4)).toBe("green");
-    expect(roundProgressTier(3)).toBe("bronze");
-    expect(roundProgressTier(2)).toBe("silver");
-    expect(roundProgressTier(1)).toBe("gold");
-    expect(roundProgressTier(0)).toBe("goldstar");
+  it("maps first-try wrong count to medal colours", () => {
+    const rows = Array.from({ length: 10 }, (_, i) => ({ en: `e${i}`, lang: `p${i}` }));
+    const base = startRound(createInitialState(), rows, "en_to_lang");
+
+    const withWrong = (wrong: number, complete: boolean) => {
+      const firstAttemptOk = Object.fromEntries(
+        rows.map((_, i) => [i, i < rows.length - wrong]),
+      );
+      return { ...base, firstAttemptOk, queue: complete ? [] : base.queue };
+    };
+
+    expect(roundProgressTier(withWrong(0, false))).toBe("green");
+    expect(roundProgressTier(withWrong(1, false))).toBe("silver");
+    expect(roundProgressTier(withWrong(2, false))).toBe("bronze");
+    expect(roundProgressTier(withWrong(0, true))).toBe("gold");
+    expect(roundProgressTier(withWrong(1, true))).toBe("silver");
+    expect(roundProgressTier(withWrong(3, true))).toBe("bronze");
   });
 });

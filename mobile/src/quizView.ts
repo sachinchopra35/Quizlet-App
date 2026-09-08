@@ -85,7 +85,7 @@ export function quizHtml(
   finishing = false,
 ): string {
   const pct = Math.round(roundProgress(state) * 100);
-  const tier = roundProgressTier(state.queue.length);
+  const tier = roundProgressTier(state);
   const fb = state.lastFeedback;
   const feedbackHtml =
     fb && fb[0] === "wrong"

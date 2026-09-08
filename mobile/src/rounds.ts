@@ -150,16 +150,14 @@ export function firstAttemptOkForCheatWrongCount(
 
 export function medalForRound(correct: number, total: number): string {
   const wrong = total - correct;
-  if (wrong === 0) return "🏅";
-  if (wrong === 1) return "🥇";
-  if (wrong === 2) return "🥈";
+  if (wrong === 0) return "🥇";
+  if (wrong === 1) return "🥈";
   return "🥉";
 }
 
 function medalRank(emoji: string): number {
   switch (emoji) {
     case "🏅":
-      return 4;
     case "🥇":
       return 3;
     case "🥈":
@@ -171,10 +169,20 @@ function medalRank(emoji: string): number {
   }
 }
 
-function parseMedalLabel(label: string): [number, number] | null {
+export function parseMedalLabel(label: string): [number, number] | null {
   const match = /^(\d+)\/(\d+)$/.exec(label);
   if (!match) return null;
   return [Number(match[1]), Number(match[2])];
+}
+
+/** Recompute emoji from stored label (handles legacy four-tier saves). */
+export function migrateMedal(medal: Medal): Medal {
+  const parts = parseMedalLabel(medal.label);
+  if (!parts) {
+    if (medal.emoji === "🏅") return { ...medal, emoji: "🥇" };
+    return medal;
+  }
+  return { emoji: medalForRound(parts[0], parts[1]), label: medal.label };
 }
 
 /** Keep whichever medal is the better result. */

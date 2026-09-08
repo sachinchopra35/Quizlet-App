@@ -12,7 +12,7 @@ export function escapeAttr(s: string): string {
   return escapeHtml(s).replace(/'/g, "&#39;");
 }
 
-/** Persistent footer bar — share of levels with a perfect gold medal. */
+/** Persistent footer bar — share of levels with a perfect score. */
 export function courseFooterHtml(progress: number): string {
   const pct = Math.round(Math.min(100, Math.max(0, progress * 100)));
   const tier = courseProgressTier(progress);

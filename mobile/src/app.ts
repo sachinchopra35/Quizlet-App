@@ -204,7 +204,7 @@ export class VocabApp {
       const last = medals[medals.length - 1];
       const quiz = levelQuizParts(this.state.selectedCsv ?? "");
       this.completion = {
-        emoji: last?.emoji ?? "🏅",
+        emoji: last?.emoji ?? "🥇",
         label: last?.label ?? "",
         quizNumber: quiz.number,
         quizName: quiz.name,
