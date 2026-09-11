@@ -96,24 +96,21 @@ export function quizHtml(
   const pct = Math.round(roundProgress(state) * 100);
   const tier = roundProgressTier(state);
   const fb = state.lastFeedback;
-  const idx = currentRowIndex(state);
-  const onRetry = idx !== null && (state.wrongAttempts[idx] ?? 0) >= 1;
   const revealed = revealedAnswerForCurrent(state);
   const showReveal = !finishing && canRevealAnswer(state);
   const monkey = revealMonkeyForCurrent(state);
 
   let feedbackHtml = "";
-  if (!revealed && !onRetry) {
-    feedbackHtml =
-      fb && fb[0] === "wrong"
-        ? `<div class="feedback warning feedback-wrong">
+  if (!revealed && fb) {
+    if (fb[0] === "wrong") {
+      feedbackHtml = `<div class="feedback warning feedback-wrong">
           <div class="feedback-wrong-title">Not quite</div>
           <div class="feedback-wrong-row">You wrote: <strong>${escapeHtml(fb[1])}</strong></div>
           <div class="feedback-wrong-row feedback-wrong-answer">Correct answer: <strong>${escapeHtml(fb[2])}</strong></div>
-        </div>`
-        : fb
-          ? `<div class="feedback success">${escapeHtml(correctFeedbackMessage(state.correctFeedbackTurn - 1))}</div>`
-          : "";
+        </div>`;
+    } else if (fb[0] === "correct" && state.lastWrongIdx === null) {
+      feedbackHtml = `<div class="feedback success">${escapeHtml(correctFeedbackMessage(state.correctFeedbackTurn - 1))}</div>`;
+    }
   }
 
   const revealBtn = showReveal
@@ -126,6 +123,10 @@ export function quizHtml(
         <div class="feedback-revealed-answer"><strong>${escapeHtml(revealed)}</strong></div>
         <div class="feedback-revealed-hint">Type it below to move on</div>
       </div>`
+    : "";
+
+  const feedbackSlotHtml = feedbackHtml
+    ? `<div class="feedback-slot" aria-live="polite">${feedbackHtml}</div>`
     : "";
 
   return `
@@ -146,7 +147,7 @@ export function quizHtml(
         </div>
       </div>
       <div class="quiz-body">
-        <div class="feedback-slot" aria-live="polite">${feedbackHtml}</div>
+        ${feedbackSlotHtml}
         <p class="prompt">${escapeHtml(prompt.text)}</p>
         ${revealBtn}
         ${revealedHtml}

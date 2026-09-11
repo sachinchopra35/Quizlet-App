@@ -255,6 +255,7 @@ button.primary {
   flex-direction: column;
   gap: 0.35rem;
   line-height: 1.4;
+  margin: 0 0 0.75rem;
 }
 
 .feedback-revealed-title {
@@ -516,21 +517,15 @@ button.primary {
   display: none;
 }
 
-.expander-words-guide[open] .words-list-summary-btn {
-  display: inline;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
+/* Tier 1: keep the blue button when expanded; stop pulsing while the list is open */
+.expander-words-guide:not(.expander-words-guide--text)[open] .words-list-summary-btn {
   animation: none;
-  font-size: 0.9rem;
-  font-weight: inherit;
-  text-align: left;
-  color: inherit;
+  box-shadow:
+    0 4px 0 var(--accent-shade),
+    0 0 12px rgba(91, 159, 212, 0.35);
 }
 
-.expander-words-guide[open] .words-list-summary-text {
+.expander-words-guide--text[open] .words-list-summary-text {
   animation: none;
   color: inherit;
 }

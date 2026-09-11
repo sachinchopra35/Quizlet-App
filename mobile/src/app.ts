@@ -87,6 +87,7 @@ export class VocabApp {
   private roundCompleteTimer: ReturnType<typeof setTimeout> | null = null;
   private quizGuessDraft = "";
   private quizGuessForIdx: number | null = null;
+  private quizSoftRender = false;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -530,6 +531,7 @@ export class VocabApp {
       },
       onReveal: () => {
         this.captureQuizGuessDraft();
+        this.quizSoftRender = true;
         this.setState(processReveal(this.state));
       },
       onToggleMute: (muted) => {
@@ -544,9 +546,15 @@ export class VocabApp {
     this.quizProgressPct = targetPct;
 
     requestAnimationFrame(() => {
+      const input = this.root.querySelector<HTMLInputElement>("#guess");
+      if (this.quizSoftRender) {
+        input?.focus({ preventScroll: true });
+        this.quizSoftRender = false;
+        return;
+      }
       window.scrollTo(0, 0);
       if (!this.quitConfirmOpen) {
-        this.root.querySelector<HTMLInputElement>("#guess")?.focus({ preventScroll: true });
+        input?.focus({ preventScroll: true });
       }
       this.playPromptAudio(prompt);
     });

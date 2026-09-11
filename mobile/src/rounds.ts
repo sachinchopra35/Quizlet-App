@@ -172,7 +172,6 @@ export function canRevealAnswer(state: QuizState): boolean {
   const idx = currentRowIndex(state);
   if (idx === null) return false;
   if (state.revealedAnswers[idx]) return false;
-  if (state.lastWrongIdx === idx) return false;
   return (state.wrongAttempts[idx] ?? 0) >= 1;
 }
 

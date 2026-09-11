@@ -28,11 +28,17 @@ describe("processReveal", () => {
     expect(processReveal(state)).toEqual(state);
   });
 
-  it("does not offer reveal immediately after a wrong answer", () => {
+  it("offers reveal after a wrong answer, including the last card in the queue", () => {
+    const lastCard = fixedState([0]);
+    const lastWrong = processAnswer(lastCard, "nope");
+    expect(lastWrong.lastWrongIdx).toBe(0);
+    expect(canRevealAnswer(lastWrong)).toBe(true);
+
     let state = fixedState();
-    state = processAnswer(state, "nope");
-    expect(state.lastWrongIdx).toBe(0);
+    state = processAnswer(state, "nope"); // Q0 wrong → Q1 front
     expect(canRevealAnswer(state)).toBe(false);
+    state = processAnswer(state, "do"); // Q1 correct → Q0 front
+    expect(canRevealAnswer(state)).toBe(true);
   });
 
   it("offers reveal when a previously wrong card returns", () => {
