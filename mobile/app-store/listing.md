@@ -39,15 +39,15 @@ Learn spoken Punjabi with useful everyday sentences — typed in English letters
 ```
 Learn spoken Punjabi the simple way.
 
-Simple Punjabi teaches useful everyday sentences — the kind you'll actually say. Think "Can I have a spoon?" not "My giraffe is an architect."
+Simple Punjabi teaches useful everyday sentences, which will be useful in real life. For example, "Can I have a spoon?" not "My giraffe is an architect."
 
 Everything is in English letters (roman script). No Gurmukhi or Shahmukhi required. This app is about speaking and understanding Punjabi, not learning a new alphabet.
 
 HOW IT WORKS
-• Work through levels on a map — from basics (numbers, colours) to full sentences
+• Work through levels on a map, from basics (numbers, colours) to full sentences
 • Type your answers; wrong questions stay in the round until you get them right
 • Choose English → Punjabi or Punjabi → English (English → Punjabi is great for building recall)
-• Earn medals at the end of each level — gold for a perfect round, silver for one miss, bronze otherwise
+• Earn medals at the end of each level: gold for a perfect round, silver for one miss, bronze otherwise
 • Beast Mode mixes 10 random questions from the whole course
 • Optional audio reads questions aloud; mute anytime
 • Flexible spelling — "garam" and "garm" both work
@@ -62,7 +62,7 @@ ABOUT THE DIALECT
 The Punjabi in this app is closest to the Malwai dialect from Eastern Punjab (Ludhiana, Patiala, and nearby). Punjabi varies across regions, but you'll be understood widely.
 
 BUILT WITH CARE
-I'm Sachin — born and raised in London — and I built this because I couldn't find an app that taught Punjabi the way I wanted to learn it. A friend from Punjab helped get the language right.
+I'm Sachin, born and raised in London, and I built this because I couldn't find an app that taught Punjabi the way I wanted to learn it. A friend from Punjab helped get the language right.
 
 Questions or feedback: professor-sachin.bobcat447@simplelogin.com
 
@@ -70,6 +70,8 @@ Good luck on your Punjabi learning journey!
 ```
 
 ---
+
+
 
 ## Keywords (100 characters max)
 
@@ -81,13 +83,17 @@ punjabi,malwai,learn,speak,phrases,vocabulary,roman,offline,language,india,sente
 
 ---
 
+
+
 ## What's New (version 1.0.0)
 
 ```
-Welcome to Simple Punjabi! Learn useful spoken Punjabi with everyday sentences, typed in English letters. Fully offline, with medals, Beast Mode, and progress saved on your device.
+Welcome to Simple Punjabi! Learn useful spoken Punjabi with everyday sentences, typed in English letters. Fully offline, with medals and progress saved on your device.
 ```
 
 ---
+
+
 
 ## What's New (version 1.0.1)
 
@@ -96,10 +102,11 @@ Paste into **App Store Connect → version 1.0.1 → What’s New in This Versio
 ```
 A clearer start for new learners, plus polish throughout:
 
-• Early levels now guide you to open “Show words list” before your first quiz
+• Early levels guide you to open “Show words list” before your first quiz
+• “Reveal Answer” option if you get stuck on a question you’ve already missed (so that you're not stuck on the same level for ages)
 • More forgiving answer matching for natural spelling variations
-• Refreshed map and button styling
-• Smaller first rounds so numbers and colours are easier to learn step by step
+• Refreshed map welcome text and button styling
+• Smaller 5-question first rounds so numbers and colours are easier to learn step by step
 
 Thanks for learning with Simple Punjabi — more improvements on the way.
 ```
@@ -107,19 +114,24 @@ Thanks for learning with Simple Punjabi — more improvements on the way.
 Shorter alternative (if you prefer a single paragraph):
 
 ```
-Clearer guidance on your first levels, improved answer matching, refreshed visuals, and smaller starter rounds for numbers and colours. Thanks for learning with Simple Punjabi!
+Clearer guidance on early levels, a Reveal Answer option when you’re stuck, improved spelling matching, refreshed visuals, and smaller starter rounds. Thanks for learning with Simple Punjabi!
 ```
 
 ---
 
+
+
 ## Screenshot captions (optional)
 
-Use in App Store Connect if you add text overlays, or as a shot list:
+Use in App Store Connect if you add text overlays, or as a shot list for version 1.0.1:
 
-1. **Learn useful Punjabi sentences** — level map
-2. **Type answers in English letters** — quiz in progress
-3. **Earn medals as you progress** — level complete / medal
-4. **Works fully offline** — map or quiz (optional: info panel for Gurmukhi clarification)
+1. **Welcome to your Punjabi course** — map with peacock and “Scroll down to start learning”
+2. **Preview words before you quiz** — level 1 popup with “Show words list” tutorial
+3. **Type answers in English letters** — quiz in progress
+4. **Stuck? Reveal the answer** — Reveal Answer button on a retry question (optional)
+5. **Earn medals as you progress** — level complete / medal screen
+
+
 
 ### Required screenshot sizes
 
@@ -132,6 +144,8 @@ Capture in Simulator: **File → Save Screen** or **Cmd+S**.
 
 ---
 
+
+
 ## Category
 
 - **Primary:** Education
@@ -139,23 +153,29 @@ Capture in Simulator: **File → Save Screen** or **Cmd+S**.
 
 ---
 
+
+
 ## Age rating — expected answers
 
-| Topic | Answer |
-|-------|--------|
-| Cartoon or fantasy violence | None |
-| Realistic violence | None |
-| Sexual content or nudity | None |
-| Profanity or crude humor | None |
-| Horror / fear themes | None |
-| Medical or treatment information | None |
-| Gambling | None |
-| Unrestricted web access | No |
-| User-generated content | No |
+
+| Topic                            | Answer |
+| -------------------------------- | ------ |
+| Cartoon or fantasy violence      | None   |
+| Realistic violence               | None   |
+| Sexual content or nudity         | None   |
+| Profanity or crude humor         | None   |
+| Horror / fear themes             | None   |
+| Medical or treatment information | None   |
+| Gambling                         | None   |
+| Unrestricted web access          | No     |
+| User-generated content           | No     |
+
 
 **Expected rating: 4+**
 
 ---
+
+
 
 ## Pricing
 

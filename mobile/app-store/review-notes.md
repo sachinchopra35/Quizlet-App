@@ -17,15 +17,18 @@ No microphone, camera, location, or tracking. Text-to-speech uses the built-in i
 
 Roman-script Punjabi only (no Gurmukhi). No user-generated content. No in-app purchases.
 
-How to test: open app → tap any level on the map → optionally expand “Show words list” → Start Quiz → complete a short round.
+How to test: open app → tap any level on the map → optionally expand “Show words list” → Start Quiz → complete a short round. To try Reveal Answer: miss a question, continue the round, then tap Reveal Answer when that question returns (type the revealed answer to move on).
 
 New in version 1.0.1 (build BUILD_NUMBER, September 2026): This is a routine update after 1.0.0 was approved and released. Changes are UX and content polish only — no new permissions, accounts, or network features.
 
-• Levels 1–2: level popup highlights “Show words list” with a blue button-style prompt and arrow before the user starts the quiz.
+• Levels 1–2: level popup highlights “Show words list” as a blue button with an arrow; the button stays styled when the list is expanded.
 • Levels 3–5: “Show words list” uses a subtle animated hint (colour + small arrow) to encourage previewing vocabulary.
 • Level 6 onward: standard expander with no tutorial animation.
+• Quiz: after a question has been missed once in a round, a “Reveal Answer” button may appear on that question when it returns; tapping it shows the answer below the prompt — the user must still type it to continue, and it does not count as a first-try correct answer for medals.
 • Improved answer matching for common roman-script spelling variations.
-• Visual polish on map buttons and early-level rounds.
+• Map welcome area: clearer “Scroll down to start learning” copy.
+• Visual polish on map buttons and early-level rounds; varied success messages during quizzes.
+• Course content reorganised into smaller early rounds (numbers and colours split); existing progress and medals migrate automatically on first launch.
 
 Beast Mode remains at the bottom of the map (10 random questions from across the course).
 
@@ -145,7 +148,7 @@ Use after **1.0.0 is already live** on the App Store. Copy for this release is i
 - [ ] `git checkout after-build-two` and run `npm test` in `mobile/`
 - [ ] `npm run cap:sync` then `npm run cap:open`
 - [ ] Xcode: **Version** = `1.0.1`, **Build** = next unused number (e.g. `2`)
-- [ ] Run on a physical iPhone; test levels 1, 3, and 6 popups + one quiz
+- [ ] Run on a physical iPhone; test levels 1, 3, and 6 popups, Reveal Answer in a quiz, and one full round
 - [ ] **Product → Archive** → upload to App Store Connect
 - [ ] Wait for build processing (often 15–60 min)
 - [ ] App Store Connect → **+ Version** → `1.0.1` → attach build
