@@ -11,6 +11,28 @@ import type { VocabRow } from "./vocab";
 export type FeedbackKind = "correct" | "wrong";
 export type Feedback = [FeedbackKind, string, string];
 
+export const CORRECT_FEEDBACK_MESSAGES = [
+  "Correct — nice.",
+  "Correct!",
+  "Correct! Well done.",
+  "Correct! Good answer.",
+] as const;
+
+export function correctFeedbackMessage(turn: number): string {
+  return CORRECT_FEEDBACK_MESSAGES[turn % CORRECT_FEEDBACK_MESSAGES.length];
+}
+
+const REVEAL_MONKEYS = ["🙈", "🙉", "🙊"] as const;
+
+function randomRevealMonkey(): string {
+  return REVEAL_MONKEYS[Math.floor(Math.random() * REVEAL_MONKEYS.length)]!;
+}
+
+function answerForRowIndex(state: QuizState, idx: number): string {
+  const row = state.vocabRows[idx]!;
+  return state.direction === "en_to_lang" ? row.lang : row.en;
+}
+
 export interface Medal {
   emoji: string;
   label: string;
@@ -34,6 +56,16 @@ export interface QuizState {
   roundMessageLevel: "info" | "success";
   feedbackSoundGen: number;
   lastChimedFeedbackGen: number;
+  /** Wrong submissions per card this round (for Reveal Answer eligibility). */
+  wrongAttempts: Record<number, number>;
+  /** Cards whose answer the user chose to reveal. */
+  revealedAnswers: Record<number, string>;
+  /** Monkey emoji picked once per card when it first goes wrong. */
+  revealMonkeys: Record<number, string>;
+  /** Row index that was just answered wrong (suppress reveal on that frame). */
+  lastWrongIdx: number | null;
+  /** Count of correct answers this round (cycles success feedback copy). */
+  correctFeedbackTurn: number;
   audioMuted: boolean;
   beastMode: boolean;
   beastStageMin: number;
@@ -59,6 +91,11 @@ export function createInitialState(): QuizState {
     roundMessageLevel: "info",
     feedbackSoundGen: 0,
     lastChimedFeedbackGen: 0,
+    wrongAttempts: {},
+    revealedAnswers: {},
+    revealMonkeys: {},
+    lastWrongIdx: null,
+    correctFeedbackTurn: 0,
     audioMuted: false,
     beastMode: false,
     beastStageMin: 1,
@@ -108,6 +145,11 @@ export function startRound(
     lastFeedback: null,
     feedbackSoundGen: 0,
     lastChimedFeedbackGen: 0,
+    wrongAttempts: {},
+    revealedAnswers: {},
+    revealMonkeys: {},
+    lastWrongIdx: null,
+    correctFeedbackTurn: 0,
   };
 }
 
@@ -123,6 +165,27 @@ export function startBeastRound(
 
 export function currentRowIndex(state: QuizState): number | null {
   return state.queue.length ? state.queue[0] : null;
+}
+
+/** True when the user may tap Reveal Answer on the current card. */
+export function canRevealAnswer(state: QuizState): boolean {
+  const idx = currentRowIndex(state);
+  if (idx === null) return false;
+  if (state.revealedAnswers[idx]) return false;
+  if (state.lastWrongIdx === idx) return false;
+  return (state.wrongAttempts[idx] ?? 0) >= 1;
+}
+
+export function revealedAnswerForCurrent(state: QuizState): string | null {
+  const idx = currentRowIndex(state);
+  if (idx === null) return null;
+  return state.revealedAnswers[idx] ?? null;
+}
+
+export function revealMonkeyForCurrent(state: QuizState): string {
+  const idx = currentRowIndex(state);
+  if (idx === null) return REVEAL_MONKEYS[0];
+  return state.revealMonkeys[idx] ?? REVEAL_MONKEYS[0];
 }
 
 export function endRoundStats(state: QuizState): [number, number, number] {
@@ -240,21 +303,48 @@ export function processAnswer(state: QuizState, userText: string): QuizState {
 
   const queue = [...state.queue];
   let lastFeedback: Feedback;
+  let lastWrongIdx = state.lastWrongIdx;
+  const wrongAttempts = { ...state.wrongAttempts };
+  const revealMonkeys = { ...state.revealMonkeys };
+  let correctFeedbackTurn = state.correctFeedbackTurn;
   if (ok) {
     queue.shift();
     lastFeedback = ["correct", promptSide, answer];
+    lastWrongIdx = null;
+    correctFeedbackTurn += 1;
   } else {
+    wrongAttempts[idx] = (wrongAttempts[idx] ?? 0) + 1;
+    if (!revealMonkeys[idx]) revealMonkeys[idx] = randomRevealMonkey();
     const wrong = queue.shift()!;
     queue.push(wrong);
     lastFeedback = ["wrong", userText, answer];
+    lastWrongIdx = idx;
   }
 
   return {
     ...state,
     queue,
     firstAttemptOk,
+    wrongAttempts,
+    revealMonkeys,
+    lastWrongIdx,
+    correctFeedbackTurn,
     lastFeedback,
     feedbackSoundGen: state.feedbackSoundGen + 1,
+  };
+}
+
+export function processReveal(state: QuizState): QuizState {
+  const idx = currentRowIndex(state);
+  if (idx === null) return state;
+  if (!canRevealAnswer(state)) return state;
+
+  const answer = answerForRowIndex(state, idx);
+  return {
+    ...state,
+    revealedAnswers: { ...state.revealedAnswers, [idx]: answer },
+    lastWrongIdx: null,
+    lastFeedback: null,
   };
 }
 

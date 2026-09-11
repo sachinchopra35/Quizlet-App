@@ -1,13 +1,21 @@
-import { escapeHtml } from "./html";
+import { escapeAttr, escapeHtml } from "./html";
 import { roundProgress, roundProgressTier } from "./levels";
 import { bindPopupPrimaryEnter } from "./popupEnterKey";
-import { currentRowIndex, type QuizState } from "./rounds";
+import {
+  canRevealAnswer,
+  correctFeedbackMessage,
+  currentRowIndex,
+  revealedAnswerForCurrent,
+  revealMonkeyForCurrent,
+  type QuizState,
+} from "./rounds";
 
 export interface QuizHandlers {
   onRequestQuit(origin: { x: number; y: number }): void;
   onCancelQuit(): void;
   onConfirmQuit(): void;
   onSubmit(guess: string): void;
+  onReveal(): void;
   onToggleMute(muted: boolean): void;
 }
 
@@ -83,20 +91,42 @@ export function quizHtml(
     quitConfirmOrigin: null,
   },
   finishing = false,
+  guessDraft = "",
 ): string {
   const pct = Math.round(roundProgress(state) * 100);
   const tier = roundProgressTier(state);
   const fb = state.lastFeedback;
-  const feedbackHtml =
-    fb && fb[0] === "wrong"
-      ? `<div class="feedback warning feedback-wrong">
+  const idx = currentRowIndex(state);
+  const onRetry = idx !== null && (state.wrongAttempts[idx] ?? 0) >= 1;
+  const revealed = revealedAnswerForCurrent(state);
+  const showReveal = !finishing && canRevealAnswer(state);
+  const monkey = revealMonkeyForCurrent(state);
+
+  let feedbackHtml = "";
+  if (!revealed && !onRetry) {
+    feedbackHtml =
+      fb && fb[0] === "wrong"
+        ? `<div class="feedback warning feedback-wrong">
           <div class="feedback-wrong-title">Not quite</div>
           <div class="feedback-wrong-row">You wrote: <strong>${escapeHtml(fb[1])}</strong></div>
           <div class="feedback-wrong-row feedback-wrong-answer">Correct answer: <strong>${escapeHtml(fb[2])}</strong></div>
         </div>`
-      : fb
-        ? `<div class="feedback success">Correct — nice.</div>`
-        : "";
+        : fb
+          ? `<div class="feedback success">${escapeHtml(correctFeedbackMessage(state.correctFeedbackTurn - 1))}</div>`
+          : "";
+  }
+
+  const revealBtn = showReveal
+    ? `<button type="button" class="reveal-answer-btn" id="reveal-answer">${escapeHtml(monkey)} Reveal Answer</button>`
+    : "";
+
+  const revealedHtml = revealed
+    ? `<div class="feedback info feedback-revealed" aria-live="polite">
+        <div class="feedback-revealed-title">${escapeHtml(monkey)} Answer revealed:</div>
+        <div class="feedback-revealed-answer"><strong>${escapeHtml(revealed)}</strong></div>
+        <div class="feedback-revealed-hint">Type it below to move on</div>
+      </div>`
+    : "";
 
   return `
     <div class="quiz-screen${finishing ? " quiz-finishing" : ""}">
@@ -118,6 +148,8 @@ export function quizHtml(
       <div class="quiz-body">
         <div class="feedback-slot" aria-live="polite">${feedbackHtml}</div>
         <p class="prompt">${escapeHtml(prompt.text)}</p>
+        ${revealBtn}
+        ${revealedHtml}
         <form class="answer-form" id="answer-form">
           <input
             type="text"
@@ -129,6 +161,7 @@ export function quizHtml(
             spellcheck="false"
             enterkeyhint="go"
             placeholder="Your answer"
+            value="${escapeAttr(guessDraft)}"
             ${finishing ? "disabled" : ""}
           />
           <button type="submit" class="primary" ${finishing ? "disabled" : ""}>Check</button>
@@ -195,6 +228,10 @@ export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void 
     const input = root.querySelector<HTMLInputElement>("#guess");
     if (!input) return;
     handlers.onSubmit(input.value);
+  });
+
+  root.querySelector("#reveal-answer")?.addEventListener("click", () => {
+    handlers.onReveal();
   });
 
   bindPopupPrimaryEnter(root);

@@ -325,8 +325,51 @@ function settingsHtml(vm: MapViewModel): string {
   `;
 }
 
-function wordListExpanderHtml(body: string): string {
-  return `<details class="expander"><summary>Show words list</summary><div class="expander-panel"><div class="expander-panel-inner">${body}</div></div></details>`;
+type WordsListGuideTier = 0 | 1 | 2;
+
+function wordsListGuideTier(vm: MapViewModel): WordsListGuideTier {
+  const csv = vm.popupCsv;
+  if (!csv || csv === BEAST_MODE_SELECTION || parseStagePracticeKey(csv) !== null) return 0;
+  const index = vm.csvNames.indexOf(csv);
+  if (index < 0) return 0;
+  if (index <= 1) return 1;
+  if (index <= 4) return 2;
+  return 0;
+}
+
+function wordListExpanderHtml(body: string, tier: WordsListGuideTier = 0): string {
+  const panel = `<div class="expander-panel"><div class="expander-panel-inner">${body}</div></div>`;
+  if (tier === 0) {
+    return `<details class="expander"><summary>Show words list</summary>${panel}</details>`;
+  }
+  if (tier === 1) {
+    return `
+      <div class="words-list-prompt words-list-prompt--intro">
+        <p class="words-list-first-step">First step — open the words list before you begin.</p>
+        <details class="expander expander-words-guide">
+          <summary>
+            <span class="words-list-guide-header">
+              <span class="words-list-summary-btn">Show words list</span>
+              <span class="words-list-arrow words-list-arrow--prominent" aria-hidden="true">←</span>
+            </span>
+          </summary>
+          ${panel}
+        </details>
+      </div>
+    `;
+  }
+  return `
+    <details class="expander expander-words-guide expander-words-guide--text">
+      <summary>
+        <span class="words-list-guide-header">
+          <span class="words-list-disclosure" aria-hidden="true"></span>
+          <span class="words-list-summary-text">Show words list</span>
+          <span class="words-list-arrow words-list-arrow--subtle" aria-hidden="true">←</span>
+        </span>
+      </summary>
+      ${panel}
+    </details>
+  `;
 }
 
 function wordListHtml(vm: MapViewModel): string {
@@ -345,6 +388,7 @@ function wordListHtml(vm: MapViewModel): string {
     .join("");
   return wordListExpanderHtml(
     `<div class="word-scroll"><table class="word-table">${rows}</table></div>`,
+    wordsListGuideTier(vm),
   );
 }
 
@@ -649,7 +693,9 @@ export function mapHtml(vm: MapViewModel): string {
         <button type="button" class="hero-peacock" id="hero-peacock" aria-label="Welcome peacock">🦚</button>
       </div>
       <div class="globe-scroll-cue">
-        <span>Welcome!<br>Your Punjabi course starts below</span>
+        <span class="globe-welcome-text">
+          <span class="globe-welcome-title">Welcome!<br>Scroll down to start learning</span>
+        </span>
         <span class="globe-arrow" aria-hidden="true">&#8595;</span>
       </div>
     </section>

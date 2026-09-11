@@ -1,12 +1,49 @@
 # App Review notes
 
-Materials for **Simple Punjabi** resubmission after Guideline 2.1 — Information Needed.
+Materials for **Simple Punjabi** App Store submissions.
 
 ---
 
-## App Review Information → Notes field
+## App Review Information → Notes field (version 1.0.1 update)
 
-Paste into **App Store Connect → App Review Information → Notes** (and keep for future builds). Not shown to the public.
+Paste into **App Store Connect → App Review Information → Notes** when submitting **version 1.0.1**. Not shown to the public.
+
+Replace `BUILD_NUMBER` with the build you upload from Xcode (e.g. `2` or `3`).
+
+```
+Simple Punjabi is an offline vocabulary and sentence practice app. Users type translations; there is no account, login, or server. Progress (medals, mute, question direction) is stored locally on the device only.
+
+No microphone, camera, location, or tracking. Text-to-speech uses the built-in iOS speech synthesiser for optional question audio.
+
+Roman-script Punjabi only (no Gurmukhi). No user-generated content. No in-app purchases.
+
+How to test: open app → tap any level on the map → optionally expand “Show words list” → Start Quiz → complete a short round.
+
+New in version 1.0.1 (build BUILD_NUMBER, September 2026): This is a routine update after 1.0.0 was approved and released. Changes are UX and content polish only — no new permissions, accounts, or network features.
+
+• Levels 1–2: level popup highlights “Show words list” with a blue button-style prompt and arrow before the user starts the quiz.
+• Levels 3–5: “Show words list” uses a subtle animated hint (colour + small arrow) to encourage previewing vocabulary.
+• Level 6 onward: standard expander with no tutorial animation.
+• Improved answer matching for common roman-script spelling variations.
+• Visual polish on map buttons and early-level rounds.
+
+Beast Mode remains at the bottom of the map (10 random questions from across the course).
+
+Developer testing shortcuts (not shown in the UI): during any quiz round, type one of these as an answer to complete the round instantly for review testing:
+• letmewin100 — perfect round (gold medal)
+• letmewin90 — one miss (silver medal)
+• letmewin80 — two misses (bronze medal)
+
+Existing users: progress and medals migrate automatically on first launch of this build; no login or cloud sync.
+
+Guideline 2.1: Original approval on version 1.0.0; screen recording and full answers were provided in the Resolution Center on 7 September 2026. No new review concerns expected for this update.
+```
+
+---
+
+## App Review Information → Notes field (version 1.0.0 — archived)
+
+Kept for reference from the first submission / resubmission.
 
 ```
 Simple Punjabi is an offline vocabulary and sentence practice app. Users type translations; there is no account, login, or server. Progress (medals, mute, question direction) is stored locally on the device only.
@@ -101,7 +138,27 @@ Fill in App Store Connect separately (unchanged):
 
 
 
-## Resubmission quick checklist
+## Version 1.0.1 update checklist (post-launch)
+
+Use after **1.0.0 is already live** on the App Store. Copy for this release is in [listing.md](listing.md) (What’s New) and the **Notes field (version 1.0.1 update)** block above.
+
+- [ ] `git checkout after-build-two` and run `npm test` in `mobile/`
+- [ ] `npm run cap:sync` then `npm run cap:open`
+- [ ] Xcode: **Version** = `1.0.1`, **Build** = next unused number (e.g. `2`)
+- [ ] Run on a physical iPhone; test levels 1, 3, and 6 popups + one quiz
+- [ ] **Product → Archive** → upload to App Store Connect
+- [ ] Wait for build processing (often 15–60 min)
+- [ ] App Store Connect → **+ Version** → `1.0.1` → attach build
+- [ ] Paste **What’s New** from [listing.md](listing.md) → version 1.0.1 section
+- [ ] Paste **App Review Notes** from above (replace `BUILD_NUMBER`)
+- [ ] Optional: install via TestFlight and smoke-test
+- [ ] **Submit for Review** (no Resolution Center reply needed unless Apple messages you)
+- [ ] After approval: release manually or automatically
+- [ ] Optional: `git tag v1.0.1`
+
+---
+
+## Resubmission quick checklist (Guideline 2.1 — archived)
 
 - [ ] Record 2–3 min screen video on physical iPhone (launch → map → level → quiz → medal)
 - [ ] Attach video or paste link in Resolution Center reply (text above)

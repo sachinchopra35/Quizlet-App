@@ -37,7 +37,9 @@ import {
   completeRoundNaturally,
   consumeIdleMessages,
   createInitialState,
+  currentRowIndex,
   processAnswer,
+  processReveal,
   sampleRows,
   startBeastRound,
   startRound,
@@ -83,6 +85,8 @@ export class VocabApp {
   private scrollToLevelCsv: string | null = null;
   private quizProgressPct = 0;
   private roundCompleteTimer: ReturnType<typeof setTimeout> | null = null;
+  private quizGuessDraft = "";
+  private quizGuessForIdx: number | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -169,6 +173,26 @@ export class VocabApp {
       clearTimeout(this.roundCompleteTimer);
       this.roundCompleteTimer = null;
     }
+  }
+
+  private clearQuizGuessDraft(): void {
+    this.quizGuessDraft = "";
+    this.quizGuessForIdx = null;
+  }
+
+  /** Keep partial input when the quiz re-renders (e.g. Reveal Answer). */
+  private captureQuizGuessDraft(): void {
+    const idx = currentRowIndex(this.state);
+    const input = this.root.querySelector<HTMLInputElement>("#guess");
+    if (idx === null || !input) return;
+    this.quizGuessDraft = input.value;
+    this.quizGuessForIdx = idx;
+  }
+
+  private quizGuessDraftValue(): string {
+    const idx = currentRowIndex(this.state);
+    if (idx === null || idx !== this.quizGuessForIdx) return "";
+    return this.quizGuessDraft;
   }
 
   private roundCompleteHoldMs(): number {
@@ -437,6 +461,7 @@ export class VocabApp {
     this.scrollToLevelCsv = name;
     this.quizProgressPct = 0;
     this.clearRoundCompleteTimer();
+    this.clearQuizGuessDraft();
     const direction = this.state.direction;
     const practiceStage = parseStagePracticeKey(name);
     if (name === BEAST_MODE_SELECTION) {
@@ -469,11 +494,17 @@ export class VocabApp {
 
     this.clearRoundCompleteTimer();
 
-    this.root.innerHTML = quizHtml(this.state, prompt, {
-      quitConfirmOpen: this.quitConfirmOpen,
-      quitConfirmAnimate: this.quitConfirmAnimate,
-      quitConfirmOrigin: this.quitConfirmOrigin,
-    });
+    this.root.innerHTML = quizHtml(
+      this.state,
+      prompt,
+      {
+        quitConfirmOpen: this.quitConfirmOpen,
+        quitConfirmAnimate: this.quitConfirmAnimate,
+        quitConfirmOrigin: this.quitConfirmOrigin,
+      },
+      false,
+      this.quizGuessDraftValue(),
+    );
     bindQuizEvents(this.root, {
       onRequestQuit: (origin) => {
         this.quitConfirmOrigin = origin;
@@ -493,9 +524,17 @@ export class VocabApp {
         stopSpeech();
         this.setState(stopRoundEarly(this.state));
       },
-      onSubmit: (guess) => this.setState(processAnswer(this.state, guess)),
+      onSubmit: (guess) => {
+        this.clearQuizGuessDraft();
+        this.setState(processAnswer(this.state, guess));
+      },
+      onReveal: () => {
+        this.captureQuizGuessDraft();
+        this.setState(processReveal(this.state));
+      },
       onToggleMute: (muted) => {
         if (muted) stopSpeech();
+        this.captureQuizGuessDraft();
         this.setState({ ...this.state, audioMuted: muted });
       },
     });
@@ -555,6 +594,7 @@ export class VocabApp {
         this.setState(stopRoundEarly(this.state));
       },
       onSubmit: () => {},
+      onReveal: () => {},
       onToggleMute: (muted) => {
         if (muted) stopSpeech();
         this.setState({ ...this.state, audioMuted: muted });

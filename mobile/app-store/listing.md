@@ -89,6 +89,29 @@ Welcome to Simple Punjabi! Learn useful spoken Punjabi with everyday sentences, 
 
 ---
 
+## What's New (version 1.0.1)
+
+Paste into **App Store Connect → version 1.0.1 → What’s New in This Version** (public — users see this on the update).
+
+```
+A clearer start for new learners, plus polish throughout:
+
+• Early levels now guide you to open “Show words list” before your first quiz
+• More forgiving answer matching for natural spelling variations
+• Refreshed map and button styling
+• Smaller first rounds so numbers and colours are easier to learn step by step
+
+Thanks for learning with Simple Punjabi — more improvements on the way.
+```
+
+Shorter alternative (if you prefer a single paragraph):
+
+```
+Clearer guidance on your first levels, improved answer matching, refreshed visuals, and smaller starter rounds for numbers and colours. Thanks for learning with Simple Punjabi!
+```
+
+---
+
 ## Screenshot captions (optional)
 
 Use in App Store Connect if you add text overlays, or as a shot list:
