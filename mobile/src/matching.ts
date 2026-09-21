@@ -537,6 +537,8 @@ export function canonicalizePunjabi(s: string): string {
   t = stripOptionalSubjectPrefix(t);
   t = stripOptionalQuestionKiCompact(t);
   t = stripOptionalTrailingHun(t);
+  // Substring canonicals (e.g. okha→aukha) can reintroduce doubled letters after the earlier collapse.
+  t = collapseDoubledLetters(t);
   return t;
 }
 

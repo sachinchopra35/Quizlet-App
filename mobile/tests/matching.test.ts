@@ -498,6 +498,7 @@ describe("language tweak canonicals", () => {
     expect(canonicalizePunjabi("eh sokha houga")).toBe(
       canonicalizePunjabi("eh saukha houga"),
     );
+    expect(answersMatch("sikhna okha hai", "sikhna aukha hai", true)).toBe(true);
     expect(canonicalizePunjabi("ohne apne aap kharidlya")).toBe(
       canonicalizePunjabi("ohne apne aap kharidya"),
     );
