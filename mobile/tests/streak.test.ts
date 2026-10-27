@@ -42,7 +42,7 @@ describe("streak", () => {
     const day2 = recordStreakPractice(day1, noon(2026, 3, 11));
     expect(day2).toEqual({ streakCount: 2, lastStreakDate: "2026-03-11" });
 
-    const same = recordStreakPractice(day2, noon(2026, 3, 11, 18));
+    const same = recordStreakPractice(day2, new Date(2026, 2, 11, 18, 0, 0));
     expect(same).toEqual({ streakCount: 2, lastStreakDate: "2026-03-11" });
   });
 
