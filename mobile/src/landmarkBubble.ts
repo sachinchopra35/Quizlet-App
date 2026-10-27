@@ -45,11 +45,8 @@ export function dismissLandmarkBubbleIfAny(): void {
 export function showLandmarkBubble(anchor: HTMLElement, handlers: LandmarkBubbleHandlers): void {
   dismissLandmarkBubble();
 
-  const rect = anchor.getBoundingClientRect();
-  const anchorCenterX = rect.left + rect.width / 2;
-
   const el = document.createElement("div");
-  el.className = "landmark-bubble popup-open";
+  el.className = "landmark-bubble popup";
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", "Secret cheat-sheet");
   el.innerHTML = `
@@ -90,11 +87,20 @@ export function showLandmarkBubble(anchor: HTMLElement, handlers: LandmarkBubble
     } else {
       el.style.top = `${Math.min(window.innerHeight - el.offsetHeight - MARGIN, r.bottom + GAP)}px`;
     }
+
+    const bubbleRect = el.getBoundingClientRect();
+    const bubbleCx = bubbleRect.left + bubbleRect.width / 2;
+    const bubbleCy = bubbleRect.top + bubbleRect.height / 2;
+    el.style.setProperty("--pop-dx", `${Math.round(cx - bubbleCx)}px`);
+    el.style.setProperty("--pop-dy", `${Math.round(r.top + r.height / 2 - bubbleCy)}px`);
   };
 
   requestAnimationFrame(() => {
     place();
-    requestAnimationFrame(place);
+    requestAnimationFrame(() => {
+      place();
+      el.classList.add("popup-open");
+    });
   });
 
   el.querySelector("#landmark-bubble-open")?.addEventListener("click", (e) => {
