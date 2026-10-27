@@ -4,6 +4,7 @@ export function introPanelBodyHtml(): string {
     <p>Hi, I'm Sachin. I've lived in London my whole life, and have never managed to learn Punjabi.</p>
     <p>I could never find a good way of learning it. I couldn't find any good apps, so I decided to make this one myself.</p>
     <p>With help from a friend from Punjab, I've built this app so that everyone can have a go at learning basic Punjabi, written with English lettering, and focused on actual useful sentences. More like "Can I have a spoon?" and not "My giraffe is an architect."</p>
+    <p><button type="button" class="primary intro-cheat-sheet-btn" id="open-cheat-sheet">Cheat Sheet and Pronunciation Guide</button></p>
     <p><strong>A note on the Punjabi dialect in this app:</strong><br />
     There are lots of ways of speaking Punjabi, but the way this app teaches it is closest to the
     <a href="https://en.wikipedia.org/wiki/Malwai_dialect" target="_blank" rel="noopener noreferrer">Malwai dialect</a>

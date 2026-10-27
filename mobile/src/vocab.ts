@@ -1,4 +1,6 @@
 import { stageLevelNames } from "./levels";
+import { compareLevelCsvNames } from "./levelOrder";
+import { isStoryLevel } from "./storyLevels";
 
 export interface VocabRow {
   en: string;
@@ -62,7 +64,7 @@ export async function listCsvNames(): Promise<string[]> {
   const res = await fetch("./data/manifest.json");
   if (!res.ok) throw new Error("Missing data/manifest.json — run npm run copy-vocab");
   const names: string[] = await res.json();
-  return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  return names.sort(compareLevelCsvNames);
 }
 
 export function loadCombinedFromMap(
@@ -86,6 +88,7 @@ export function rowsForStageRange(
   const combined: VocabRow[] = [];
   for (let stage = minStage; stage <= maxStage; stage++) {
     for (const name of stageLevelNames(csvNames, stage)) {
+      if (isStoryLevel(name)) continue;
       const rows = files.get(name);
       if (rows) combined.push(...rows);
     }

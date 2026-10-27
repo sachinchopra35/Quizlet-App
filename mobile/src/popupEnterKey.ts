@@ -32,19 +32,31 @@ function shouldIgnoreEnterTarget(target: EventTarget | null): boolean {
   return input.type !== "checkbox" && input.type !== "radio";
 }
 
-/** Press Enter to activate the top popup's main action (desktop / keyboard use). */
-export function bindPopupPrimaryEnter(root: HTMLElement): void {
-  root.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" || e.isComposing) return;
-    if (shouldIgnoreEnterTarget(e.target)) return;
+let enterRoot: HTMLElement | null = null;
+let listening = false;
 
-    for (const layer of MAP_POPUP_LAYERS) {
-      if (!isBackdropActive(root, layer)) continue;
-      const btn = root.querySelector<HTMLButtonElement>(`#${CSS.escape(layer.buttonId)}`);
-      if (!btn || btn.disabled) return;
-      e.preventDefault();
-      btn.click();
-      return;
-    }
-  });
+function onKeydown(e: KeyboardEvent): void {
+  const root = enterRoot;
+  if (!root || e.key !== "Enter" || e.isComposing) return;
+  if (shouldIgnoreEnterTarget(e.target)) return;
+
+  for (const layer of MAP_POPUP_LAYERS) {
+    if (!isBackdropActive(root, layer)) continue;
+    const btn = root.querySelector<HTMLButtonElement>(`#${CSS.escape(layer.buttonId)}`);
+    if (!btn || btn.disabled) return;
+    e.preventDefault();
+    btn.click();
+    return;
+  }
+}
+
+/**
+ * Press Enter to activate the top popup's main action (desktop / keyboard use).
+ * Listens on the document because re-renders drop focus to <body>, outside root.
+ */
+export function bindPopupPrimaryEnter(root: HTMLElement): void {
+  enterRoot = root;
+  if (listening) return;
+  listening = true;
+  document.addEventListener("keydown", onKeydown);
 }

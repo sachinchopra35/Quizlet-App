@@ -24,6 +24,8 @@ IOS_ICON = (
     / "AppIcon-512@2x.png"
 )
 CANONICAL_VARIANT = "02-pa-off-white.png"
+FAVICON = MOBILE / "public" / "favicon.png"
+FAVICON_CORNER_RADIUS_RATIO = 0.22
 
 FONT_CANDIDATES = [
     "/System/Library/Fonts/Supplemental/Gurmukhi.ttf",
@@ -56,6 +58,18 @@ def draw_glyph_centered(
     x = (size - tw) // 2 - bbox[0]
     y = (size - th) // 2 - bbox[1]
     draw.text((x, y), GLYPH, font=font, fill=fill)
+
+
+def round_icon_corners(img: Image.Image, radius_ratio: float = FAVICON_CORNER_RADIUS_RATIO) -> Image.Image:
+    """Rounded rect mask + alpha for browser tab / bookmark icons."""
+    img = img.convert("RGBA")
+    w, h = img.size
+    radius = int(min(w, h) * radius_ratio)
+    mask = Image.new("L", (w, h), 0)
+    draw = ImageDraw.Draw(mask)
+    draw.rounded_rectangle((0, 0, w - 1, h - 1), radius=radius, fill=255)
+    img.putalpha(mask)
+    return img
 
 
 def render_white(size: int, font: ImageFont.FreeTypeFont) -> Image.Image:
@@ -124,6 +138,11 @@ def main() -> None:
         out = OUT_DIR / filename
         render(size, font).save(out, "PNG")
         print("Wrote", out)
+
+    favicon_src = OUT_DIR / CANONICAL_VARIANT
+    FAVICON.parent.mkdir(parents=True, exist_ok=True)
+    round_icon_corners(Image.open(favicon_src)).save(FAVICON, "PNG")
+    print("Wrote", FAVICON)
 
     if args.install_ios:
         src = OUT_DIR / CANONICAL_VARIANT

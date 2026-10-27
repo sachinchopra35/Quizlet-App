@@ -82,6 +82,38 @@ describe("processReveal", () => {
   });
 });
 
+describe("story mode", () => {
+  const storyRows: VocabRow[] = [
+    { en: "first", lang: "pehla" },
+    { en: "second", lang: "duja" },
+  ];
+
+  it("plays CSV rows in order", () => {
+    const base = createInitialState();
+    const state = startRound(
+      { ...base, selectedCsv: "100 Story - Morning 01.csv" },
+      storyRows,
+      "en_to_lang",
+    );
+    expect(state.storyMode).toBe(true);
+    expect(state.queue).toEqual([0, 1]);
+  });
+
+  it("keeps the same card after a wrong answer", () => {
+    let state = startRound(
+      { ...createInitialState(), selectedCsv: "100 Story - Morning 01.csv" },
+      storyRows,
+      "en_to_lang",
+    );
+    state = processAnswer(state, "nope");
+    expect(state.queue).toEqual([0, 1]);
+    state = processAnswer(state, "nope");
+    expect(state.queue).toEqual([0, 1]);
+    state = processAnswer(state, "pehla");
+    expect(state.queue).toEqual([1]);
+  });
+});
+
 describe("correctFeedbackMessage", () => {
   it("cycles through four success messages", () => {
     expect(correctFeedbackMessage(0)).toBe("Correct — nice.");

@@ -21,9 +21,10 @@ import {
   bindMapEvents,
   mapHtml,
   type CompletionSummary,
-  levelQuizParts,
   type MapViewModel,
+  levelQuizParts,
 } from "./mapView";
+import { isStoryLevel } from "./storyLevels";
 import { bindQuizEvents, finishingPrompt, promptFor, quizHtml, syncQuizProgressBar, type QuizPrompt } from "./quizView";
 import { roundProgress } from "./levels";
 import {
@@ -33,6 +34,10 @@ import {
   pickPersistable,
   saveProgress,
 } from "./progress";
+import { bindCheatSheetEvents, cheatSheetPageHtml } from "./cheatSheet";
+import { type FooterTipKind, type FooterTipState } from "./courseFooterTips";
+import { dismissLandmarkBubbleIfAny } from "./landmarkBubble";
+import { expireStreakIfNeeded, recordStreakPractice } from "./streak";
 import {
   completeRoundNaturally,
   consumeIdleMessages,
@@ -88,6 +93,13 @@ export class VocabApp {
   private quizGuessDraft = "";
   private quizGuessForIdx: number | null = null;
   private quizSoftRender = false;
+  private footerTipOpen: FooterTipKind | null = null;
+  private footerTipOrigin: { x: number; y: number } | null = null;
+  private footerTipAnimate = false;
+  private cheatSheetOpen = false;
+  private cheatSheetExitConfirmOpen = false;
+  private cheatSheetExitConfirmAnimate = false;
+  private mapScrollY = 0;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -105,7 +117,19 @@ export class VocabApp {
     const range = saved
       ? clampBeastStageRange(base.beastStageMin, base.beastStageMax, stages)
       : defaultBeastStageRange(stages);
-    this.state = { ...base, beastStageMin: range.min, beastStageMax: range.max };
+    const expired = expireStreakIfNeeded({
+      streakCount: base.streakCount,
+      lastStreakDate: base.lastStreakDate,
+    });
+    this.state = {
+      ...base,
+      beastStageMin: range.min,
+      beastStageMax: range.max,
+      ...expired.fields,
+    };
+    if (expired.changed) {
+      saveProgress(pickPersistable(this.state));
+    }
     this.render();
   }
 
@@ -137,6 +161,15 @@ export class VocabApp {
     this.render();
   }
 
+  private completeRound(): void {
+    const next = completeRoundNaturally(this.state);
+    const streak = recordStreakPractice({
+      streakCount: next.streakCount,
+      lastStreakDate: next.lastStreakDate,
+    });
+    this.setState({ ...next, ...streak });
+  }
+
   private rowsFor(name: string | null): VocabRow[] {
     if (!name || name === BEAST_MODE_SELECTION || parseStagePracticeKey(name) !== null) return [];
     return this.csvCache.get(name) ?? [];
@@ -145,6 +178,7 @@ export class VocabApp {
   private rowsForStage(stage: number): VocabRow[] {
     const rows: VocabRow[] = [];
     for (const name of stageLevelNames(this.state.csvNames, stage)) {
+      if (isStoryLevel(name)) continue;
       rows.push(...(this.csvCache.get(name) ?? []));
     }
     return rows;
@@ -209,6 +243,40 @@ export class VocabApp {
     }
   }
 
+  private footerTipState(): FooterTipState {
+    return {
+      open: this.footerTipOpen,
+      origin: this.footerTipOrigin,
+      animate: this.footerTipAnimate,
+    };
+  }
+
+  private closeFooterTip(): void {
+    this.footerTipOpen = null;
+    this.footerTipOrigin = null;
+    this.render();
+  }
+
+  private footerTipHandlers() {
+    return {
+      onOpenFooterTip: (kind: FooterTipKind, origin: { x: number; y: number }) => {
+        playButtonClick();
+        if (this.footerTipOpen === kind) {
+          this.closeFooterTip();
+          return;
+        }
+        this.footerTipOpen = kind;
+        this.footerTipOrigin = origin;
+        this.footerTipAnimate = true;
+        this.render();
+        this.footerTipAnimate = false;
+      },
+      onCloseFooterTip: () => {
+        this.closeFooterTip();
+      },
+    };
+  }
+
   private celebrateRoundComplete(announce: string | null): void {
     requestAnimationFrame(() => {
       playConfetti();
@@ -220,7 +288,58 @@ export class VocabApp {
     }
   }
 
+  private openCheatSheet(): void {
+    if (!this.cheatSheetOpen) {
+      this.mapScrollY = window.scrollY;
+    }
+    dismissLandmarkBubbleIfAny();
+    this.infoOpen = false;
+    this.cheatSheetOpen = true;
+    this.cheatSheetExitConfirmOpen = false;
+    this.cheatSheetExitConfirmAnimate = false;
+    this.renderMap();
+    window.scrollTo(0, 0);
+  }
+
+  private leaveCheatSheet(): void {
+    this.cheatSheetOpen = false;
+    this.cheatSheetExitConfirmOpen = false;
+    this.cheatSheetExitConfirmAnimate = false;
+    this.renderMap();
+    const y = this.mapScrollY;
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }
+
+  private renderCheatSheet(): void {
+    this.root.innerHTML = cheatSheetPageHtml({
+      exitConfirmOpen: this.cheatSheetExitConfirmOpen,
+      exitConfirmAnimate: this.cheatSheetExitConfirmAnimate,
+    });
+    bindCheatSheetEvents(this.root, {
+      onRequestExit: () => {
+        this.cheatSheetExitConfirmOpen = true;
+        this.cheatSheetExitConfirmAnimate = true;
+        this.renderCheatSheet();
+        this.cheatSheetExitConfirmAnimate = false;
+      },
+      onStayOnSheet: () => {
+        this.cheatSheetExitConfirmOpen = false;
+        this.renderCheatSheet();
+      },
+      onLeaveSheet: () => {
+        this.leaveCheatSheet();
+      },
+    });
+  }
+
   private renderMap(): void {
+    if (this.cheatSheetOpen) {
+      this.renderCheatSheet();
+      return;
+    }
+
+    dismissLandmarkBubbleIfAny();
+
     const consumed = consumeIdleMessages(this.state);
     this.state = consumed.state;
     const shouldCelebrate = Boolean(consumed.message && consumed.level === "success");
@@ -267,6 +386,9 @@ export class VocabApp {
       beastStageMax: this.state.beastStageMax,
       beastStageCount: stageCount(this.state.csvNames.length),
       beastCustomizeOpen: this.beastCustomizeOpen,
+      streakCount: this.state.streakCount,
+      lastStreakDate: this.state.lastStreakDate,
+      footerTip: this.footerTipState(),
     };
 
     this.root.innerHTML = mapHtml(vm);
@@ -392,6 +514,8 @@ export class VocabApp {
           levelMedals: {},
           beastStageMin: range.min,
           beastStageMax: range.max,
+          streakCount: 0,
+          lastStreakDate: null,
         });
       },
       onToggleGear: () => {
@@ -436,6 +560,11 @@ export class VocabApp {
       },
       onButtonPress: () => {
         if (!this.state.audioMuted) playButtonClick();
+      },
+      ...this.footerTipHandlers(),
+      onOpenCheatSheet: () => {
+        if (!this.state.audioMuted) playButtonClick();
+        this.openCheatSheet();
       },
     });
 
@@ -489,7 +618,7 @@ export class VocabApp {
         this.holdRoundComplete();
         return;
       }
-      this.setState(completeRoundNaturally(this.state));
+      this.completeRound();
       return;
     }
 
@@ -505,8 +634,10 @@ export class VocabApp {
       },
       false,
       this.quizGuessDraftValue(),
+      this.footerTipState(),
     );
     bindQuizEvents(this.root, {
+      ...this.footerTipHandlers(),
       onRequestQuit: (origin) => {
         this.quitConfirmOrigin = origin;
         this.quitConfirmOpen = true;
@@ -527,7 +658,8 @@ export class VocabApp {
       },
       onSubmit: (guess) => {
         this.clearQuizGuessDraft();
-        this.setState(processAnswer(this.state, guess));
+        const prev = this.state;
+        this.setState(processAnswer(prev, guess));
       },
       onReveal: () => {
         this.captureQuizGuessDraft();
@@ -565,7 +697,7 @@ export class VocabApp {
 
     const displayPrompt = finishingPrompt(this.state);
     if (!displayPrompt) {
-      this.setState(completeRoundNaturally(this.state));
+      this.completeRound();
       return;
     }
 
@@ -578,8 +710,11 @@ export class VocabApp {
         quitConfirmOrigin: this.quitConfirmOrigin,
       },
       true,
+      "",
+      this.footerTipState(),
     );
     bindQuizEvents(this.root, {
+      ...this.footerTipHandlers(),
       onRequestQuit: (origin) => {
         this.clearRoundCompleteTimer();
         this.quitConfirmOrigin = origin;
@@ -615,7 +750,7 @@ export class VocabApp {
 
     this.roundCompleteTimer = setTimeout(() => {
       this.roundCompleteTimer = null;
-      this.setState(completeRoundNaturally(this.state));
+      this.completeRound();
     }, this.roundCompleteHoldMs());
   }
 

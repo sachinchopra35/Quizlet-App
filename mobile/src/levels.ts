@@ -5,6 +5,16 @@ export type LevelTier = "blue" | "bronze" | "silver" | "gold";
 
 /** Keyword to emoji. Longest / most specific keys first — first match wins. */
 const EMOJI_RULES: [string, string][] = [
+  ["lots of verbs", "✅"],
+  ["lots of nouns", "📦"],
+  ["lots of adjectives", "✨"],
+  ["vocab - things that happen", "🥛"],
+  ["story - morning", "📖"],
+  ["story - lunch", "🐒"],
+  ["story - evening", "🌅"],
+  ["vocab - how you do it", "🏷️"],
+  ["vocab - around town", "🚕"],
+  ["vocab - describing people", "👨🏽‍🦲"],
   ["plans and next - mixed 03", "👩‍🏫"],
   ["plans and next - mixed 02", "🧑‍🏫"],
   ["plans and next - mixed 01", "👨🏽‍🏫"],
@@ -190,6 +200,10 @@ const STAGE_DIVIDER_DESCRIPTIONS: Record<number, string> = {
   7: "Life and Hobbies",
   8: "Complex Phrases",
   9: "Advanced Grammar",
+  10: "More Vocab",
+  11: "Telling Stories",
+  12: "Lots of Words",
+  13: "Even More Words",
 };
 
 export function stageDividerLabel(stageNum: number): string {

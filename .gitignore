@@ -1,5 +1,6 @@
 # Python
 venv/
+.venv-icon/
 __pycache__/
 *.pyc
 *.pyo
@@ -22,3 +23,7 @@ mobile/dist/
 mobile/ios/
 mobile/public/data/*.csv
 mobile/.capacitor/
+
+# Personal Mac Dock launcher for the browser version (not part of the app)
+mobile/scripts/*-mac.sh
+mobile/scripts/make-mac-launcher.sh

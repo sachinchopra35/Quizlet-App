@@ -2,6 +2,8 @@
 
 Copy, legal pages, and submission checklists for the iOS App Store listing.
 
+**Android / Google Play:** see [`../play-store/`](../play-store/).
+
 | File | Purpose |
 |------|---------|
 | [checklist.md](checklist.md) | Step-by-step: what to submit where |

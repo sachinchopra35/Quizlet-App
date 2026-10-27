@@ -7,7 +7,15 @@ import {
   STYLE_FROM_EN,
   STYLE_TO_EN,
 } from "./config";
+import {
+  bindCourseFooterTipEvents,
+  footerTipPopupHtml,
+  type FooterTipKind,
+  type FooterTipState,
+} from "./courseFooterTips";
+import { showLandmarkBubble } from "./landmarkBubble";
 import { courseFooterHtml, escapeAttr, escapeHtml } from "./html";
+import { displayStreakDays } from "./streak";
 import { introPanelBodyHtml } from "./introContent";
 import {
   BEAST_LEVEL_EMOJI,
@@ -26,7 +34,9 @@ import {
 import type { Medal } from "./rounds";
 import { roundHintBodyHtml, roundHintFor } from "./roundHints";
 import { burstSparkles, PEACOCK_BURST_COLORS } from "./sparkleBurst";
+import { levelLabel, levelQuizParts } from "./levelLabels";
 import { bindPopupPrimaryEnter } from "./popupEnterKey";
+import { isStoryLevel } from "./storyLevels";
 import type { VocabRow } from "./vocab";
 
 export interface CompletionSummary {
@@ -67,6 +77,9 @@ export interface MapViewModel {
   beastStageMax: number;
   beastStageCount: number;
   beastCustomizeOpen: boolean;
+  streakCount: number;
+  lastStreakDate: string | null;
+  footerTip: FooterTipState;
 }
 
 export interface MapHandlers {
@@ -96,25 +109,12 @@ export interface MapHandlers {
   onAdjustBeastStageMax(delta: number): void;
   onBeastCustomizeToggle(open: boolean): void;
   onButtonPress?(): void;
+  onOpenFooterTip(kind: FooterTipKind, origin: { x: number; y: number }): void;
+  onCloseFooterTip(): void;
+  onOpenCheatSheet(): void;
 }
 
-export function levelLabel(name: string): string {
-  if (name === BEAST_MODE_SELECTION) return "Beast Mode";
-  const stage = parseStagePracticeKey(name);
-  if (stage !== null) return `Stage ${stage} Practice`;
-  return name.replace(/\.csv$/i, "");
-}
-
-/** Split a level filename into quiz number and topic name for display. */
-export function levelQuizParts(name: string): { number: string | null; name: string } {
-  if (name === BEAST_MODE_SELECTION) return { number: null, name: "Beast Mode" };
-  const stage = parseStagePracticeKey(name);
-  if (stage !== null) return { number: null, name: `Stage ${stage} Practice` };
-  const base = name.replace(/\.csv$/i, "");
-  const match = base.match(/^(\d+)\s+(.+)$/);
-  if (match) return { number: match[1]!, name: match[2]! };
-  return { number: null, name: base };
-}
+export { levelLabel, levelQuizParts } from "./levelLabels";
 
 function beastRangeSummary(min: number, max: number): string {
   const stageLabel = min === max ? `Stage ${min}` : `Stages ${min}–${max}`;
@@ -439,6 +439,9 @@ function popupHtml(vm: MapViewModel): string {
   if (practiceStage !== null) {
     return trophyPracticePopupHtml(vm, practiceStage, backdropClass);
   }
+  const storyNote = isStoryLevel(vm.popupCsv)
+    ? `<p class="story-level-note">Story level: questions play in order.</p>`
+    : "";
   return `
     <div class="${backdropClass}" id="popup-backdrop">
       <div ${popupPanelAttrs(vm)} role="dialog" aria-modal="true">
@@ -446,6 +449,7 @@ function popupHtml(vm: MapViewModel): string {
           <h2>${escapeHtml(levelLabel(vm.popupCsv))}</h2>
           ${popupHeadActionsHtml(vm)}
         </div>
+        ${storyNote}
         ${settingsHtml(vm)}
         ${wordListHtml(vm)}
         <button type="button" class="primary popup-start" id="popup-start">Start Quiz</button>
@@ -713,7 +717,14 @@ export function mapHtml(vm: MapViewModel): string {
     ${settingsPanelHtml(vm)}
     ${resetConfirmPanelHtml(vm)}
     ${resetTypePanelHtml(vm)}
-    ${courseFooterHtml(courseGoldProgress(vm.csvNames, vm.levelMedals))}
+    ${courseFooterHtml(
+      courseGoldProgress(vm.csvNames, vm.levelMedals),
+      displayStreakDays({ streakCount: vm.streakCount, lastStreakDate: vm.lastStreakDate }),
+    )}
+    ${footerTipPopupHtml(
+      vm.footerTip,
+      displayStreakDays({ streakCount: vm.streakCount, lastStreakDate: vm.lastStreakDate }),
+    )}
   `;
 }
 
@@ -858,6 +869,10 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
     handlers.onDismissCompletion();
   });
 
+  root.querySelector("#open-cheat-sheet")?.addEventListener("click", () => {
+    handlers.onOpenCheatSheet();
+  });
+
   root.querySelector("#map-info")?.addEventListener("click", () => {
     handlers.onOpenInfo();
   });
@@ -943,8 +958,9 @@ export function bindMapEvents(root: HTMLElement, handlers: MapHandlers): void {
     handlers.onToggleMute((e.target as HTMLInputElement).checked);
   });
 
-  bindDecorativeBursts(root);
+  bindDecorativeBursts(root, handlers);
   bindExpanderAnimations(root);
+  bindCourseFooterTipEvents(root, handlers);
   bindPopupPrimaryEnter(root);
 }
 
@@ -956,12 +972,13 @@ function playDecorativePop(el: HTMLElement, x: number, y: number, colors?: reado
   el.addEventListener("animationend", () => el.classList.remove("is-bouncing"), { once: true });
 }
 
-function bindDecorativeBursts(root: HTMLElement): void {
+function bindDecorativeBursts(root: HTMLElement, handlers: MapHandlers): void {
   root.querySelectorAll<HTMLButtonElement>("button.level-landmark").forEach((btn) => {
     bindPressFeedback(btn, undefined);
     btn.addEventListener("click", () => {
       const r = btn.getBoundingClientRect();
       playDecorativePop(btn, r.left + r.width / 2, r.top + r.height / 2);
+      showLandmarkBubble(btn, handlers);
     });
   });
 

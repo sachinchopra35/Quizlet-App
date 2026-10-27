@@ -1,5 +1,12 @@
-import { escapeAttr, escapeHtml } from "./html";
-import { roundProgress, roundProgressTier } from "./levels";
+import {
+  bindCourseFooterTipEvents,
+  footerTipPopupHtml,
+  type FooterTipHandlers,
+  type FooterTipState,
+} from "./courseFooterTips";
+import { courseFooterHtml, escapeAttr, escapeHtml } from "./html";
+import { courseGoldProgress, roundProgress, roundProgressTier } from "./levels";
+import { displayStreakDays } from "./streak";
 import { bindPopupPrimaryEnter } from "./popupEnterKey";
 import {
   canRevealAnswer,
@@ -10,7 +17,7 @@ import {
   type QuizState,
 } from "./rounds";
 
-export interface QuizHandlers {
+export interface QuizHandlers extends FooterTipHandlers {
   onRequestQuit(origin: { x: number; y: number }): void;
   onCancelQuit(): void;
   onConfirmQuit(): void;
@@ -92,6 +99,7 @@ export function quizHtml(
   },
   finishing = false,
   guessDraft = "",
+  footerTip: FooterTipState = { open: null, origin: null, animate: false },
 ): string {
   const pct = Math.round(roundProgress(state) * 100);
   const tier = roundProgressTier(state);
@@ -169,6 +177,20 @@ export function quizHtml(
         </form>
       </div>
     </div>
+    ${courseFooterHtml(
+      courseGoldProgress(state.csvNames, state.levelMedals),
+      displayStreakDays({
+        streakCount: state.streakCount,
+        lastStreakDate: state.lastStreakDate,
+      }),
+    )}
+    ${footerTipPopupHtml(
+      footerTip,
+      displayStreakDays({
+        streakCount: state.streakCount,
+        lastStreakDate: state.lastStreakDate,
+      }),
+    )}
     ${quitConfirmHtml(overlay)}
   `;
 }
@@ -235,5 +257,6 @@ export function bindQuizEvents(root: HTMLElement, handlers: QuizHandlers): void 
     handlers.onReveal();
   });
 
+  bindCourseFooterTipEvents(root, handlers);
   bindPopupPrimaryEnter(root);
 }

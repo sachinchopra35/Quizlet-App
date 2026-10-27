@@ -92,6 +92,8 @@ describe("canonicalizePunjabi", () => {
       canonicalizePunjabi("main bahut khaya"),
     );
     expect(answersMatch("main bahut kha lya", "main bahut khaya", true)).toBe(true);
+    expect(answersMatch("main eh ajj seekhlya", "main eh ajj sikhya", true)).toBe(true);
+    expect(answersMatch("main eh ajj sikh leya", "main eh ajj sikhya", true)).toBe(true);
     expect(canonicalizePunjabi("main eh ajj sikh lya")).toBe(
       canonicalizePunjabi("main eh ajj sikhya"),
     );
@@ -122,6 +124,10 @@ describe("canonicalizePunjabi", () => {
     expect(canonicalizePunjabi("asi nu lagda hai ke oh aa jange")).toBe(
       canonicalizePunjabi("asanu lagda hai ke oh aa jange"),
     );
+    expect(answersMatch("asanu udeek karni paini hai", "sanu udeek karni paini hai?", true)).toBe(
+      true,
+    );
+    expect(answersMatch("asanu jana paina hai", "sanu jana paina hai", true)).toBe(true);
     expect(canonicalizePunjabi("asi aapas vich gall karde han")).toBe(
       canonicalizePunjabi("asi aapas vich gall karde han"),
     );
@@ -223,6 +229,76 @@ describe("canonicalizePunjabi", () => {
   it("ik minute and ik mind", () => {
     expect(canonicalizePunjabi("ik minute rukho")).toBe(
       canonicalizePunjabi("ik mind rukho"),
+    );
+  });
+
+  it("subject may come before or after time / place / with phrases", () => {
+    expect(
+      canonicalizePunjabi("main das mind baad agli bus te chadh gya"),
+    ).toBe(canonicalizePunjabi("das minute baad main agli bus te chadh gya"));
+    expect(
+      answersMatch(
+        "main das mind to baad agli bus te chadh gya",
+        "das minute baad main agli bus te chadh gya",
+        true,
+      ),
+    ).toBe(true);
+    expect(canonicalizePunjabi("main phir toilet gya")).toBe(
+      canonicalizePunjabi("phir main toilet gya"),
+    );
+    expect(canonicalizePunjabi("main bus te apni app naal punjabi sikhya")).toBe(
+      canonicalizePunjabi("bus te main apni app naal punjabi sikhya"),
+    );
+    expect(answersMatch("par bandar rukh te chadh gya", "par bandar perh te chadh gya", true)).toBe(true);
+    expect(answersMatch("rukh digg gya", "perh digg gya", true)).toBe(true);
+    expect(answersMatch("asi kaam ton baad cinema gaye", "kaam ton baad asi cinema gaye", true)).toBe(
+      true,
+    );
+    expect(
+      answersMatch(
+        "mera dost thakeya si is karke oh jaldi ghar chala gaya",
+        "mera dost thaka si is karke oh jaldi ghar chala gya",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch("asi raat de tin vaje parathe khaye", "raat de tin baje asi parathe khaye", true),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "asi india gate te suraj nikalda dekhya",
+        "asi India Gate te suraj nikalda dekheya",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "lunch bahut mazedaar si asanu bahut maza aa gya",
+        "lunch bahut mazedaar si, sanu bahut maza aaya",
+        true,
+      ),
+    ).toBe(true);
+    expect(answersMatch("perh digg gya", "rukh digg gya", true)).toBe(true);
+    expect(answersMatch("ik minute perho", "ik minute rukho", true)).toBe(false);
+    expect(answersMatch("asi phir ice cream kharid leyi", "phir asi ice cream kharid leyi", true)).toBe(
+      true,
+    );
+    expect(
+      answersMatch(
+        "main lunch vele apne dostan naal lodhi garden gya",
+        "lunch vele main apne dostan naal Lodhi Garden gya",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "mera dost samose te chole bhature le ke aa gya",
+        "mera dost samose te chole bhature le ke aaya",
+        true,
+      ),
+    ).toBe(true);
+    expect(canonicalizePunjabi("main bahut jaldi uth gya")).toBe(
+      canonicalizePunjabi("bahut jaldi main uth gya"),
     );
   });
 
@@ -454,6 +530,27 @@ describe("canonicalizePunjabi", () => {
 describe("language tweak canonicals", () => {
   it("doggy and kutta", () => {
     expect(canonicalizePunjabi("mera kutta")).toBe(canonicalizePunjabi("mera doggy"));
+    expect(
+      answersMatch(
+        "oh mere naal doggy de baare gall karda hai",
+        "oh mere naal kutte de baare gall karda hai",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "oh mere naal dog de baare gall karda hai",
+        "oh mere naal kutte de baare gall karda hai",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "oh mere naal kutta de baare gall karda hai",
+        "oh mere naal kutte de baare gall karda hai",
+        true,
+      ),
+    ).toBe(true);
   });
 
   it("cow ga gan gay gaye", () => {
@@ -502,6 +599,205 @@ describe("language tweak canonicals", () => {
     expect(canonicalizePunjabi("ohne apne aap kharidlya")).toBe(
       canonicalizePunjabi("ohne apne aap kharidya"),
     );
+  });
+
+  it("vocab round spelling variants", () => {
+    expect(answersMatch("bachcha ro raha hai", "bacha ro raha hai", true)).toBe(true);
+    expect(answersMatch("oh hoshiyar hai", "oh hushiyar hai", true)).toBe(true);
+    expect(answersMatch("haule bolo", "hauli bolo", true)).toBe(true);
+    expect(answersMatch("glass tut gya", "glass toot gya", true)).toBe(true);
+    expect(answersMatch("eh tut gya", "eh toot gya", true)).toBe(true);
+    expect(answersMatch("dariya doonga hai", "nadi doonga hai", true)).toBe(true);
+    expect(answersMatch("ohde kes lambe ne", "ohde vaal lambe ne", true)).toBe(true);
+    expect(answersMatch("ohde baal lambe ne", "ohde vaal lambe ne", true)).toBe(true);
+    expect(answersMatch("apne kes brush kar lo", "apne vaal brush kar lo", true)).toBe(true);
+    expect(answersMatch("oh takda hai", "oh takra hai", true)).toBe(true);
+    expect(answersMatch("oh mazboot hai", "oh takra hai", true)).toBe(true);
+    expect(answersMatch("khana sarh gya", "khana sar gya", true)).toBe(true);
+    expect(answersMatch("khana sad gya", "khana sar gya", true)).toBe(true);
+    expect(answersMatch("school nede hai", "school nere hai", true)).toBe(true);
+    expect(answersMatch("asi kuch saap kharidange", "asi kuch sapp kharidange", true)).toBe(true);
+    expect(answersMatch("glass toot gya", "glass tut gya", true)).toBe(true);
+    expect(answersMatch("purana banda gusse ch hai", "budha banda gusse ch hai", true)).toBe(true);
+    expect(answersMatch("main peenda hun", "main pinda hun", true)).toBe(true);
+    expect(answersMatch("main kade kade chai pinda hun", "main kade kade chai peenda hun", true)).toBe(
+      true,
+    );
+    expect(answersMatch("main jaldi jaldi khaya", "main jaldi jaldi kha leya", true)).toBe(true);
+    expect(answersMatch("mera dost daal nahi kha leyi", "mera dost daal nahi khayi", true)).toBe(
+      true,
+    );
+    expect(
+      answersMatch("main apne dand brush kita", "main apne dand brush kar leye", true),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "main bahut late si is karke main bus miss kar dita",
+        "main bahut late si is karke main bus miss kar diti",
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      answersMatch(
+        "das mind baad main agli bus te chadh gya",
+        "das minute baad main agli bus te chadh gya",
+        true,
+      ),
+    ).toBe(true);
+    expect(answersMatch("main bas lai bhaaj gya", "main bus lai bhaaj gya", true)).toBe(true);
+    expect(answersMatch("bas te main apni app naal punjabi sikhya", "bus te main apni app naal punjabi sikhya", true)).toBe(
+      true,
+    );
+    expect(
+      answersMatch(
+        "bas te main apni app de naal punjabi sikhya",
+        "bus te main apni app naal punjabi sikhya",
+        true,
+      ),
+    ).toBe(true);
+    expect(answersMatch("oh der naal aaya", "oh der naal aa gya", true)).toBe(true);
+    expect(answersMatch("bas ho gya", "bus ho gya", true)).toBe(false);
+    expect(answersMatch("pher main toilet gya", "phir main toilet gya", true)).toBe(true);
+    expect(answersMatch("phir main toilet gaya", "phir main toilet gya", true)).toBe(true);
+    expect(answersMatch("main bahut jaldi uth gaya", "main bahut jaldi uth gya", true)).toBe(true);
+    expect(answersMatch("main khaya", "main kha leya", true)).toBe(true);
+    expect(answersMatch("bachche chup karke baithe ne", "bache chup karke baithe ne", true)).toBe(
+      true,
+    );
+    expect(answersMatch("main naya phone kharideya", "main naya phone kharidya", true)).toBe(true);
+    expect(answersMatch("nadi dunga hai", "nadi doonga hai", true)).toBe(true);
+    expect(answersMatch("tusi kyun ro rehe ho", "tusi kyon ro rahe ho?", true)).toBe(true);
+    expect(answersMatch("tusi kyu ro rahe ho", "tusi kyon ro rahe ho?", true)).toBe(true);
+    expect(answersMatch("dukaan vich bahut bheed hai", "dukaan ch bahut bheed hai", true)).toBe(true);
+    expect(answersMatch("dukaan te bahut bheed hai", "dukaan ch bahut bheed hai", true)).toBe(true);
+    expect(answersMatch("driver der naal aa gya", "driver der naal aaya", true)).toBe(true);
+    expect(answersMatch("oh der naal aa gaya", "oh der naal aaya", true)).toBe(true);
+    expect(answersMatch("oh vapas aaya", "oh vapas aa gya", true)).toBe(true);
+    expect(answersMatch("oh chala gya", "oh chalaya", true)).toBe(false);
+    expect(answersMatch("asi der naal pahunchange", "asi der naal pahunch jaaange", true)).toBe(true);
+    expect(answersMatch("asi jaldi pahunch jange", "asi jaldi pahunch jaaange", true)).toBe(true);
+    expect(answersMatch("oh jaldi ghar pahunchega", "oh jaldi ghar pahunch jayega", true)).toBe(true);
+    expect(answersMatch("oh kadon pahunch jaange?", "oh kadon pahunchange?", true)).toBe(true);
+    expect(answersMatch("apne hath dhang naal dholo", "hath dhang naal dho lo", true)).toBe(true);
+    expect(answersMatch("dand brush kar lo", "apne dand brush kar lo", true)).toBe(true);
+    expect(answersMatch("main kursi te baithya hun", "main apni kursi te baithya hun", true)).toBe(
+      true,
+    );
+    expect(answersMatch("aap naal gall karo", "apne aap naal gall karo", true)).toBe(false);
+    expect(answersMatch("ohne jaldi khaya", "ohne jaldi jaldi khaya", true)).toBe(true);
+    expect(answersMatch("hauli hauli bolo", "hauli bolo", true)).toBe(true);
+    expect(answersMatch("main naya phone kharidya", "main nava phone kharidya", true)).toBe(true);
+    expect(answersMatch("naya ghar", "nava ghar", true)).toBe(true);
+    expect(answersMatch("kyonki main thaka si", "kyunki main thaka si", true)).toBe(true);
+    expect(answersMatch("billi manje te sutti hai", "billi bistar te sutti hai", true)).toBe(
+      true,
+    );
+    expect(answersMatch("main kade kade chai peenda hun", "main kade kade cha peenda hun", true)).toBe(
+      true,
+    );
+  });
+
+  it("conjugated verb level variants", () => {
+    expect(answersMatch("main ik bandar vekhya", "main ik bandar dekhya", true)).toBe(true);
+    expect(answersMatch("main so raha si", "main sutta si", true)).toBe(true);
+    expect(answersMatch("oh kehnda hai ke oh thaka hai", "oh kehnda hai ki oh thaka hai", true)).toBe(
+      true,
+    );
+    expect(answersMatch("main sochda hun ke oh aa jayegi", "main sochda hun ki oh aa jayegi", true)).toBe(
+      true,
+    );
+    for (const [typed, answer] of [
+      ["main ohnu tohfa dinda haan", "main ohnu tohfa dinda hun"],
+      ["main apna homework kar reha haan", "main apna homework kar raha hun"],
+      ["oh roz gym jandi hai", "oh har roz gym jaandi hai"],
+      ["main tuhanu kal dasanga", "main tuhanu kal dassunga"],
+      ["main ik chitthi likhanga", "main ik chitthi likhunga"],
+      ["ohne mainu ik sawal puchya", "ohne mainu ik sawaal puchheya"],
+      ["ohne mainu ik sawaal puchlya", "ohne mainu ik sawaal puchheya"],
+      ["main bahut hasya", "main bahut hasseya"],
+      ["main bhaj reha si", "main bhaj raha si"],
+    ] as const) {
+      expect(answersMatch(typed, answer, true)).toBe(true);
+    }
+    expect(answersMatch("khana changa hai", "khana chunga hai", true)).toBe(false);
+  });
+
+  it("noun level spelling variants", () => {
+    for (const [typed, answer] of [
+      ["meri ankh", "meri akh"],
+      ["meri jindagi", "meri zindagi"],
+      ["nava hospital", "nava hasptaal"],
+      ["sadda gurudwara", "sadda gurdwara"],
+      ["meri tankha", "meri tankhaah"],
+      ["vadda kharch", "vadda kharcha"],
+      ["mera bhai", "mera bhra"],
+      ["meri behn", "meri bhain"],
+      ["meri behen", "meri bhain"],
+      ["meri bahin", "meri bhain"],
+      ["mera veer", "mera bhra"],
+      ["mera vir", "mera bhra"],
+      ["vaddi company", "vaddi kampani"],
+      ["usdi kudi", "ohdi kudi"],
+      ["meri padai", "meri padhai"],
+      ["garam rajai", "garam kambal"],
+      ["garam razai", "garam kambal"],
+      ["vadda sheher", "vadda shehar"],
+      ["mashhoor sheher", "mashhoor shehar"],
+    ] as const) {
+      expect(answersMatch(typed, answer, true)).toBe(true);
+    }
+    expect(answersMatch("lamba banda", "lamba aadmi", true)).toBe(true);
+    expect(answersMatch("budha aadmi gusse ch hai", "budha banda gusse ch hai", true)).toBe(true);
+    expect(answersMatch("ik bandar thalle aa gya", "ik aadmi thalle aa gya", true)).toBe(false);
+    expect(answersMatch("mera bhra", "meri bhain", true)).toBe(false);
+    expect(answersMatch("ohda puttar", "ohda munda", true)).toBe(true);
+    expect(answersMatch("ohda putar", "ohda munda", true)).toBe(true);
+    expect(answersMatch("ohda munda", "ohdi kudi", true)).toBe(false);
+  });
+
+  it("adjective level spelling variants", () => {
+    for (const [typed, answer] of [
+      ["kimti tohfa", "keemti tohfa"],
+      ["zaroori gall", "jaroori gall"],
+      ["muft khana", "mufat khana"],
+      ["pheeki daal", "phikki daal"],
+      ["kachcha kela", "kacha kela"],
+      ["tutta phone", "tutteya phone"],
+      ["bewkoof banda", "bewakoof banda"],
+      ["surakshit ghar", "surakhit ghar"],
+      ["pura mahina", "poora mahina"],
+      ["mehangi gaddi", "mehngi gaddi"],
+    ] as const) {
+      expect(answersMatch(typed, answer, true)).toBe(true);
+    }
+    expect(answersMatch("mehngi gaddi", "sasti gaddi", true)).toBe(false);
+  });
+
+  it("bare infinitive spelling variants", () => {
+    for (const [typed, answer] of [
+      ["sona", "sauna"],
+      ["aana", "aauna"],
+      ["pina", "peena"],
+      ["khelna", "khedna"],
+      ["khareedna", "kharidna"],
+      ["madat karna", "madad karna"],
+      ["rahna", "rehna"],
+      ["samjhna", "samajhna"],
+      ["khada hona", "khalona"],
+      ["hassna", "hasna"],
+      ["padhna", "parhna"],
+    ] as const) {
+      expect(answersMatch(typed, answer, true)).toBe(true);
+    }
+  });
+
+  it("imperative lo and do endings", () => {
+    expect(answersMatch("pakha chala lo", "pakha chala do", true)).toBe(true);
+    expect(answersMatch("parde kholo", "parde khol do", true)).toBe(true);
+    expect(answersMatch("darwaza kholo", "darwaza khol do", true)).toBe(true);
+    expect(answersMatch("mainu paise de lo", "mainu paise de do", true)).toBe(true);
+    expect(answersMatch("bottle bhar lo", "bottle bhar do", true)).toBe(true);
+    expect(answersMatch("ehnu dedo", "ehnu de do", true)).toBe(true);
   });
 
   it("future be: ho jaa- and hou- copula are equivalent", () => {

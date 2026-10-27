@@ -6,6 +6,7 @@ import {
   styleFromDirection,
 } from "./config";
 import { answersMatch } from "./matching";
+import { isStoryLevel } from "./storyLevels";
 import type { VocabRow } from "./vocab";
 
 export type FeedbackKind = "correct" | "wrong";
@@ -68,10 +69,13 @@ export interface QuizState {
   correctFeedbackTurn: number;
   audioMuted: boolean;
   beastMode: boolean;
+  storyMode: boolean;
   beastStageMin: number;
   beastStageMax: number;
   roundMedals: Medal[];
   csvNames: string[];
+  streakCount: number;
+  lastStreakDate: string | null;
 }
 
 export function createInitialState(): QuizState {
@@ -98,10 +102,13 @@ export function createInitialState(): QuizState {
     correctFeedbackTurn: 0,
     audioMuted: false,
     beastMode: false,
+    storyMode: false,
     beastStageMin: 1,
     beastStageMax: 1,
     roundMedals: [],
     csvNames: [],
+    streakCount: 0,
+    lastStreakDate: null,
   };
 }
 
@@ -129,7 +136,10 @@ export function startRound(
   direction: Direction,
 ): QuizState {
   const n = rows.length;
-  const order = shuffle([...Array(n).keys()]);
+  const storyMode = Boolean(state.selectedCsv && isStoryLevel(state.selectedCsv));
+  const order = storyMode
+    ? [...Array(n).keys()]
+    : shuffle([...Array(n).keys()]);
   return {
     ...state,
     vocabRows: rows,
@@ -142,6 +152,7 @@ export function startRound(
     roundActive: true,
     screen: "quiz",
     beastMode: false,
+    storyMode,
     lastFeedback: null,
     feedbackSoundGen: 0,
     lastChimedFeedbackGen: 0,
@@ -160,7 +171,7 @@ export function startBeastRound(
 ): QuizState {
   const sample = sampleRows(combined, beastSampleSize(combined.length));
   const next = startRound(state, sample, direction);
-  return { ...next, beastMode: true };
+  return { ...next, beastMode: true, storyMode: false };
 }
 
 export function currentRowIndex(state: QuizState): number | null {
@@ -314,8 +325,10 @@ export function processAnswer(state: QuizState, userText: string): QuizState {
   } else {
     wrongAttempts[idx] = (wrongAttempts[idx] ?? 0) + 1;
     if (!revealMonkeys[idx]) revealMonkeys[idx] = randomRevealMonkey();
-    const wrong = queue.shift()!;
-    queue.push(wrong);
+    if (!state.storyMode) {
+      const wrong = queue.shift()!;
+      queue.push(wrong);
+    }
     lastFeedback = ["wrong", userText, answer];
     lastWrongIdx = idx;
   }
@@ -355,6 +368,7 @@ export function completeRoundNaturally(state: QuizState): QuizState {
     roundActive: false,
     screen: "map",
     beastMode: false,
+    storyMode: false,
     lastFeedback: null,
     roundMessage: `Quiz complete. You scored ${c} / ${t} (${pct.toFixed(0)}%).`,
     roundAnnounce: `Quiz complete. You scored ${c} out of ${t}.`,
@@ -369,6 +383,7 @@ export function stopRoundEarly(state: QuizState): QuizState {
     roundActive: false,
     screen: "map",
     beastMode: false,
+    storyMode: false,
     queue: [],
     lastFeedback: null,
     roundMessage: `Round stopped early. First-try score so far: ${c} / ${t} (${pct.toFixed(1)}%).`,

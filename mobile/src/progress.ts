@@ -10,15 +10,17 @@ import { stageCount } from "./levels";
 import { bestMedal, migrateMedal, type Medal, type QuizState } from "./rounds";
 
 const STORAGE_KEY = "learn-punjabi-progress";
-const SAVE_VERSION = 4;
+const SAVE_VERSION = 5;
 
 export interface SavedProgress {
-  version: 4;
+  version: 5;
   levelMedals: Record<string, Medal>;
   audioMuted: boolean;
   questionStyle: string;
   beastStageMin?: number;
   beastStageMax?: number;
+  streakCount: number;
+  lastStreakDate: string | null;
 }
 
 interface SavedProgressV1 {
@@ -46,6 +48,20 @@ interface SavedProgressV3 {
   beastStageMax?: number;
 }
 
+interface SavedProgressV4 {
+  version: 4;
+  levelMedals: Record<string, Medal>;
+  audioMuted: boolean;
+  questionStyle: string;
+  beastStageMin?: number;
+  beastStageMax?: number;
+}
+
+const DEFAULT_STREAK: Pick<SavedProgress, "streakCount" | "lastStreakDate"> = {
+  streakCount: 0,
+  lastStreakDate: null,
+};
+
 export function pickPersistable(state: QuizState): SavedProgress {
   return {
     version: SAVE_VERSION,
@@ -54,6 +70,8 @@ export function pickPersistable(state: QuizState): SavedProgress {
     questionStyle: state.questionStyle,
     beastStageMin: state.beastStageMin,
     beastStageMax: state.beastStageMax,
+    streakCount: state.streakCount,
+    lastStreakDate: state.lastStreakDate,
   };
 }
 
@@ -106,6 +124,8 @@ export function applySaved(
     direction: directionFromStyle(saved.questionStyle),
     beastStageMin: range.min,
     beastStageMax: range.max,
+    streakCount: saved.streakCount,
+    lastStreakDate: saved.lastStreakDate,
   };
 }
 
@@ -115,6 +135,7 @@ function migrateV1(raw: SavedProgressV1): SavedProgress {
     levelMedals: renameLevelMedals(migrateMedals(raw.levelMedals)),
     audioMuted: raw.audioMuted,
     questionStyle: raw.questionStyle,
+    ...DEFAULT_STREAK,
   };
 }
 
@@ -126,6 +147,7 @@ function migrateV2(raw: SavedProgressV2): SavedProgress {
     questionStyle: raw.questionStyle,
     beastStageMin: raw.beastStageMin,
     beastStageMax: raw.beastStageMax,
+    ...DEFAULT_STREAK,
   };
 }
 
@@ -137,6 +159,19 @@ function migrateV3(raw: SavedProgressV3): SavedProgress {
     questionStyle: raw.questionStyle,
     beastStageMin: raw.beastStageMin,
     beastStageMax: raw.beastStageMax,
+    ...DEFAULT_STREAK,
+  };
+}
+
+function migrateV4(raw: SavedProgressV4): SavedProgress {
+  return {
+    version: SAVE_VERSION,
+    levelMedals: renameLevelMedals(raw.levelMedals),
+    audioMuted: raw.audioMuted,
+    questionStyle: raw.questionStyle,
+    beastStageMin: raw.beastStageMin,
+    beastStageMax: raw.beastStageMax,
+    ...DEFAULT_STREAK,
   };
 }
 
@@ -152,11 +187,23 @@ function parseSaved(raw: unknown): SavedProgress | null {
   if (parsed.version === 3) {
     return migrateV3(parsed as unknown as SavedProgressV3);
   }
+  if (parsed.version === 4) {
+    return migrateV4(parsed as unknown as SavedProgressV4);
+  }
   if (parsed.version !== SAVE_VERSION) return null;
   if (typeof parsed.audioMuted !== "boolean") return null;
   if (typeof parsed.questionStyle !== "string") return null;
   if (!parsed.levelMedals || typeof parsed.levelMedals !== "object") return null;
-  return parsed as unknown as SavedProgress;
+  const streakCount = typeof parsed.streakCount === "number" ? parsed.streakCount : 0;
+  const lastStreakDate =
+    parsed.lastStreakDate === null || typeof parsed.lastStreakDate === "string"
+      ? parsed.lastStreakDate
+      : null;
+  return {
+    ...(parsed as unknown as SavedProgress),
+    streakCount,
+    lastStreakDate,
+  };
 }
 
 export function loadProgress(): SavedProgress | null {

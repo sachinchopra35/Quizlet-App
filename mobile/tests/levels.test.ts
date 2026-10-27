@@ -79,6 +79,27 @@ describe("levelEmoji", () => {
     expect(levelEmoji("61 How and Which.csv")).toBe("🤷‍♂️");
     expect(levelEmoji("62 Agar - If.csv")).toBe("🤷‍♂️");
     expect(levelEmoji("63 Wants - Chahna.csv")).toBe("🙏");
+    expect(levelEmoji("91 Vocab - Describing People.csv")).toBe("👨🏽‍🦲");
+    expect(levelEmoji("92 Vocab - Around Town.csv")).toBe("🚕");
+    expect(levelEmoji("93 Vocab - How You Do It.csv")).toBe("🏷️");
+    expect(levelEmoji("94 Vocab - Things That Happen.csv")).toBe("🥛");
+    expect(levelEmoji("96 Vocab - Describing People 2.csv")).toBe("👨🏽‍🦲");
+    expect(levelEmoji("97 Vocab - Around Town 2.csv")).toBe("🚕");
+    expect(levelEmoji("98 Vocab - How You Do It 2.csv")).toBe("🏷️");
+    expect(levelEmoji("99 Vocab - Things That Happen 2.csv")).toBe("🥛");
+    expect(levelEmoji("100 Story - Morning 01.csv")).toBe("📖");
+    expect(levelEmoji("101 Story - Morning 02.csv")).toBe("📖");
+    expect(levelEmoji("102 Story - Lunch 01.csv")).toBe("🐒");
+    expect(levelEmoji("103 Story - Lunch 02.csv")).toBe("🐒");
+    expect(levelEmoji("104 Story - Evening 01.csv")).toBe("🌅");
+    expect(levelEmoji("105 Story - Evening 02.csv")).toBe("🌅");
+    expect(levelEmoji("106 Lots of Verbs 1.csv")).toBe("✅");
+    expect(levelEmoji("109 Lots of Verbs 4.csv")).toBe("✅");
+    expect(levelEmoji("113 Lots of Verbs 8.csv")).toBe("✅");
+    expect(levelEmoji("114 Lots of Nouns 1.csv")).toBe("📦");
+    expect(levelEmoji("121 Lots of Nouns 8.csv")).toBe("📦");
+    expect(levelEmoji("122 Lots of Adjectives 1.csv")).toBe("✨");
+    expect(levelEmoji("129 Lots of Adjectives 8.csv")).toBe("✨");
   });
 });
 
@@ -227,7 +248,9 @@ describe("stage helpers", () => {
     expect(stageDividerLabel(3)).toBe("Stage 3: Describing things");
     expect(stageDividerLabel(8)).toBe("Stage 8: Complex Phrases");
     expect(stageDividerLabel(9)).toBe("Stage 9: Advanced Grammar");
-    expect(stageDividerLabel(10)).toBe("Stage 10");
+    expect(stageDividerLabel(10)).toBe("Stage 10: More Vocab");
+    expect(stageDividerLabel(13)).toBe("Stage 13: Even More Words");
+    expect(stageDividerLabel(14)).toBe("Stage 14");
   });
 
   it("counts stages for a course length", () => {
