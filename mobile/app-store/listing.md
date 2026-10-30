@@ -32,6 +32,14 @@ Speak Punjabi, English letters
 Learn spoken Punjabi with useful everyday sentences — typed in English letters. No Gurmukhi required. Works fully offline. Built for real conversations, not textbook phrases.
 ```
 
+**Suggested update for this release (170 max):**
+
+```
+Daily streaks, a pronunciation cheat sheet, and lots of new levels — still fully offline. Useful Punjabi in English letters, from basics to full sentences.
+```
+
+(169 characters)
+
 ---
 
 ## Description
@@ -115,6 +123,30 @@ Shorter alternative (if you prefer a single paragraph):
 
 ```
 Clearer guidance on early levels, a Reveal Answer option when you’re stuck, improved spelling matching, refreshed visuals, and smaller starter rounds. Thanks for learning with Simple Punjabi!
+```
+
+---
+
+## What's New (version 1.0.2)
+
+Paste into **App Store Connect → version 1.0.2 → What’s New in This Version**.
+
+```
+More to learn, and more help saying it out loud:
+
+• Daily streak — finish a round each day to keep your streak; see it on the map and in quizzes
+• Course progress bar — see how much of the map you’ve cleared with a perfect round
+• Pronunciation cheat sheet — how English spellings in the app actually sound (open from About, or find the secret on the map)
+• Lots of new levels — more verbs, nouns, adjectives, and short story days, with clearer level names on the map
+• Smarter answer matching for common spelling variations
+
+Thanks for learning with Simple Punjabi.
+```
+
+Shorter alternative:
+
+```
+Daily streaks, a course progress bar, a new pronunciation cheat sheet, many new levels (including story days), and improved spelling matching. Thanks for learning with Simple Punjabi!
 ```
 
 ---
